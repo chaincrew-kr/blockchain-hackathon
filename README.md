@@ -4,6 +4,10 @@ Solana Devnet과 x402 v2를 사용한 AI 에이전트 결제 해커톤 프로젝
 증명이 없는 요청에는 `402 Payment Required`를 반환하고, 에이전트는 USDC 결제를
 서명한 뒤 요청을 자동 재시도합니다.
 
+> **블록체인·x402가 처음이신가요?** 개념부터 이해하려면 [개념 온보딩](docs/CONCEPTS.md),
+> 팀 공용 devnet 지갑으로 바로 테스트하려면 [팀 Devnet 셋업](docs/TEAM_DEVNET_SETUP.md)을
+> 먼저 읽으세요.
+
 ## 저장소 구조
 
 ```text
@@ -71,10 +75,11 @@ npm run client
 Devnet 준비 방법과 무엇을 미리 신청해야 하는지는
 [Devnet 가이드](docs/DEVNET.md)에 정리되어 있습니다.
 
-`pay.sh`를 사용할 때는 다음처럼 기존 curl 호출을 감쌀 수 있습니다.
+코드를 직접 짜지 않고도 [`pay.sh`](https://github.com/solana-foundation/pay)로 기존
+curl 호출을 감싸 x402 결제를 처리할 수 있습니다. 설치는 [pay.sh 설치 문서](https://pay.sh/docs/get-started/install)를
+참고하세요(우리 `npm run client`와 동작 원리는 같습니다).
 
 ```bash
-npm install -g @solana/pay
 pay setup
 pay curl http://localhost:4021/api/costly-data
 ```

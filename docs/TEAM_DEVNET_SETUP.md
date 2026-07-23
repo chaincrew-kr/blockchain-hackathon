@@ -17,8 +17,8 @@
 | USDC 민트 (devnet) | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | 서버가 요구하는 결제 토큰 |
 | merchant USDC 토큰계정(ATA) | `64wTiyJHoj3y2cTwvApsuzChtkk8iJNv1rovsHXoHV65` | 이미 생성 완료 (아래 참고) |
 
-buyer 개인키(`SVM_PRIVATE_KEY`, base58)는 **문서에 없습니다.** 팀 채널에서 별도로
-전달받으세요.
+buyer **키페어 파일**(`buyer-devnet.json`, 64바이트 숫자 배열)은 **문서에 없습니다.**
+팀 채널(Slack DM 등)에서 별도로 전달받으세요.
 
 ## 사전 준비
 
@@ -34,13 +34,26 @@ buyer 개인키(`SVM_PRIVATE_KEY`, base58)는 **문서에 없습니다.** 팀 �
 npm install
 ```
 
-### 2) `.env` 생성
+### 2) 구매자 키페어 파일 배치
+
+팀 채널에서 받은 `buyer-devnet.json`을 저장소의 `.secrets/` 폴더에 둡니다.
+
+```bash
+mkdir -p .secrets
+# 받은 buyer-devnet.json을 .secrets/buyer-devnet.json 으로 저장
+```
+
+`.secrets/`와 `buyer-devnet.json`은 `.gitignore`에 등록돼 있어 Git에 올라가지
+않습니다. (안심하고 그대로 두세요.)
+
+### 3) `.env` 생성
 
 ```bash
 cp .env.example .env
 ```
 
-`.env`를 열어 아래처럼 채웁니다. **개인키만 팀 채널에서 받은 값으로** 교체하세요.
+`.env`를 열어 **판매자 주소만** 아래 값으로 채웁니다. 구매자 키는 기본값
+`SVM_KEYPAIR_PATH`가 위 파일을 가리키므로 따로 안 넣어도 됩니다.
 
 ```dotenv
 PORT=4021
@@ -52,13 +65,16 @@ PAYMENT_PRICE=$0.001
 SVM_ADDRESS=7CCkgtKXQThSYf4xLuDpM7NL6ybEf1pGwz8BwVKPwZRh
 
 RESOURCE_SERVER_URL=http://localhost:4021
-# 구매자 개인키 — 팀 채널에서 받은 base58 값으로 교체 (절대 커밋 금지)
-SVM_PRIVATE_KEY=<팀_채널에서_받은_buyer_개인키>
+# 구매자 키페어 파일 경로 (기본값 그대로 두면 됨)
+SVM_KEYPAIR_PATH=.secrets/buyer-devnet.json
 ```
 
-> `.env`는 `.gitignore`에 등록돼 있어 Git에 올라가지 않습니다. 그대로 두세요.
+> **대안:** 키페어 파일 대신 base58 문자열을 쓰려면, 위 줄 대신
+> `SVM_PRIVATE_KEY=<base58 값>`을 넣어도 됩니다(둘 중 하나만).
 
-### 3) 서버 실행
+> `.env`도 `.gitignore`에 등록돼 있어 Git에 올라가지 않습니다.
+
+### 4) 서버 실행
 
 ```bash
 npm run dev
@@ -67,7 +83,7 @@ npm run dev
 `http://localhost:4021`에서 API 서버가 뜹니다. (서버는 각자 **본인 PC**에서
 돌아갑니다. 공용 서버가 아닙니다.)
 
-### 4) 결제 전 챌린지 확인 (선택)
+### 5) 결제 전 챌린지 확인 (선택)
 
 다른 터미널에서:
 
@@ -76,7 +92,7 @@ curl http://localhost:4021/health      # {"status":"ok"}
 npm run inspect:402                     # HTTP 402 + payment-required 헤더
 ```
 
-### 5) 실제 결제 테스트
+### 6) 실제 결제 테스트
 
 ```bash
 npm run client
@@ -116,7 +132,7 @@ spl-token transfer 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU 1 <merchant주�
 
 ## 보안 체크리스트
 
-- [ ] `.env`와 `*.json` 키 파일을 **Git에 커밋하지 않는다** (`.gitignore`로 이미 차단)
-- [ ] 개인키는 Slack DM / 1Password 등 안전한 경로로만 공유한다
+- [ ] `.env`와 `.secrets/`, `*-devnet.json` 키파일을 **Git에 커밋하지 않는다** (`.gitignore`로 이미 차단)
+- [ ] 키페어 파일/개인키는 Slack DM / 1Password 등 안전한 경로로만 공유한다
 - [ ] 이 devnet 키를 **mainnet에서 재사용하지 않는다**
 - [ ] mainnet 전환 시에는 **새 지갑을 새로 생성**하고 키를 공유하지 않는다
