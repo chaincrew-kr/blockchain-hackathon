@@ -4,8 +4,8 @@ Solana Devnet과 x402 v2를 사용한 AI 에이전트 결제 해커톤 프로젝
 증명이 없는 요청에는 `402 Payment Required`를 반환하고, 에이전트는 USDC 결제를
 서명한 뒤 요청을 자동 재시도합니다.
 
-> **블록체인·x402가 처음이신가요?** 개념부터 이해하려면 [개념 온보딩](docs/CONCEPTS.md),
-> 팀 공용 devnet 지갑으로 바로 테스트하려면 [팀 Devnet 셋업](docs/TEAM_DEVNET_SETUP.md)을
+> **블록체인·x402가 처음이신가요?** 개념부터 이해하려면 [개념 온보딩](docs/onboarding/CONCEPTS.md),
+> 팀 공용 devnet 지갑으로 바로 테스트하려면 [팀 Devnet 셋업](docs/onboarding/TEAM_DEVNET_SETUP.md)을
 > 먼저 읽으세요.
 
 ## 저장소 구조
@@ -17,12 +17,16 @@ apps/
 packages/
 ├── agent/        # 402 처리, 지불 클라이언트, A2A (AI)
 └── blockchain/   # 지갑, 정산, 공용 온체인 코드 (Blockchain)
-docs/             # 팀 계획, Devnet, 아키텍처, Git 운영
+docs/
+├── onboarding/   # 개념 이해 + Devnet 셋업 (새 팀원용)
+├── team/         # Git 규칙, 팀 계획
+├── ARCHITECTURE.md  # 시스템 경계
+└── PRODUCT_BRIEF.md # 제품 요약
 config/           # ESLint, TypeScript 공통 설정
 infra/            # Docker Compose
 ```
 
-세부 역할과 일정은 [4인 팀 계획](docs/TEAM_PLAN.md), 시스템 경계는
+세부 역할과 일정은 [4인 팀 계획](docs/team/TEAM_PLAN.md), 시스템 경계는
 [아키텍처](docs/ARCHITECTURE.md)를 참고하세요.
 
 ## 로컬 실행
@@ -73,7 +77,7 @@ npm run client
 ```
 
 Devnet 준비 방법과 무엇을 미리 신청해야 하는지는
-[Devnet 가이드](docs/DEVNET.md)에 정리되어 있습니다.
+[Devnet 가이드](docs/onboarding/DEVNET.md)에 정리되어 있습니다.
 
 코드를 직접 짜지 않고도 [`pay.sh`](https://github.com/solana-foundation/pay)로 기존
 curl 호출을 감싸 x402 결제를 처리할 수 있습니다. 설치는 [pay.sh 설치 문서](https://pay.sh/docs/get-started/install)를
@@ -97,7 +101,7 @@ pay curl http://localhost:4021/api/costly-data
 ## 팀 Git 규칙
 
 `feature/* → dev → main`만 허용합니다. `main`과 `dev`에 직접 push하지 않습니다.
-[Git 브랜치 운영](docs/GIT_WORKFLOW.md)을 따릅니다.
+[Git 브랜치 운영](docs/team/GIT_WORKFLOW.md)을 따릅니다.
 
 ## 참고 자료
 
