@@ -9,24 +9,38 @@ Solana Devnet과 x402 v2를 사용한 AI 에이전트 결제 해커톤 프로젝
 > 팀 공용 devnet 지갑으로 바로 테스트하려면 [팀 Devnet 셋업](docs/onboarding/TEAM_DEVNET_SETUP.md),
 > 지금 뭐가 되고 안 되는지는 [구현 현황](docs/onboarding/STATUS.md)을 보세요.
 
-## 결제 흐름
+## 아키텍처
 
 ```mermaid
-sequenceDiagram
-    participant A as 에이전트 (구매자)
-    participant S as API 서버 (판매자)
-    participant F as Facilitator
-    participant C as Solana Devnet
-    A->>S: ① 요청 (결제 없음)
-    S-->>A: ② 402 + 가격·수신주소
-    A->>S: ③ 결제 서명 후 재시도
-    S->>F: ④ 결제 검증 요청
-    F->>C: ⑤ USDC 정산 (수수료 대납)
-    F-->>S: ⑥ 유효 확인
-    S-->>A: ⑦ 200 OK + 데이터
+flowchart TD
+    subgraph ours["우리가 만든 코드"]
+        web["apps/web<br/>(데모 UI)"]
+        agent["packages/agent<br/>구매자 클라이언트<br/>🔑 buyer 개인키"]
+        api["apps/api<br/>판매자 서버<br/>📮 merchant 주소 (SVM_ADDRESS)"]
+    end
+    subgraph external["외부 인프라"]
+        facilitator["facilitator<br/>(x402.org)"]
+        solana["Solana Devnet<br/>(블록체인 장부)"]
+    end
+
+    web -->|사용자 요청| agent
+    agent -->|"① HTTP 요청"| api
+    api -->|"② 402 Payment Required"| agent
+    agent -->|"③ buyer 키로 서명 후 재시도"| api
+    api -->|"④ 이 결제 유효해?"| facilitator
+    facilitator -->|"⑤ 검증 + 정산"| solana
+    facilitator -->|"⑥ 유효함"| api
+    api -->|"⑦ 200 OK + 데이터"| agent
 ```
 
-상세 구조와 buyer/merchant 구분은 [아키텍처](docs/ARCHITECTURE.md)를 참고하세요.
+**buyer와 merchant 구분:** 둘은 서로 다른 지갑이며, 코드에서 읽는 값으로 나뉩니다.
+구매자 클라이언트(`packages/agent`)는 **buyer 개인키**(`SVM_KEYPAIR_PATH` /
+`SVM_PRIVATE_KEY`)로 결제를 서명하고, 판매자 서버(`apps/api`)는 **merchant 공개
+주소**(`SVM_ADDRESS`)만 알고 "여기로 결제하라"고 알려줍니다. 서버에는 개인키가 없어,
+서버가 노출돼도 지갑은 안전합니다.
+
+MVP는 요청당 결제인 x402 `exact` 방식입니다. 장기 구독이나 반복 pull-payment가 제품
+요구사항에 들어올 때만 `@solana/subscriptions`를 별도 실험 브랜치에서 검토합니다.
 
 ## 저장소 구조
 
@@ -40,7 +54,6 @@ packages/
 docs/
 ├── onboarding/   # 개념·셋업·현황 (새 팀원용)
 ├── team/         # Git 규칙, 팀 계획, 해커톤 개요
-├── ARCHITECTURE.md  # 시스템 경계
 └── PRODUCT_BRIEF.md # 제품 요약
 config/           # ESLint, TypeScript 공통 설정
 infra/            # Docker Compose

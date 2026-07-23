@@ -2,7 +2,7 @@
 
 > **📝 이 문서의 성격:** Google × Solana AI Agentic Hackathon 준비 중 작성한 **팀
 > 온보딩 노트**입니다(팀원 온보딩용). 아직 팀이 공식 합의한 사양은 아니며,
-> [ARCHITECTURE](../ARCHITECTURE.md)(시스템 경계)나 [PRODUCT_BRIEF](../PRODUCT_BRIEF.md)
+> [README의 아키텍처](../../README.md#아키텍처)나 [PRODUCT_BRIEF](../PRODUCT_BRIEF.md)
 > (제품 요약) 같은 확정 문서와 동급이 아닙니다. 개념 이해용 참고 자료로 봐 주세요.
 
 블록체인·x402가 처음인 팀원을 위한 **개념 설명서**입니다. 실제 셋업 방법은

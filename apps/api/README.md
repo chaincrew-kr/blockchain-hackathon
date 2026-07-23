@@ -23,5 +23,5 @@ npm run dev        # 개발 서버 (기본 http://localhost:4021)
 - `src/config.ts` — 환경변수 로드/검증 (네트워크, 가격, payTo 등)
 - `src/server.ts` — 서버 부트스트랩
 
-결제 흐름 전체 그림은 [아키텍처](../../docs/ARCHITECTURE.md), 구매자 쪽은
+결제 흐름 전체 그림은 [루트 README의 아키텍처](../../README.md#아키텍처), 구매자 쪽은
 [`packages/agent`](../../packages/agent/README.md)를 참고하세요.
