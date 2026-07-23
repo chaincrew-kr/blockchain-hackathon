@@ -14,12 +14,12 @@
 
 ## 공용 지갑 정보 (공개 가능)
 
-| 항목 | 값 | 역할 |
-| --- | --- | --- |
+| 항목                          | 값                                             | 역할                                           |
+| ----------------------------- | ---------------------------------------------- | ---------------------------------------------- |
 | merchant 주소 (`SVM_ADDRESS`) | `7CCkgtKXQThSYf4xLuDpM7NL6ybEf1pGwz8BwVKPwZRh` | 결제를 **받는** 판매자 지갑 (공개 주소만 필요) |
-| buyer 주소 | `2vNC3EzRQuHqfwDuFbJvrH59gFerfu9E61nYTYbgHzDp` | 결제를 **내는** 구매자 지갑 |
-| USDC 민트 (devnet) | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | 서버가 요구하는 결제 토큰 |
-| merchant USDC 토큰계정(ATA) | `64wTiyJHoj3y2cTwvApsuzChtkk8iJNv1rovsHXoHV65` | 이미 생성 완료 (아래 참고) |
+| buyer 주소                    | `2vNC3EzRQuHqfwDuFbJvrH59gFerfu9E61nYTYbgHzDp` | 결제를 **내는** 구매자 지갑                    |
+| USDC 민트 (devnet)            | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | 서버가 요구하는 결제 토큰                      |
+| merchant USDC 토큰계정(ATA)   | `64wTiyJHoj3y2cTwvApsuzChtkk8iJNv1rovsHXoHV65` | 이미 생성 완료 (아래 참고)                     |
 
 buyer **키페어 파일**(`buyer-devnet.json`, 64바이트 숫자 배열)은 **문서에 없습니다.**
 팀 채널(Slack DM 등)에서 별도로 전달받으세요.

@@ -17,6 +17,23 @@ x402 유료 API 서버(**판매자 쪽**)입니다. 결제 증명이 없는 요�
 npm run dev        # 개발 서버 (기본 http://localhost:4021)
 ```
 
+## 입력 → 출력 흐름
+
+```text
+입력                          처리                         출력
+────────────────────────────────────────────────────────────────────
+.env (SVM_ADDRESS, 가격 등) → config.ts가 검증           → AppConfig
+HTTP GET /health            → app.ts (미들웨어 통과 X)   → 200 {"status":"ok"}
+HTTP GET /api/costly-data
+  ├ 결제 증명 없음          → paymentMiddleware 차단     → 402 + payment-required 헤더(챌린지)
+  └ 결제 증명 있음          → facilitator 검증·정산      → 200 + JSON 데이터
+                                                          + payment-response 헤더(정산 결과)
+```
+
+- 챌린지(`payment-required` 헤더)는 base64 JSON — 금액(amount), 토큰(asset),
+  수신 주소(payTo), 수수료 대납자(feePayer)가 들어있다.
+- 이 서버는 개인키를 갖지 않는다. `.env`의 `SVM_ADDRESS`(공개 주소)만 사용.
+
 ## 주요 파일
 
 - `src/app.ts` — 라우트와 x402 결제 미들웨어
