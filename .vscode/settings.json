@@ -1,0 +1,12 @@
+{
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "package.json": ".npmrc, package-lock.json, .nvmrc, .editorconfig, .prettierignore, .prettierrc*, .gitattributes, .gitignore, .dockerignore, .env, .env.*, tsconfig*.json, eslint.config.js, compose.yaml",
+    "README.md": "LICENSE, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md"
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/node_modules": false
+  }
+}
