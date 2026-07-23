@@ -1,5 +1,11 @@
 # Product Brief
 
+> **⚠️ 재검토 예정:** 이 브리프는 x402 **결제 레이어** 관점의 초기 버전입니다.
+> [수상작 분석](notice/solana_top25_winners_analysis_light.html)에 따르면 심사의
+> 핵심은 결제 레일 자체가 아니라 "누가 돈을 내는 어떤 제품인가"이므로, 제품
+> 주제(예: OpenBench 실험 인텔리전스 네트워크)를 팀에서 확정한 뒤 이 문서를
+> 다시 작성합니다. 현재 구현 범위는 [구현 현황](onboarding/STATUS.md) 참고.
+
 ## 한 줄 설명
 
 AI 에이전트가 계정이나 API 키 없이 Solana USDC로 요청당 비용을 지불하고 유료 API를

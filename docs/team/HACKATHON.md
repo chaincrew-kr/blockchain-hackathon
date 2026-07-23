@@ -51,8 +51,8 @@
 
 - 라이브 배포 엔드포인트: 심사 기간 중 접근 가능한 동작 URL
 
-> 제출물 대비 현황: ② Repo/README는 진행 중, ③ 데모 영상 구성은
-> [DEMO_SCRIPT.md](../DEMO_SCRIPT.md) 참고. 라이브 배포는 미완(현재 로컬 실행).
+> 제출물 대비 현황은 [구현 현황](../onboarding/STATUS.md)을 참고하세요. (Repo/README
+> 진행 중, 데모 영상·라이브 배포 미착수)
 
 ## 제공 인프라 — Google Cloud Credits
 

@@ -109,6 +109,17 @@ npm run client
 https://explorer.solana.com/tx/<서명>?cluster=devnet
 ```
 
+## Docker 실행
+
+`.env` 설정 후 한 명령으로 API를 빌드하고 실행할 수 있습니다.
+
+```bash
+npm run docker:up      # 빌드 + 실행
+npm run docker:down    # 종료
+```
+
+키는 이미지에 포함되지 않고 런타임에 `.env`로만 주입됩니다.
+
 ## 잔액이 부족할 때 (USDC 소진 시)
 
 공용 buyer 지갑의 devnet USDC는 결제할 때마다 조금씩 줄어듭니다($0.001씩).
