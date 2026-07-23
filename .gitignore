@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Build and test output
+dist/
+coverage/
+
+# Environment variables (examples stay tracked)
+.env
+.env.*
+!.env.example
+
+# Local tooling
+.turbo/
+*.tsbuildinfo
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Local Solana keypairs
+*-keypair.json
+.secrets/
+buyer-devnet.json
+merchant-devnet.json

@@ -1,0 +1,28 @@
+name: blockchain-hackathon
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    environment:
+      PORT: 4021
+      FACILITATOR_URL: "${FACILITATOR_URL:-https://x402.org/facilitator}"
+      X402_NETWORK: "${X402_NETWORK:-solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1}"
+      PAYMENT_PRICE: "${PAYMENT_PRICE:-$$0.001}"
+      SVM_ADDRESS: "${SVM_ADDRESS:-}"
+    ports:
+      - "${PORT:-4021}:4021"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:4021/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s

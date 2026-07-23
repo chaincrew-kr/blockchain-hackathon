@@ -1,0 +1,217 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Solana Frontier Top 25 Winners 분석</title><style>
+:root{--bg:#f5f7fb;--paper:#fff;--ink:#182033;--muted:#667085;--line:#dbe2ea;--navy:#173b67;--blue:#2f6fed;--blue-soft:#eef4ff;--green:#13795b;--green-soft:#eaf8f2;--amber:#9a6700;--amber-soft:#fff6d9;--shadow:0 10px 30px rgba(25,44,74,.08)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.62}.wrap{max-width:1180px;margin:0 auto;padding:34px 20px 80px}.hero{background:linear-gradient(135deg,#fff 0%,#f0f5ff 70%,#eef9f4 100%);border:1px solid var(--line);border-radius:28px;padding:42px;box-shadow:var(--shadow)}.eyebrow{font-size:13px;font-weight:800;letter-spacing:.14em;color:var(--blue)}h1{font-size:clamp(34px,5.8vw,62px);line-height:1.08;letter-spacing:-.045em;margin:9px 0 18px;color:#102a4c}.hero p{font-size:19px;color:#42526b;max-width:900px;margin:0}.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}.summary-box{border:1px solid var(--line);background:#fff;border-radius:17px;padding:18px}.summary-box b{display:block;font-size:25px;color:var(--navy)}.summary-box span{font-size:13px;color:var(--muted)}.section{margin-top:48px}.section h2{font-size:32px;letter-spacing:-.035em;margin:0 0 10px;color:#15365d}.section-lead{margin:0 0 22px;color:var(--muted)}.overview{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}.panel{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:25px;box-shadow:var(--shadow)}.panel h3{margin-top:0;font-size:23px;color:#173b67}.panel li{margin:8px 0}.callout{background:var(--blue-soft);border-left:5px solid var(--blue);padding:17px 19px;border-radius:14px;color:#254468}.filters{display:flex;gap:10px;margin:18px 0 24px}.filters input,.filters select{height:42px;border:1px solid #cfd8e5;border-radius:12px;background:#fff;padding:0 13px;font-size:14px}.filters input{min-width:300px;flex:1}.project-list{display:grid;gap:18px}.project-card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:25px;box-shadow:var(--shadow)}.card-head{display:grid;grid-template-columns:56px 1fr;gap:16px}.number{width:50px;height:50px;border-radius:15px;display:flex;align-items:center;justify-content:center;background:#edf3fb;color:var(--navy);font-weight:900}.project-card h3{font-size:27px;margin:0 0 4px;color:#163b69}.one-line{margin:0;color:#4f5f75}.badges{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}.badge{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800}.category{background:#eef2f7;color:#46556b}.sim-vhigh{background:var(--green-soft);color:var(--green)}.sim-high{background:var(--blue-soft);color:var(--blue)}.sim-mid{background:var(--amber-soft);color:var(--amber)}.sim-low{background:#f1f3f5;color:#6b7280}.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}.detail-grid>div{border:1px solid #e4e9f0;border-radius:14px;padding:14px 15px;background:#fbfcfe}.detail-grid dt{font-size:12px;font-weight:900;color:#718096;margin-bottom:4px}.detail-grid dd{margin:0;color:#28384d}.detail-grid .lesson{grid-column:1/-1;background:#f4f9ff;border-color:#dbe9fb}.detail-grid .lesson dt{color:var(--blue)}.matrix{width:100%;border-collapse:collapse;background:#fff;border-radius:18px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow)}.matrix th,.matrix td{padding:13px 14px;border-bottom:1px solid #e4e9f0;text-align:left;vertical-align:top}.matrix th{background:#edf3fa;color:#173b67;font-size:13px}.final-box{background:linear-gradient(135deg,#f7fbff,#f3fbf6);border:1px solid #d8e5ef;border-radius:24px;padding:30px}.final-box h3{font-size:27px;margin:0 0 12px;color:#173b67}.final-quote{font-size:22px;font-weight:800;color:#15365d;border-left:5px solid var(--green);padding:14px 0 14px 20px;margin:20px 0}.footer{margin-top:54px;padding-top:22px;border-top:1px solid var(--line);color:#7a8698;font-size:13px}.hidden{display:none!important}@media(max-width:900px){.summary-grid{grid-template-columns:repeat(2,1fr)}.overview{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}.detail-grid .lesson{grid-column:auto}}@media(max-width:560px){.wrap{padding:18px 13px 50px}.hero{padding:27px}.summary-grid{grid-template-columns:1fr}.card-head{grid-template-columns:1fr}.filters{flex-direction:column}.filters input{min-width:100%}.matrix{font-size:12px}}@media print{body{background:#fff}.filters{display:none}.project-card,.panel,.hero,.matrix{box-shadow:none}}
+</style></head><body><main class="wrap">
+<header class="hero"><div class="eyebrow">SOLANA FRONTIER HACKATHON</div><h1>Top 25 Winners 전수 분석</h1><p>25개 수상작을 <strong>고객, 문제, 제품 핵심, Solana 당위성, 해자, OpenBench가 배울 점</strong>으로 분석했습니다. 단순 기술 데모가 아니라 실제 시장과 운영 구조를 어떻게 잡았는지 비교합니다.</p>
+<div class="summary-grid"><div class="summary-box"><b>25</b><span>프로젝트 전수 분석</span></div><div class="summary-box"><b>4</b><span>공통 유형</span></div><div class="summary-box"><b>6</b><span>직접 연결 핵심 사례</span></div><div class="summary-box"><b>1</b><span>최종 방향: Experiment Intelligence Network</span></div></div></header>
+<section class="section"><h2>1. Top 25에서 반복되는 성공 패턴</h2><p class="section-lead">수상작은 기능 수보다 경제적으로 중요한 문제를 끝까지 해결하는가를 보여줍니다.</p>
+<div class="overview"><article class="panel"><h3>공통 구조</h3><ul><li><b>거래 가능한 시장을 새로 만든다</b></li><li><b>기존 시장의 마찰을 없앤다</b></li><li><b>복잡한 업무를 하나의 운영 레이어로 통합한다</b></li><li><b>데이터를 인텔리전스로 바꾼다</b></li></ul></article>
+<article class="panel"><h3>심사위원이 보는 질문</h3><ul><li>누가 실제로 돈을 내는가?</li><li>Solana가 빠지면 제품이 여전히 성립하는가?</li><li>사용할수록 데이터·유동성·평판이 쌓이는가?</li><li>집계·분석·실행 중 어디까지 실제 제공하는가?</li><li>해커톤 이후에도 회사가 될 수 있는가?</li></ul></article></div>
+<div class="callout" style="margin-top:18px"><b>OpenBench와 가장 가까운 결:</b> Flovia의 machine-paid API 인텔리전스 + Bench의 유용한 신호 보상 + Nomu의 end-to-end 운영 구조 + Traded.gg의 집계·분석·실행 통합.</div></section>
+<section class="section"><h2>2. 25개 프로젝트 상세 분석</h2><p class="section-lead">검색어와 OpenBench 유사도 필터로 빠르게 비교할 수 있습니다.</p>
+<div class="filters"><input id="search" type="search" placeholder="프로젝트명, 고객, 문제, 배울 점 검색"><select id="similarity"><option value="">유사도 전체</option><option>매우 높음</option><option>높음</option><option>중간</option><option>낮음</option></select></div><div class="project-list"><article class="project-card" data-similarity="중간">
+<div class="card-head"><div class="number">01</div><div><h3>Peaks</h3><p class="one-line">자연어 투자 아이디어를 자동 포트폴리오로 변환하고 에이전트가 비중을 관리한다.</p></div></div>
+<div class="badges"><span class="badge category">Agentic Investing</span><span class="badge sim-mid">OpenBench 유사도: 중간</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>개인 투자자</dd></div><div><dt>해결 문제</dt><dd>전문지식 없이 특정 관점의 투자전략을 실제로 실행하고 지속 관리하기 어렵다.</dd></div>
+<div><dt>제품 핵심</dt><dd>자연어 투자 아이디어를 자동 포트폴리오로 변환하고 에이전트가 비중을 관리한다.</dd></div><div><dt>Solana 당위성</dt><dd>자산 구성과 실행을 온체인에서 직접 수행한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>누적 전략 성과 데이터와 투자자 행동 데이터</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>경영 목표를 실제 자원 배분 정책으로 변환해야 한다.</dd></div>
+</dl></article><article class="project-card" data-similarity="중간">
+<div class="card-head"><div class="number">02</div><div><h3>Alpha Group Trading</h3><p class="one-line">채팅, 공동 의사결정, 거래 실행을 통합한다.</p></div></div>
+<div class="badges"><span class="badge category">Social Trading</span><span class="badge sim-mid">OpenBench 유사도: 중간</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>친구 단위 개인 투자자</dd></div><div><dt>해결 문제</dt><dd>투자 커뮤니티와 실제 거래가 분리돼 있다.</dd></div>
+<div><dt>제품 핵심</dt><dd>채팅, 공동 의사결정, 거래 실행을 통합한다.</dd></div><div><dt>Solana 당위성</dt><dd>그룹 단위 자금 흐름과 거래를 투명하게 기록한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>그룹 네트워크와 협업 거래 데이터</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>실험 저장소보다 공유, 협업, 이어달리기 UX가 중요하다.</dd></div>
+</dl></article><article class="project-card" data-similarity="매우 높음">
+<div class="card-head"><div class="number">03</div><div><h3>Bench</h3><p class="one-line">신호 제출, 결과 검증, 유용성 평가, 보상을 연결한다.</p></div></div>
+<div class="badges"><span class="badge category">Signal Markets</span><span class="badge sim-vhigh">OpenBench 유사도: 매우 높음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>시장 생성자, 투자자, 정보 수요자</dd></div><div><dt>해결 문제</dt><dd>좋은 정보와 쓸모없는 정보를 구분하고 보상하기 어렵다.</dd></div>
+<div><dt>제품 핵심</dt><dd>신호 제출, 결과 검증, 유용성 평가, 보상을 연결한다.</dd></div><div><dt>Solana 당위성</dt><dd>기여도와 보상을 투명하게 연결한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>신호 성과 데이터와 기여자 평판</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>실험 결과의 재사용 가치와 비용 절감 기여도에 따라 보상하는 구조와 가장 유사하다.</dd></div>
+</dl></article><article class="project-card" data-similarity="중간">
+<div class="card-head"><div class="number">04</div><div><h3>Mentioned</h3><p class="one-line">언급 가능성을 YES/NO 시장으로 전환한다.</p></div></div>
+<div class="badges"><span class="badge category">Prediction Markets</span><span class="badge sim-mid">OpenBench 유사도: 중간</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>예측시장 참여자</dd></div><div><dt>해결 문제</dt><dd>미디어 서사와 언어 선택에 대한 전망을 거래할 시장이 없다.</dd></div>
+<div><dt>제품 핵심</dt><dd>언급 가능성을 YES/NO 시장으로 전환한다.</dd></div><div><dt>Solana 당위성</dt><dd>시장 생성, 참여, 결과 정산을 처리한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>독특한 시장 생성 UX와 데이터</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>실험 결과도 단순 문서가 아니라 다음 사람의 비용을 줄이는 경제적 자산으로 정의해야 한다.</dd></div>
+</dl></article><article class="project-card" data-similarity="매우 높음">
+<div class="card-head"><div class="number">05</div><div><h3>Flovia</h3><p class="one-line">사용량, 결제, 고객 행동, 성장 신호를 통합 분석한다.</p></div></div>
+<div class="badges"><span class="badge category">Machine-paid API Intelligence</span><span class="badge sim-vhigh">OpenBench 유사도: 매우 높음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>x402·MPP 기반 API 판매자</dd></div><div><dt>해결 문제</dt><dd>어떤 에이전트가 왜 API를 쓰고 재구매하는지 파악하기 어렵다.</dd></div>
+<div><dt>제품 핵심</dt><dd>사용량, 결제, 고객 행동, 성장 신호를 통합 분석한다.</dd></div><div><dt>Solana 당위성</dt><dd>기계 결제 데이터가 온체인에 생성된다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>API 소비·결제 벤치마크 데이터</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>모델·API별 비용 대비 성능, 재현율, 재사용 횟수를 인텔리전스로 축적할 수 있다.</dd></div>
+</dl></article><article class="project-card" data-similarity="낮음">
+<div class="card-head"><div class="number">06</div><div><h3>Senthos</h3><p class="one-line">원시 예측시장 흐름을 위험도별 상품으로 구조화한다.</p></div></div>
+<div class="badges"><span class="badge category">Structured Products</span><span class="badge sim-low">OpenBench 유사도: 낮음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>고급 투자자, DeFi 투자자</dd></div><div><dt>해결 문제</dt><dd>예측시장 노출이 단순하고 위험 관리가 어렵다.</dd></div>
+<div><dt>제품 핵심</dt><dd>원시 예측시장 흐름을 위험도별 상품으로 구조화한다.</dd></div><div><dt>Solana 당위성</dt><dd>포지션을 조합 가능한 온체인 자산으로 만든다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>리스크 모델과 상품 구조</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>운영자에게 raw API 호출수가 아니라 추가 지원 추천 팀, 성과 대비 과다지출 팀처럼 의사결정 단위로 보여줘야 한다.</dd></div>
+</dl></article><article class="project-card" data-similarity="낮음">
+<div class="card-head"><div class="number">07</div><div><h3>Dropset</h3><p class="one-line">여러 통화의 교환과 정산을 온체인에서 처리한다.</p></div></div>
+<div class="badges"><span class="badge category">Onchain FX</span><span class="badge sim-low">OpenBench 유사도: 낮음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>국가 간 결제 수요가 있는 개인·기업</dd></div><div><dt>해결 문제</dt><dd>다국적 통화 교환의 비용, 속도, 접근성이 낮다.</dd></div>
+<div><dt>제품 핵심</dt><dd>여러 통화의 교환과 정산을 온체인에서 처리한다.</dd></div><div><dt>Solana 당위성</dt><dd>글로벌 24시간 정산과 낮은 비용을 제공한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>유동성과 통화 네트워크</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>대학 내부만이 아니라 글로벌 API 공급자와 기관 간 결제로 확장할 때 Solana 당위성이 강해진다.</dd></div>
+</dl></article><article class="project-card" data-similarity="중간">
+<div class="card-head"><div class="number">08</div><div><h3>WeLikeSports</h3><p class="one-line">사용자 정의 경기 풀과 투명한 자금 운용을 제공한다.</p></div></div>
+<div class="badges"><span class="badge category">Fantasy Sports</span><span class="badge sim-mid">OpenBench 유사도: 중간</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>스포츠 팬</dd></div><div><dt>해결 문제</dt><dd>기존 플랫폼의 높은 하우스 수수료와 불투명한 자금 구조</dd></div>
+<div><dt>제품 핵심</dt><dd>사용자 정의 경기 풀과 투명한 자금 운용을 제공한다.</dd></div><div><dt>Solana 당위성</dt><dd>공동 자금 풀과 보상을 투명하게 관리한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>참여 커뮤니티와 풀 운영 데이터</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>수익모델은 직접 수수료 외에도 관리형 서비스, 리베이트, 엔터프라이즈 운영으로 설계할 수 있다.</dd></div>
+</dl></article><article class="project-card" data-similarity="중간">
+<div class="card-head"><div class="number">09</div><div><h3>ODL</h3><p class="one-line">할인 자산을 소싱하고 유동화해 재판매한다.</p></div></div>
+<div class="badges"><span class="badge category">RWA Marketplace</span><span class="badge sim-mid">OpenBench 유사도: 중간</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>청산자금, 기관투자자</dd></div><div><dt>해결 문제</dt><dd>비유동 사모자산의 매수자와 매도자를 연결하기 어렵다.</dd></div>
+<div><dt>제품 핵심</dt><dd>할인 자산을 소싱하고 유동화해 재판매한다.</dd></div><div><dt>Solana 당위성</dt><dd>실물자산 권리와 자금 흐름을 연결한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>공급자·구매자 네트워크</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>사용하지 않은 API 예산을 회수해 다른 팀에 재배정하는 것도 핵심 경제 구조가 될 수 있다.</dd></div>
+</dl></article><article class="project-card" data-similarity="낮음">
+<div class="card-head"><div class="number">10</div><div><h3>Housd</h3><p class="one-line">부동산 부채 기반 수익 상품을 온체인화한다.</p></div></div>
+<div class="badges"><span class="badge category">Real Estate RWA</span><span class="badge sim-low">OpenBench 유사도: 낮음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>안정적인 수익을 원하는 DeFi 투자자</dd></div><div><dt>해결 문제</dt><dd>부동산 접근성과 DeFi 수익 안정성을 동시에 확보하기 어렵다.</dd></div>
+<div><dt>제품 핵심</dt><dd>부동산 부채 기반 수익 상품을 온체인화한다.</dd></div><div><dt>Solana 당위성</dt><dd>실물 수익의 토큰화와 분배를 지원한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>자산 소싱과 리스크 관리</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>실험 원문 전체를 온체인에 올리기보다 실험 기여와 보상 기록만 온체인화하는 편이 자연스럽다.</dd></div>
+</dl></article><article class="project-card" data-similarity="높음">
+<div class="card-head"><div class="number">11</div><div><h3>JK Index</h3><p class="one-line">거래시장, 가격지수, 등급 정보를 통합한다.</p></div></div>
+<div class="badges"><span class="badge category">Collectibles Intelligence</span><span class="badge sim-high">OpenBench 유사도: 높음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>카드 수집가와 거래자</dd></div><div><dt>해결 문제</dt><dd>가격과 등급 정보가 분산되고 신뢰하기 어렵다.</dd></div>
+<div><dt>제품 핵심</dt><dd>거래시장, 가격지수, 등급 정보를 통합한다.</dd></div><div><dt>Solana 당위성</dt><dd>소유권과 거래 이력을 연결한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>커뮤니티 참여 데이터와 가격지수</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>실험 품질 평가는 AI 단독이 아니라 교수·조교·동료 재현·실제 재사용을 합쳐야 한다.</dd></div>
+</dl></article><article class="project-card" data-similarity="중간">
+<div class="card-head"><div class="number">12</div><div><h3>Fraudsworth</h3><p class="one-line">플레이, 정보, 유동성을 결합한 게임 경제를 설계한다.</p></div></div>
+<div class="badges"><span class="badge category">Game Economy</span><span class="badge sim-mid">OpenBench 유사도: 중간</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>게임 참여자</dd></div><div><dt>해결 문제</dt><dd>게임 활동과 경제적 가치가 단절돼 있다.</dd></div>
+<div><dt>제품 핵심</dt><dd>플레이, 정보, 유동성을 결합한 게임 경제를 설계한다.</dd></div><div><dt>Solana 당위성</dt><dd>자금 흐름과 게임 활동을 연결한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>독자적 게임 경제와 커뮤니티</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>크레딧 보상을 일회성 이벤트가 아니라 행동을 바꾸는 경제 설계로 만들어야 한다.</dd></div>
+</dl></article><article class="project-card" data-similarity="높음">
+<div class="card-head"><div class="number">13</div><div><h3>Sudont</h3><p class="one-line">로컬 실행, 방화벽, RPC 보안으로 거래를 통제한다.</p></div></div>
+<div class="badges"><span class="badge category">Agent Security</span><span class="badge sim-high">OpenBench 유사도: 높음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>온체인 에이전트 개발자와 기업</dd></div><div><dt>해결 문제</dt><dd>에이전트가 잘못된 거래를 실행할 위험이 크다.</dd></div>
+<div><dt>제품 핵심</dt><dd>로컬 실행, 방화벽, RPC 보안으로 거래를 통제한다.</dd></div><div><dt>Solana 당위성</dt><dd>보호 대상이 Solana에서 동작하는 에이전트다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>실행 보안 기술과 정책 엔진</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>AI 추천 뒤에 deterministic policy engine과 사람 검토가 있어야 한다.</dd></div>
+</dl></article><article class="project-card" data-similarity="높음">
+<div class="card-head"><div class="number">14</div><div><h3>YieldCompass</h3><p class="one-line">실제 성과와 위험을 비교해 검색·추천한다.</p></div></div>
+<div class="badges"><span class="badge category">DeFi Intelligence</span><span class="badge sim-high">OpenBench 유사도: 높음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>DeFi 투자자</dd></div><div><dt>해결 문제</dt><dd>표시 수익률과 실제 수익률이 다르고 위험 비교가 어렵다.</dd></div>
+<div><dt>제품 핵심</dt><dd>실제 성과와 위험을 비교해 검색·추천한다.</dd></div><div><dt>Solana 당위성</dt><dd>실제 온체인 거래와 수익 데이터를 분석한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>리스크 평가 모델과 성과 데이터</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>모델·API의 표시 성능이 아니라 실제 과제 성능, 총비용, 실패율, 재현율을 비교해야 한다.</dd></div>
+</dl></article><article class="project-card" data-similarity="중간">
+<div class="card-head"><div class="number">15</div><div><h3>Clawpump</h3><p class="one-line">다양한 금융 기능을 수행하는 전문 에이전트를 제공한다.</p></div></div>
+<div class="badges"><span class="badge category">Agentic Finance</span><span class="badge sim-mid">OpenBench 유사도: 중간</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>온체인 자동화를 원하는 투자자</dd></div><div><dt>해결 문제</dt><dd>여러 금융 프로토콜을 직접 사용하기 복잡하다.</dd></div>
+<div><dt>제품 핵심</dt><dd>다양한 금융 기능을 수행하는 전문 에이전트를 제공한다.</dd></div><div><dt>Solana 당위성</dt><dd>에이전트가 실제 금융행위를 온체인에서 실행한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>자동화 범위와 실행 데이터</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>에이전트도 추천만 하지 말고 예산 배정, 결제, 회수, 보상 지급까지 실제 실행해야 한다.</dd></div>
+</dl></article><article class="project-card" data-similarity="낮음">
+<div class="card-head"><div class="number">16</div><div><h3>One Arena</h3><p class="one-line">소유권을 활용한 게임·경제 애플리케이션을 제공한다.</p></div></div>
+<div class="badges"><span class="badge category">Onchain Collectibles</span><span class="badge sim-low">OpenBench 유사도: 낮음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>TCG 플레이어와 보유자</dd></div><div><dt>해결 문제</dt><dd>카드 소유, 게임, 거래가 분리돼 있다.</dd></div>
+<div><dt>제품 핵심</dt><dd>소유권을 활용한 게임·경제 애플리케이션을 제공한다.</dd></div><div><dt>Solana 당위성</dt><dd>카드 소유권과 거래가 온체인에 존재한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>게임과 경제 네트워크</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>x402나 Solana 자체를 다시 만드는 것이 아니라 그 위에 교육·연구 자원 배분 애플리케이션을 만들어야 한다.</dd></div>
+</dl></article><article class="project-card" data-similarity="중간">
+<div class="card-head"><div class="number">17</div><div><h3>Stablecorp</h3><p class="one-line">사업 운영에 필요한 금융·회계 인프라를 통합한다.</p></div></div>
+<div class="badges"><span class="badge category">Stablecoin Business Infra</span><span class="badge sim-mid">OpenBench 유사도: 중간</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>인도의 원격 창업자</dd></div><div><dt>해결 문제</dt><dd>스테이블코인 수입과 법인·회계·운영이 단절돼 있다.</dd></div>
+<div><dt>제품 핵심</dt><dd>사업 운영에 필요한 금융·회계 인프라를 통합한다.</dd></div><div><dt>Solana 당위성</dt><dd>고객 수입과 정산이 스테이블코인 기반이다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>지역 규제·운영 노하우</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>첫 타깃은 대학보다 생성형 AI 수업과 캡스톤을 운영하는 대학 AI 사업단처럼 좁혀야 한다.</dd></div>
+</dl></article><article class="project-card" data-similarity="높음">
+<div class="card-head"><div class="number">18</div><div><h3>The Syndicate</h3><p class="one-line">실력 기반 리그와 투명한 상금 구조를 제공한다.</p></div></div>
+<div class="badges"><span class="badge category">Provable Gaming</span><span class="badge sim-high">OpenBench 유사도: 높음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>경쟁형 카드게임 이용자</dd></div><div><dt>해결 문제</dt><dd>운영자 중심 상금과 정산이 불투명하다.</dd></div>
+<div><dt>제품 핵심</dt><dd>실력 기반 리그와 투명한 상금 구조를 제공한다.</dd></div><div><dt>Solana 당위성</dt><dd>수익과 상금 풀을 검증 가능하게 기록한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>게임 커뮤니티와 리그 운영</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>대학 API 예산 중 기본배정, 실험보상, 재현보상 비율을 투명하게 보여줄 수 있다.</dd></div>
+</dl></article><article class="project-card" data-similarity="낮음">
+<div class="card-head"><div class="number">19</div><div><h3>DashX</h3><p class="one-line">규제 준수형 국제결제 레일을 제공한다.</p></div></div>
+<div class="badges"><span class="badge category">Cross-border Payments</span><span class="badge sim-low">OpenBench 유사도: 낮음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>기업과 국제송금 사업자</dd></div><div><dt>해결 문제</dt><dd>국제결제의 속도, 비용, 규제 대응이 어렵다.</dd></div>
+<div><dt>제품 핵심</dt><dd>규제 준수형 국제결제 레일을 제공한다.</dd></div><div><dt>Solana 당위성</dt><dd>글로벌 즉시정산을 지원한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>규제, 은행, 지역 파트너 네트워크</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>상용화 단계에서는 대학 회계와 USDC 사이의 규제·정산 브리지를 고려해야 한다.</dd></div>
+</dl></article><article class="project-card" data-similarity="매우 높음">
+<div class="card-head"><div class="number">20</div><div><h3>Nomu</h3><p class="one-line">복잡한 공급망 업무 전체를 하나의 운영 레이어로 통합한다.</p></div></div>
+<div class="badges"><span class="badge category">Supply Chain OS</span><span class="badge sim-vhigh">OpenBench 유사도: 매우 높음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>상품을 만들고 판매하는 기업</dd></div><div><dt>해결 문제</dt><dd>공급망 기능이 여러 사업자와 시스템에 흩어져 있다.</dd></div>
+<div><dt>제품 핵심</dt><dd>복잡한 공급망 업무 전체를 하나의 운영 레이어로 통합한다.</dd></div><div><dt>Solana 당위성</dt><dd>글로벌 공급자와 지급을 연결한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>공급자 네트워크와 운영 데이터</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>실험 검색부터 보상 지급까지 end-to-end 워크플로를 해결해야 한다.</dd></div>
+</dl></article><article class="project-card" data-similarity="중간">
+<div class="card-head"><div class="number">21</div><div><h3>Cesto</h3><p class="one-line">주제별 투자 바스켓을 자동 구성한다.</p></div></div>
+<div class="badges"><span class="badge category">Thematic Investing</span><span class="badge sim-mid">OpenBench 유사도: 중간</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>테마 투자자</dd></div><div><dt>해결 문제</dt><dd>여러 자산군을 목적에 맞게 조합하기 어렵다.</dd></div>
+<div><dt>제품 핵심</dt><dd>주제별 투자 바스켓을 자동 구성한다.</dd></div><div><dt>Solana 당위성</dt><dd>다양한 온체인 자산을 조합한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>전략·구성·성과 데이터</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>실험 결과를 개별 문서가 아니라 한국어 RAG 평가팩 같은 재사용 가능한 실험 패키지로 만들 수 있다.</dd></div>
+</dl></article><article class="project-card" data-similarity="중간">
+<div class="card-head"><div class="number">22</div><div><h3>Crafts</h3><p class="one-line">지분 연계 토큰을 활용한 새로운 조달 방식을 제공한다.</p></div></div>
+<div class="badges"><span class="badge category">Startup Financing</span><span class="badge sim-mid">OpenBench 유사도: 중간</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>초기 스타트업, 투자자, 이해관계자</dd></div><div><dt>해결 문제</dt><dd>초기 자금조달과 이해관계자 참여를 연결하기 어렵다.</dd></div>
+<div><dt>제품 핵심</dt><dd>지분 연계 토큰을 활용한 새로운 조달 방식을 제공한다.</dd></div><div><dt>Solana 당위성</dt><dd>권리와 자금조달 기록을 온체인에 연결한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>법적 구조와 투자 네트워크</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>실험 기여자에게 API 크레딧뿐 아니라 향후 실험 우선권, GPU 시간, 연구장비 접근권을 보상할 수 있다.</dd></div>
+</dl></article><article class="project-card" data-similarity="중간">
+<div class="card-head"><div class="number">23</div><div><h3>Memetic Machines</h3><p class="one-line">이벤트 감지, 분석, 시장 생성을 자동화한다.</p></div></div>
+<div class="badges"><span class="badge category">Event-to-Market</span><span class="badge sim-mid">OpenBench 유사도: 중간</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>뉴스·예측시장 참여자</dd></div><div><dt>해결 문제</dt><dd>뉴스 발생과 거래 가능한 시장 생성 사이에 지연이 있다.</dd></div>
+<div><dt>제품 핵심</dt><dd>이벤트 감지, 분석, 시장 생성을 자동화한다.</dd></div><div><dt>Solana 당위성</dt><dd>시장 개설과 결과 정산을 처리한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>실시간 분석과 시장 생성 데이터</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>기존 실험의 빈칸을 찾아 다음 실험 과제를 자동 생성하는 기능으로 발전할 수 있다.</dd></div>
+</dl></article><article class="project-card" data-similarity="낮음">
+<div class="card-head"><div class="number">24</div><div><h3>KinnectFi</h3><p class="one-line">두 국가의 금융환경을 연결한 네오뱅크를 제공한다.</p></div></div>
+<div class="badges"><span class="badge category">Diaspora Banking</span><span class="badge sim-low">OpenBench 유사도: 낮음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>해외 거주 필리핀인과 가족</dd></div><div><dt>해결 문제</dt><dd>송금, 저축, 금융 접근성이 낮다.</dd></div>
+<div><dt>제품 핵심</dt><dd>두 국가의 금융환경을 연결한 네오뱅크를 제공한다.</dd></div><div><dt>Solana 당위성</dt><dd>국제 자금 이동과 스테이블코인 활용을 지원한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>특정 커뮤니티와 규제 대응</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>강한 제품은 특정 사용자에 깊게 맞춰진다. 처음에는 한 대학·한 수업에서 강하게 검증하는 것이 좋다.</dd></div>
+</dl></article><article class="project-card" data-similarity="매우 높음">
+<div class="card-head"><div class="number">25</div><div><h3>Traded.gg</h3><p class="one-line">집계, 분석, 실행을 한 제품에서 제공한다.</p></div></div>
+<div class="badges"><span class="badge category">Aggregation + Intelligence + Execution</span><span class="badge sim-vhigh">OpenBench 유사도: 매우 높음</span></div>
+<dl class="detail-grid">
+<div><dt>핵심 고객</dt><dd>카드 거래자와 수집가</dd></div><div><dt>해결 문제</dt><dd>시세, 소유, 거래 플랫폼이 분산돼 있다.</dd></div>
+<div><dt>제품 핵심</dt><dd>집계, 분석, 실행을 한 제품에서 제공한다.</dd></div><div><dt>Solana 당위성</dt><dd>실제 카드 거래와 소유권을 연결한다.</dd></div>
+<div><dt>지속 가능한 해자</dt><dd>유동성, 데이터, 사용자 네트워크</dd></div><div class="lesson"><dt>우리 아이디어가 배울 점</dt><dd>실험 집계, 비용·재현성 분석, 예산·보상 실행을 모두 가져야 한다.</dd></div>
+</dl></article></div></section>
+<section class="section"><h2>3. OpenBench와 가장 가까운 10개</h2>
+<table class="matrix"><thead><tr><th>순위</th><th>프로젝트</th><th>직접적인 접점</th></tr></thead><tbody>
+<tr><td>1</td><td>Flovia</td><td>machine-paid API 데이터, 비용·사용량·성장 인텔리전스</td></tr>
+<tr><td>2</td><td>Bench</td><td>유용한 정보 기여자에게 검증 가능한 보상</td></tr>
+<tr><td>3</td><td>Nomu</td><td>검색부터 실행·정산까지 end-to-end 운영 레이어</td></tr>
+<tr><td>4</td><td>Traded.gg</td><td>Aggregation + Intelligence + Execution 통합</td></tr>
+<tr><td>5</td><td>YieldCompass</td><td>표시 성능이 아닌 실제 성능·위험·효율 비교</td></tr>
+<tr><td>6</td><td>JK Index</td><td>커뮤니티 기반 품질 평가와 지수화</td></tr>
+<tr><td>7</td><td>Sudont</td><td>에이전트 실행 전 정책·보안 가드레일</td></tr>
+<tr><td>8</td><td>The Syndicate</td><td>공동 자금 풀과 보상 구조의 투명성</td></tr>
+<tr><td>9</td><td>Peaks</td><td>자연어 목표를 자동 자원 운용 전략으로 변환</td></tr>
+<tr><td>10</td><td>ODL</td><td>미사용 자원의 회수와 재배분</td></tr></tbody></table></section>
+<section class="section"><h2>4. 우리 아이디어가 같은 결이 되려면</h2><div class="final-box"><h3>대학 내부 API 관리도구에서 실험 인텔리전스 네트워크로</h3>
+<div class="final-quote">OpenBench는 흩어진 AI 실험을 검증 가능한 공동 지식으로 전환하고, 실험의 재사용 가치와 비용 절감 기여도에 따라 API 연구자원을 자동 배분하는 실험 인텔리전스 네트워크다.</div>
+<table class="matrix"><thead><tr><th>레이어</th><th>핵심 기능</th></tr></thead><tbody>
+<tr><td>Experiment Aggregation</td><td>모델·데이터·프롬프트·설정·결과·비용·증거 수집</td></tr>
+<tr><td>Experiment Intelligence</td><td>중복 탐지, 재현성 평가, 비용 대비 성능, 실험 공백 탐지, 다음 실험 추천</td></tr>
+<tr><td>Resource Execution</td><td>API 크레딧 배정, x402·MPP 결제, 추가 보상, 미사용 예산 회수·재분배</td></tr></tbody></table></div></section>
+<section class="section"><h2>5. 최종 판단</h2><table class="matrix"><thead><tr><th>평가 항목</th><th>대학 내부 관리도구</th><th>확장된 OpenBench</th></tr></thead><tbody>
+<tr><td>실제 문제</td><td>높음</td><td>매우 높음</td></tr><tr><td>시장 규모</td><td>제한적</td><td>대학·연구기관·기업 R&amp;D·부트캠프·바우처로 확장</td></tr>
+<tr><td>Solana 당위성</td><td>보통</td><td>API 결제, 기여 보상, 기관 간 정산에서 명확</td></tr><tr><td>네트워크 효과</td><td>낮음</td><td>실험·재현·비용 데이터가 쌓일수록 강해짐</td></tr>
+<tr><td>Public Good 적합성</td><td>높음</td><td>매우 높음</td></tr><tr><td>University Award 적합성</td><td>높음</td><td>매우 높음</td></tr><tr><td>Top 25 스타트업 적합성</td><td>보통 이하</td><td>높음</td></tr>
+</tbody></table></section>
+<footer class="footer">본 문서는 사용자가 제공한 Solana Frontier Top 25 Winners 목록과 OpenBench 아이디어를 기준으로 작성했습니다.</footer>
+</main>
+<script>
+const s=document.getElementById('search'),f=document.getElementById('similarity'),cards=[...document.querySelectorAll('.project-card')];
+function apply(){const q=s.value.trim().toLowerCase(),v=f.value;cards.forEach(c=>{const okq=!q||c.innerText.toLowerCase().includes(q),okv=!v||c.dataset.similarity===v;c.classList.toggle('hidden',!(okq&&okv));});}
+s.addEventListener('input',apply);f.addEventListener('change',apply);
+</script></body></html>
