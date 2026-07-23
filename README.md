@@ -1,9 +1,14 @@
 # blockchain-hackathon
 
-Solana Devnet과 x402 v2를 사용한 AI 에이전트 결제 해커톤 프로젝트입니다. 결제
-증명이 없는 요청에는 `402 Payment Required`를 반환하고, 에이전트는 USDC 결제를
-서명한 뒤 요청을 자동 재시도합니다. 대회 개요·제출 요건은 [해커톤 개요](docs/team/HACKATHON.md)를
-참고하세요.
+> **해커톤 주제 — AI 에이전트가 매 단계 사람 승인 없이, 정해진 한도 안에서 스스로
+> 결제를 처리하는 프로덕트.** (Google Cloud × Solana, 단일 트랙: Solana 기반
+> Agentic Commerce · [대회 개요·제출 요건](docs/team/HACKATHON.md))
+
+이 저장소는 그중 **"사람 승인 없는 자동 결제" 레일**을 Solana Devnet + x402 v2로
+구현한 것입니다. 결제 증명이 없는 요청에는 `402 Payment Required`를 반환하고,
+에이전트는 USDC 결제를 서명한 뒤 요청을 자동 재시도합니다. 나머지 요소(지출 한도·
+정책, 그 위에 얹을 프로덕트)는 진행 중입니다 — [구현 현황](docs/onboarding/STATUS.md)
+참고.
 
 > **블록체인·x402가 처음이신가요?** 개념부터 이해하려면 [개념 온보딩](docs/onboarding/CONCEPTS.md),
 > 팀 공용 devnet 지갑으로 바로 테스트하려면 [팀 Devnet 셋업](docs/onboarding/TEAM_DEVNET_SETUP.md),
