@@ -1,5 +1,10 @@
 # 블록체인 결제 개념 이해 — 팀 온보딩
 
+> **📝 이 문서의 성격:** Google × Solana AI Agentic Hackathon 준비 중 작성한 **개인
+> 온보딩·학습 노트**입니다. 아직 팀이 공식 합의한 사양이 아니며,
+> [ARCHITECTURE](../ARCHITECTURE.md)(시스템 경계)나 [PRODUCT_BRIEF](../PRODUCT_BRIEF.md)
+> (제품 요약) 같은 확정 문서와 동급이 아닙니다. 개념 이해용 참고 자료로 봐 주세요.
+
 블록체인·x402가 처음인 팀원을 위한 **개념 설명서**입니다. 실제 셋업 방법은
 [TEAM_DEVNET_SETUP.md](TEAM_DEVNET_SETUP.md)에, 여기서는 "왜 이렇게 하는지"를
 다룹니다. 위에서부터 순서대로 읽으면 이해되도록 구성했습니다.
