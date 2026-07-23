@@ -1,7 +1,7 @@
 # 블록체인 결제 개념 이해 — 팀 온보딩
 
-> **📝 이 문서의 성격:** Google × Solana AI Agentic Hackathon 준비 중 작성한 **개인
-> 온보딩·학습 노트**입니다. 아직 팀이 공식 합의한 사양이 아니며,
+> **📝 이 문서의 성격:** Google × Solana AI Agentic Hackathon 준비 중 작성한 **팀
+> 온보딩 노트**입니다(팀원 온보딩용). 아직 팀이 공식 합의한 사양은 아니며,
 > [ARCHITECTURE](../ARCHITECTURE.md)(시스템 경계)나 [PRODUCT_BRIEF](../PRODUCT_BRIEF.md)
 > (제품 요약) 같은 확정 문서와 동급이 아닙니다. 개념 이해용 참고 자료로 봐 주세요.
 
