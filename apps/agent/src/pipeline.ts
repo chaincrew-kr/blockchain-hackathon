@@ -13,6 +13,7 @@ import type {
   VerificationResult,
 } from "@chaincrew/schema";
 
+import { ChainCallError } from "./errors.js";
 import { judgeSettlement } from "./judge/index.js";
 import type { NarrativeGenerator } from "./judge/narrative.js";
 import {
@@ -50,6 +51,36 @@ export interface PipelineDeps {
   narrativeGenerator?: NarrativeGenerator;
 }
 
+/**
+ * 체인 호출 — 실패를 ChainCallError(502)로 분류한다.
+ *
+ * 우리 판정 로직의 버그(500)와 업스트림 체인 장애(502)를 섞으면 대시보드가
+ * 재시도해도 되는 상황인지 판단할 수 없다.
+ */
+async function callChain(
+  gateway: ChainGateway,
+  decision: JudgeDecision,
+  screeningId: string,
+  netAmount: number,
+): Promise<string> {
+  const proceed = decision.verdict === "proceed";
+  const instruction = proceed ? "settle_batch" : "mark_disputed";
+  try {
+    const { txSignature } = proceed
+      ? await gateway.settleBatch(screeningId, netAmount)
+      : await gateway.markDisputed(screeningId, decision.heldAmount);
+    return txSignature;
+  } catch (error) {
+    throw new ChainCallError(
+      `${instruction} failed for ${screeningId}`,
+      instruction,
+      {
+        cause: error,
+      },
+    );
+  }
+}
+
 /** 발권 합계 − 환불 합계 */
 export function netAmountOf(events: TicketEvent[]): number {
   return events.reduce(
@@ -84,13 +115,12 @@ export async function runSettlementBatch(
       deps.narrativeGenerator,
     );
 
-    const { txSignature } =
-      decision.verdict === "proceed"
-        ? await deps.chainGateway.settleBatch(meta.screeningId, netAmount)
-        : await deps.chainGateway.markDisputed(
-            meta.screeningId,
-            decision.heldAmount,
-          );
+    const txSignature = await callChain(
+      deps.chainGateway,
+      decision,
+      meta.screeningId,
+      netAmount,
+    );
 
     timeline.push({
       label:

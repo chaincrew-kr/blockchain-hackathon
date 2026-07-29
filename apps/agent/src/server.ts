@@ -13,31 +13,31 @@
  *   체인 호출: StubChainGateway → AnchorChainGateway (B·C IDL 확정 후)
  */
 import "dotenv/config";
-import express from "express";
 
+import { createApp } from "./app.js";
 import { StubChainGateway } from "./chain/gateway.js";
 import { demoBatch } from "./fixtures/screenings.js";
-import { batchRouter } from "./routes/batch.js";
-import { logsRouter } from "./routes/logs.js";
+import { logger } from "./logger.js";
 import { AgentStore } from "./store.js";
 
 const store = new AgentStore(demoBatch);
 const deps = { chainGateway: new StubChainGateway() };
 
-const app = express();
-app.disable("x-powered-by");
-app.use(express.json());
-
-app.get("/health", (_request, response) => {
-  response.json({ status: "ok" });
-});
-
-app.use("/api", logsRouter(store));
-app.use("/api", batchRouter(store, deps));
+const app = createApp(store, deps);
 
 // Cloud Run은 PORT를 주입한다 — 로컬 개발은 .env의 AGENT_PORT를 계속 쓴다.
 const port = Number(process.env.PORT ?? process.env.AGENT_PORT ?? 4030);
 // 컨테이너에서는 0.0.0.0으로 바인딩해야 외부에서 닿는다.
-app.listen(port, "0.0.0.0", () => {
-  console.log(`settlement agent listening on port ${port}`);
+const server = app.listen(port, "0.0.0.0", () => {
+  logger.info("settlement agent started", {
+    port,
+    chainGateway: "stub",
+    screenings: store.batch.length,
+  });
+});
+
+// Cloud Run은 인스턴스를 줄일 때 SIGTERM을 보낸다 — 진행 중인 요청을 흘려보낸다.
+process.on("SIGTERM", () => {
+  logger.info("SIGTERM received, shutting down");
+  server.close(() => process.exit(0));
 });

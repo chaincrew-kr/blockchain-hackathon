@@ -15,8 +15,12 @@ function sumRefunded(events: TicketEvent[]): number {
     .reduce((sum, e) => sum + e.amount, 0);
 }
 
+/** 배치 실행 상태 — 이중 정산을 막는 근거가 되는 값이다. */
+export type BatchRunState = "idle" | "running" | "completed";
+
 export class AgentStore {
   private batchResult: BatchRunResult | null = null;
+  private state: BatchRunState = "idle";
 
   constructor(private readonly screenings: readonly ScreeningBatchInput[]) {}
 
@@ -24,8 +28,37 @@ export class AgentStore {
     return this.screenings;
   }
 
+  get runState(): BatchRunState {
+    return this.state;
+  }
+
+  /**
+   * 실행 슬롯을 점유한다. 이미 실행 중이면 false.
+   *
+   * ⚠️ 반드시 **첫 await 이전에 동기적으로** 호출할 것. Node는 단일 스레드라
+   *    await 사이에만 다른 요청이 끼어들 수 있으므로, 검사와 점유가 같은 tick에
+   *    끝나야 두 요청이 동시에 통과하지 않는다.
+   */
+  tryBeginRun(): boolean {
+    if (this.state === "running") return false;
+    this.state = "running";
+    return true;
+  }
+
+  /** 실행 실패 — 결과가 없으면 idle로 되돌려 재시도를 허용한다. */
+  abortRun(): void {
+    this.state = this.batchResult ? "completed" : "idle";
+  }
+
   recordBatchRun(result: BatchRunResult): void {
     this.batchResult = result;
+    this.state = "completed";
+  }
+
+  /** 리허설용 초기화 — 배치 트리거 이전 상태로 되돌린다. */
+  reset(): void {
+    this.batchResult = null;
+    this.state = "idle";
   }
 
   get lastBatchRun(): BatchRunResult | null {
