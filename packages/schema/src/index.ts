@@ -43,8 +43,27 @@ export interface SettlementRule {
   minimumGuarantee: number | null;
   /** 정산일 (회차 종료 후 n일) */
   settlementDays: number;
-  /** 무료 발권 상한 비율 (예: 0.05) — STAGE 3 P3 검증과 숫자 일치 필수 */
+  /**
+   * 계약서상 무료 발권 상한 비율 (SPEC §5 `compTicketCap`, 예: 0.05).
+   *
+   * ⚠️ 아래 `disputeThresholds.freeTicketRate`와 **다른 층위다.**
+   *   이 값 초과      → 계약 위반
+   *   보류 임계 초과  → 자금 격리
+   * 계약 위반이라고 즉시 자금을 묶지 않으려고 완충을 둔 구조이므로,
+   * 두 숫자는 같을 필요가 없다. STAGE 3 검증은 disputeThresholds를 쓰고,
+   * 판정 근거 문구는 이 값을 계약 조항으로 인용한다.
+   */
   freeTicketCapRate: number;
+  /**
+   * 정산 보류를 거는 이상탐지 임계값 (SPEC §5 `disputeThresholds`).
+   * STAGE 3의 P3 검증이 이 값을 기준으로 판정한다.
+   */
+  disputeThresholds: {
+    /** 환불률 상한 (SPEC 기본 0.10) */
+    refundRate: number;
+    /** 무료 발권 비율 상한 (SPEC 기본 0.15) */
+    freeTicketRate: number;
+  };
   clauses: ExtractedClause[];
   conflicts: RuleConflict[];
   approvals: { distributor: boolean; theater: boolean };

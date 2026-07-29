@@ -35,7 +35,7 @@ export const templateNarrative: NarrativeGenerator = {
     if (verdict === "proceed") {
       return (
         `회차 ${meta.screeningId}의 발권·환불 기록 ${verification.checks.length}개 항목 ` +
-        `검증을 모두 통과했습니다. 환불률·무료 발권 비율이 조정 임계값 이내이고 ` +
+        `검증을 모두 통과했습니다. 환불률·무료 발권 비율이 조정된 보류 임계 이내이고 ` +
         `발권 수가 좌석수(${meta.seatCount}석)를 넘지 않으며 기록 해시가 연속적이므로 ` +
         `계약 규칙에 따라 정산을 진행합니다.`
       );
@@ -44,10 +44,12 @@ export const templateNarrative: NarrativeGenerator = {
     const reasons = failed
       .map((c) => {
         switch (c.check) {
+          // "상한"이라고 쓰면 계약 조항의 상한과 헷갈린다 — 이 숫자는
+          // 자금을 격리하는 보류 임계값이지 계약 위반 기준이 아니다.
           case "free-rate":
-            return `무료 발권 비율이 ${percent(Number(c.observed))}로 상한 ${percent(Number(c.threshold))}를 초과`;
+            return `무료 발권 비율이 ${percent(Number(c.observed))}로 보류 임계 ${percent(Number(c.threshold))}를 초과`;
           case "refund-rate":
-            return `환불률이 ${percent(Number(c.observed))}로 상한 ${percent(Number(c.threshold))}를 초과`;
+            return `환불률이 ${percent(Number(c.observed))}로 보류 임계 ${percent(Number(c.threshold))}를 초과`;
           case "over-issue":
             return `발권 수 ${c.observed}건이 좌석수 ${c.threshold}석을 초과`;
           case "hash-chain":

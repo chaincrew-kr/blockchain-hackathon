@@ -14,31 +14,52 @@ import type {
   VerificationResult,
 } from "@chaincrew/schema";
 
+import { DEMO_CONTRACT_TERMS, type ContractTerms } from "./contract.js";
 import { templateNarrative, type NarrativeGenerator } from "./narrative.js";
 
-/**
- * 실패 검증 → 계약 근거 조항 매핑.
- * TODO(A): 가상 계약서 확정 후 조항 번호·문구를 실제 계약서와 일치시킬 것.
- */
-function basisClause(check: CheckResult): string {
-  const observed =
-    typeof check.observed === "number"
-      ? `${Math.round(check.observed * 1000) / 10}%`
-      : String(check.observed);
-  const threshold =
-    typeof check.threshold === "number"
-      ? `${Math.round(check.threshold * 1000) / 10}%`
-      : String(check.threshold);
+/** 비율(0~1) → 백분율 문자열. 비율이 아닌 값에는 쓰지 말 것. */
+function percent(rate: number): string {
+  return `${Math.round(rate * 1000) / 10}%`;
+}
 
+/**
+ * 실패 검증 → 계약 근거 조항 문구.
+ *
+ * 검사마다 단위가 다르다 — 환불률·무료비율은 **비율**, 발권 초과는 **건수**,
+ * 해시 연속성은 **문자열**이다. 하나의 포맷터로 뭉뚱그리면 좌석 50석이
+ * "5000%"로 표시되므로 검사별로 나눠 쓴다.
+ *
+ * 무료 발권만 계약 상한(제5조)과 보류 임계가 둘 다 있어서 두 층위를 함께
+ * 적는다 — 계약서에는 5%라 적혀 있는데 화면이 임계값만 말하면 어긋나 보인다.
+ */
+function basisClause(check: CheckResult, terms: ContractTerms): string {
   switch (check.check) {
-    case "free-rate":
-      return `제5조(무료 발권 상한) — 상한 ${threshold} 대비 ${observed} 발권`;
-    case "refund-rate":
-      return `제7조(환불 처리) — 환불률 상한 ${threshold} 대비 ${observed}`;
+    case "free-rate": {
+      const { article, cap } = terms.freeTicket;
+      const observed = percent(Number(check.observed));
+      const threshold = percent(Number(check.threshold));
+      return cap === null
+        ? `${article} — 보류 임계 ${threshold} 대비 ${observed} 발권`
+        : `${article} — 계약 상한 ${percent(cap)} 대비 ${observed} 발권 ` +
+            `(보류 임계 ${threshold} 초과)`;
+    }
+    case "refund-rate": {
+      const { article, cap } = terms.refund;
+      const observed = percent(Number(check.observed));
+      const threshold = percent(Number(check.threshold));
+      return cap === null
+        ? `${article} — 보류 임계 ${threshold} 대비 환불률 ${observed}`
+        : `${article} — 계약 상한 ${percent(cap)} 대비 환불률 ${observed} ` +
+            `(보류 임계 ${threshold} 초과)`;
+    }
     case "over-issue":
-      return `제4조(발권 관리) — 좌석수 ${threshold}석 대비 ${observed}건 발권`;
+      // 건수·좌석수는 비율이 아니다 — 백분율로 바꾸면 "5000%석"이 된다.
+      return (
+        `${terms.seating.article} — 좌석수 ${check.threshold}석 대비 ` +
+        `${check.observed}건 발권`
+      );
     case "hash-chain":
-      return `제9조(기록 보존) — 발권 기록 연속성 훼손 (${observed})`;
+      return `${terms.record.article} — 발권 기록 연속성 훼손 (${check.observed})`;
   }
 }
 
@@ -48,11 +69,12 @@ export async function judgeSettlement(
   /** 이 회차의 귀속 대상 금액 (발권 − 환불, USDC 최소단위) — 보류 시 격리 금액 */
   netAmount: number,
   narrativeGenerator: NarrativeGenerator = templateNarrative,
+  contractTerms: ContractTerms = DEMO_CONTRACT_TERMS,
 ): Promise<JudgeDecision> {
   const failed = verification.checks.filter((c) => !c.passed);
   const verdict = verification.allPassed ? "proceed" : "partial-hold";
   const heldAmount = verdict === "partial-hold" ? netAmount : 0;
-  const basisClauses = failed.map(basisClause);
+  const basisClauses = failed.map((c) => basisClause(c, contractTerms));
 
   // TODO(D, 시간 되면): 임계 미달이어도 이상 패턴(심야 회차 점유율 급등 등)을
   // Gemini로 플래그 — 리허설에서 출력 불안정하면 컷 (실행계획서 STAGE 4 결정)

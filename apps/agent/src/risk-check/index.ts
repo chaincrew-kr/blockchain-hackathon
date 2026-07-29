@@ -18,8 +18,14 @@ import { GENESIS_HASH, hashTicketEvent } from "./hash.js";
 import { FixtureHistoryProvider, type HistoryProvider } from "./history.js";
 
 /**
- * 기본 임계값 — 실행계획서 STAGE 4 권장안(P3=10%/15%) 그대로.
- * ⚠️ A의 가상 계약서 조항 숫자와 반드시 일치시킬 것 (freeTicketCapRate 등).
+ * 정산 보류를 거는 이상탐지 임계값 — SPEC §5 `disputeThresholds` 및
+ * 실행계획서 STAGE 4 권장안(P3=10%/15%) 그대로.
+ *
+ * ⚠️ 계약서의 무료 발권 상한(`compTicketCap`, 0.05)과 **같은 값이 아니다.**
+ *   계약 상한 초과 → 계약 위반
+ *   이 값 초과     → 자금 격리
+ * 계약 위반이라고 곧바로 돈을 묶지 않으려는 완충이므로 일치시키면 안 된다.
+ * 계약 조항 값은 judge/contract.ts가 근거 문구용으로 따로 들고 있다.
  */
 export const DEFAULT_THRESHOLDS = {
   maxRefundRate: 0.1,
