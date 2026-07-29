@@ -7,9 +7,16 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["**/*.ts"],
+    files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       globals: globals.node,
+    },
+  },
+  {
+    // apps/web은 브라우저 환경 (Vite + React)
+    files: ["apps/web/**/*.{ts,tsx}"],
+    languageOptions: {
+      globals: globals.browser,
     },
   },
 );
