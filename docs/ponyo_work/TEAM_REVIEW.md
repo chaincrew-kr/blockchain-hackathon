@@ -91,22 +91,32 @@ D가 이 주석을 근거로 두 값을 같게 맞추려다 판정 문구가 어
 스키마에 없다. **A가 추측해서 프론트를 짜야 하는 상태다.**
 
 ```ts
-// POST /api/batch/trigger 응답
-{
-  (theater, replayed, decisions, timeline);
+/** POST /api/batch/trigger 응답 */
+interface BatchRunResponse {
+  theater: string;
+  /** true면 새로 실행한 게 아니라 기존 결과를 다시 준 것 (멱등성) */
+  replayed: boolean;
+  decisions: JudgeDecision[];
+  timeline: TimelineEntry[];
 }
 
-// 모든 오류 응답 (4xx·5xx 공통)
-{
+/** 모든 오류 응답 (4xx·5xx 공통) */
+interface ApiErrorResponse {
   error: {
-    (code, message, requestId);
-  }
+    code: ApiErrorCode;
+    message: string;
+    /** X-Request-Id 헤더와 같은 값 — Cloud Logging 검색용 */
+    requestId: string;
+  };
 }
+
+type ApiErrorCode =
+  "batch_in_progress" | "not_found" | "chain_call_failed" | "internal_error";
 ```
 
 스캐폴드를 잡는 단계라면 이 둘도 스키마에 올려서 A가 타입으로 받아쓰게 하는 게
-좋다. 오류 `code` 값(`batch_in_progress`, `not_found`, `chain_call_failed`,
-`internal_error`)도 A가 화면 분기에 쓰므로 유니온 타입으로 고정할 만하다.
+좋다. 오류 `code`는 A가 화면 분기에 쓰므로 유니온 타입으로 고정하면 A가 분기를
+빠뜨렸을 때 컴파일 단계에서 잡힌다.
 
 **결정 요청:** 스키마에 올릴지, D가 별도 문서로만 공유할지.
 
