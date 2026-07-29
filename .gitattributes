@@ -1,0 +1,11 @@
+# 팀원 OS가 달라도 줄바꿈을 LF로 통일한다 (prettier endOfLine=lf와 일치).
+# core.autocrlf 설정과 무관하게 이 파일이 우선한다.
+* text=auto eol=lf
+
+# 바이너리
+*.pdf binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
