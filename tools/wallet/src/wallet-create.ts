@@ -3,9 +3,18 @@ import { randomBytes, webcrypto } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 
 const secretsDirectoryUrl = new URL("../../../.secrets/", import.meta.url);
-const keypairUrl = new URL("buyer-devnet.json", secretsDirectoryUrl);
 
 async function main(): Promise<void> {
+  // 지갑 이름: 극장/배급/제작/투자/에이전트 5종 생성용. 예) npm run wallet:create -- theater
+  const walletName = process.argv[2] ?? "buyer";
+  if (!/^[a-z0-9-]+$/.test(walletName)) {
+    throw new Error(
+      "Wallet name must be lowercase letters, digits, or hyphens.",
+    );
+  }
+  const keypairFileName = `${walletName}-devnet.json`;
+  const keypairUrl = new URL(keypairFileName, secretsDirectoryUrl);
+
   const privateKeyBytes = randomBytes(32);
   const signer = await createKeyPairSignerFromPrivateKeyBytes(
     privateKeyBytes,
@@ -28,7 +37,7 @@ async function main(): Promise<void> {
   } catch (error) {
     if (error instanceof Error && "code" in error && error.code === "EEXIST") {
       throw new Error(
-        "buyer-devnet.json already exists. It was not overwritten.",
+        `${keypairFileName} already exists. It was not overwritten.`,
         { cause: error },
       );
     }
@@ -38,7 +47,7 @@ async function main(): Promise<void> {
     keypairBytes.fill(0);
   }
 
-  console.log("Created .secrets/buyer-devnet.json");
+  console.log(`Created .secrets/${keypairFileName}`);
   console.log(`Public address: ${signer.address}`);
 }
 

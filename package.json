@@ -3,27 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Solana x402 agent payments monorepo",
+  "description": "AI 영화 정산 에이전트 — Solana 에스크로 + 위험조정검증 (PLAN-INDIE-003)",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "tools/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=@chaincrew/api",
-    "start": "npm run start --workspace=@chaincrew/api",
-    "client": "npm run start --workspace=@chaincrew/agent",
-    "inspect:402": "npm run inspect:402 --workspace=@chaincrew/agent",
-    "wallet:create": "npm run wallet:create --workspace=@chaincrew/agent",
-    "wallet:address": "npm run wallet:address --workspace=@chaincrew/agent",
+    "dev:web": "npm run dev --workspace=@chaincrew/web",
+    "dev:agent": "npm run dev --workspace=@chaincrew/agent",
+    "wallet:create": "npm run wallet:create --workspace=@chaincrew/wallet-tools --",
+    "wallet:address": "npm run wallet:address --workspace=@chaincrew/wallet-tools --",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "lint": "eslint --config config/eslint.config.js apps packages",
-    "format": "prettier --write \"apps/**/*.{ts,tsx,js,json,md}\" \"packages/**/*.{ts,tsx,js,json,md}\" \"config/**/*.{js,json}\" \"docs/**/*.md\" \"infra/**/*.{yml,yaml}\" \"*.{json,md}\"",
-    "format:check": "prettier --check \"apps/**/*.{ts,tsx,js,json,md}\" \"packages/**/*.{ts,tsx,js,json,md}\" \"config/**/*.{js,json}\" \"docs/**/*.md\" \"infra/**/*.{yml,yaml}\" \"*.{json,md}\"",
-    "check": "npm run lint && npm run typecheck && npm test && npm run format:check",
-    "docker:up": "docker compose --env-file .env -f infra/compose.yaml up --build",
-    "docker:down": "docker compose --env-file .env -f infra/compose.yaml down"
+    "lint": "eslint --config config/eslint.config.js apps packages tools",
+    "format": "prettier --write \"apps/**/*.{ts,tsx,js,json,md}\" \"packages/**/*.{ts,tsx,js,json,md}\" \"tools/**/*.{ts,tsx,js,json,md}\" \"config/**/*.{js,json}\" \"docs/**/*.md\" \"*.{json,md}\"",
+    "format:check": "prettier --check \"apps/**/*.{ts,tsx,js,json,md}\" \"packages/**/*.{ts,tsx,js,json,md}\" \"tools/**/*.{ts,tsx,js,json,md}\" \"config/**/*.{js,json}\" \"docs/**/*.md\" \"*.{json,md}\"",
+    "check": "npm run lint && npm run typecheck && npm test && npm run format:check"
   },
   "engines": {
     "node": ">=22.10.0",

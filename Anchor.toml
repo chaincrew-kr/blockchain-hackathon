@@ -1,0 +1,22 @@
+# Anchor 워크스페이스 설정 — B·C가 관리.
+# 프로그램 ID는 placeholder다. `anchor keys sync`로 각자 키에 맞춰 갱신할 것.
+[features]
+resolver = true
+skip-lint = false
+
+[programs.localnet]
+movie_escrow = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+
+[programs.devnet]
+movie_escrow = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+# 개발은 localnet, Devnet 이전은 8/1 이후 (실행계획서 §4)
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "echo 'TODO(B·C): anchor 테스트 러너 연결'"

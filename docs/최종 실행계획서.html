@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>실행 계획서 — 흐름·역할·일정·결정사항 | 영화 정산 에이전트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F7F5; --ink:#1C2531; --ink-soft:#5B6673; --ink-faint:#9AA3AD;
+  --line:#D9DEE2; --blue:#2C4A6E; --blue-wash:#EDF1F6;
+  --stamp:#BE3A28; --stamp-wash:#F9EEEC; --paid:#2E6B52; --paid-wash:#EBF3EF;
+  --amber:#8A6516; --amber-wash:#F7F1E2;
+  --mono:'IBM Plex Mono',monospace; --body:'IBM Plex Sans KR',sans-serif; --disp:'Hahmlet',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:920px;margin:0 auto;padding:0 24px 96px}
+
+header{border-bottom:3px double var(--ink);padding:52px 0 30px;margin-bottom:8px}
+.doc-meta{display:flex;flex-wrap:wrap;gap:8px 24px;font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);letter-spacing:.04em;margin-bottom:26px}
+.doc-meta b{color:var(--ink);font-weight:600}
+h1{font-family:var(--disp);font-weight:700;font-size:clamp(25px,4.4vw,38px);line-height:1.3}
+h1 small{display:block;font-family:var(--body);font-weight:500;font-size:15px;color:var(--ink-soft);margin-top:10px}
+
+nav{display:flex;flex-wrap:wrap;gap:6px 18px;padding:16px 0;border-bottom:1px solid var(--line);font-size:13px}
+nav a{color:var(--blue);text-decoration:none;font-weight:500}
+nav a:hover,nav a:focus-visible{text-decoration:underline}
+nav a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+section{margin-top:56px}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:22px}
+.sec-num{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink-faint);letter-spacing:.1em}
+h2{font-family:var(--disp);font-weight:600;font-size:21px}
+h4{font-family:var(--disp);font-weight:600;font-size:15.5px;margin:22px 0 8px}
+p.lead{color:var(--ink-soft)}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:12px}
+th{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-align:left;color:var(--ink-soft);border-bottom:2px solid var(--ink);padding:8px 10px;white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:9px 10px;vertical-align:top}
+td.id{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue);white-space:nowrap}
+tr:hover td{background:#fff}
+.role{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:2px;letter-spacing:.06em;white-space:nowrap}
+.rA{background:var(--amber-wash);color:var(--amber);border:1px solid #E4D6B4}
+.rB{background:var(--blue-wash);color:var(--blue);border:1px solid #C9D5E4}
+.rC{background:var(--stamp-wash);color:var(--stamp);border:1px solid #E9CCC6}
+.rD{background:var(--paid-wash);color:var(--paid);border:1px solid #CBDFD4}
+.phase2{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--ink-faint);border:1px solid var(--line);border-radius:2px;padding:1px 6px;letter-spacing:.04em;white-space:nowrap}
+
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.75;background:#fff;border:1px solid var(--line);border-top:3px solid var(--ink);padding:16px 18px;overflow-x:auto;margin-top:12px}
+code{font-family:var(--mono);font-size:.92em;background:#fff;border:1px solid var(--line);padding:0 5px;border-radius:2px}
+
+.stage{background:#fff;border:1px solid var(--line);margin-top:20px;padding:20px 24px;box-shadow:0 1px 0 rgba(28,37,49,.06);position:relative}
+.stage::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+.stage h3{font-family:var(--disp);font-size:16.5px;font-weight:600;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.stage h3 .sn{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);letter-spacing:.1em}
+.io{display:grid;grid-template-columns:76px 1fr;gap:4px 14px;font-size:13.5px;margin-top:12px}
+.io dt{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-faint);letter-spacing:.06em;padding-top:2px}
+.io dd{color:var(--ink)}
+.io dd ul{margin:2px 0 0 16px}
+.io dd li+li{margin-top:2px}
+.build{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+.build b{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--paid);letter-spacing:.1em}
+.build.p2 b{color:var(--ink-faint)}
+.build ul{margin:6px 0 0 18px;font-size:13.5px}
+.build li+li{margin-top:4px}
+.dec{margin-top:14px;background:var(--amber-wash);border-left:3px solid var(--amber);padding:12px 16px;font-size:13.5px}
+.dec b{font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--amber);letter-spacing:.1em;display:block;margin-bottom:6px}
+.dec ul{list-style:none;margin:0}
+.dec li{padding-left:26px;position:relative;margin-top:5px}
+.dec li::before{content:"☐";position:absolute;left:0;font-family:var(--mono);color:var(--amber)}
+.dec li b.pick{font-weight:700;color:var(--ink)}
+.dec li .rec{font-size:12.5px;color:var(--ink-soft)}
+.note{border:1px solid var(--line);border-left:3px solid var(--blue);background:#fff;padding:14px 18px;font-size:13.5px;margin-top:16px}
+.note b{color:var(--blue)}
+.note ol{margin:8px 0 0 18px}
+.note ol li{margin-top:8px}
+.warn{border:1px solid var(--line);border-left:3px solid var(--stamp);background:var(--stamp-wash);padding:14px 18px;font-size:13.5px;margin-top:16px}
+.warn b{color:var(--stamp)}
+.sync{border:1px solid var(--line);border-left:3px solid var(--paid);background:var(--paid-wash);padding:12px 16px;font-size:13.5px;margin-top:10px}
+.sync b{color:var(--paid);font-family:var(--mono);font-size:11px;letter-spacing:.06em}
+
+footer{margin-top:80px;border-top:3px double var(--ink);padding-top:16px;font-family:var(--mono);font-size:11px;color:var(--ink-faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+@media print{body{background:#fff}nav{display:none}}
+@media(max-width:620px){.io{grid-template-columns:1fr}.io dt{padding-top:8px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="doc-meta">
+    <span>문서번호 <b>PLAN-INDIE-003</b></span>
+    <span>버전 <b>v0.4</b></span>
+    <span>작성일 <b>2026-07-29</b></span>
+    <span>연관 <b>REQ-INDIE-001 v0.2 (요구사항) · SPEC-INDIE-002 v0.5 (개발 스펙)</b></span>
+  </div>
+  <h1>실행 계획서
+    <small>전체 흐름도 · 역할 분배(4인) · 스테이지별 Input/Output/필요 로직/결정사항 · 개발 일정(싱크 체크포인트 포함) · 담당 매트릭스</small>
+  </h1>
+</header>
+
+<nav aria-label="목차">
+  <a href="#flow">1 전체 흐름도</a>
+  <a href="#roles">2 역할 분배</a>
+  <a href="#stages">3 단계별 상세</a>
+  <a href="#schedule">4 개발 일정</a>
+  <a href="#global">5 전역 결정사항</a>
+  <a href="#raci">6 담당 매트릭스</a>
+</nav>
+
+<!-- ═══════ 1. 흐름도 ═══════ -->
+<section id="flow">
+  <div class="sec-head"><span class="sec-num">01</span><h2>전체 흐름도</h2></div>
+  <p class="lead">실선 = 자금(레일 1) · 점선 = 데이터(레일 2, 온체인 이력 조회 기본 + Phase 2 조건부 x402). 색 = 담당 역할(§2 — A 프론트·AI데이터 / B 체인·자금흐름 / C 체인·판정집행 / D 에이전트·판단로직). 각 노드 번호는 §3의 단계 카드와 일치한다.</p>
+  <div style="background:#fff;border:1px solid var(--line);border-top:3px solid var(--ink);padding:16px;margin-top:12px;overflow-x:auto">
+  <pre class="mermaid" style="border:none;padding:0;margin:0;background:transparent">
+flowchart TB
+  ST0["0 계약 온보딩<br/>PDF → Gemini 추출 → 양측 승인 → 규칙 vN"]:::rA
+  ST0 -->|"규칙 해시 온체인 등록"| ST0b["에스크로 초기화<br/>init_escrow(rule_hash, ver)"]:::rB
+  ST1["1 자금 유입<br/>모의 구매 웹 → Solana Pay → 에스크로 PDA<br/>상태: Pending (전원 인출 불가)"]:::rA
+  ST0b --> ST1
+  ST1 -.->|"발권·환불 로그 적재"| ST3
+  ST2["2 배치 귀속<br/>공제(÷1.03×3% → VAT 1/11) → 부율 →<br/>수수료 → MG → 상환 → Allocated"]:::rB
+  ST3["3 위험조정검증 (온체인)<br/>신뢰도 유효성 · 정산규모 · 분쟁이력 →<br/>임계값 조정 → 발권·환불·해시 정합성 검증(P3~P5)"]:::rD
+  ST3x(["3-x 조건부 조회 (x402 · Phase 2)<br/>신뢰도 만료 또는 환불 불일치 시<br/>신뢰·증빙 API 조회"]):::trig
+  ST4["4 정산 실행 판단<br/>진행 / 부분 보류 확정 + 근거 조항·적용 정책<br/>Gemini 자연어 지급 의도 생성"]:::rD
+  ST5["5 분배 실행<br/>정상분 원자적 다자 지급 → Paid<br/>이상분 Disputed 격리 / claim은 자기 몫만"]:::rC
+  ST6["6 투명 대시보드<br/>상태머신·잔액·tx 타임라인<br/>+ KOBIS 대조 패널"]:::rA
+
+  TRIG(["배치 트리거 P7<br/>회차 종료 + 환불 윈도우 경과"]):::trig
+  TRIG -.-> ST3
+  ST3 -.->|"기본 경로 (Phase 1)"| ST4
+  ST3 -.->|"조건부 (Phase 2)"| ST3x
+  ST3x -.->|"조회 결과 반영"| ST4
+  ST4 -->|"진행 판정"| ST2
+  ST2 --> ST5
+  ST4 -.->|"보류 판정 + 리포트"| ST5
+  ST5 -.->|"온체인 로그"| ST6
+  ST1 -.->|"입금 tx"| ST6
+
+  classDef rA fill:#F7F1E2,stroke:#8A6516,color:#1C2531
+  classDef rB fill:#EDF1F6,stroke:#2C4A6E,color:#1C2531
+  classDef rC fill:#F9EEEC,stroke:#BE3A28,color:#1C2531
+  classDef rD fill:#EBF3EF,stroke:#2E6B52,color:#1C2531
+  classDef trig fill:#fff,stroke:#9AA3AD,color:#5B6673,stroke-dasharray:4 3
+  </pre>
+  </div>
+  <div class="note"><b>읽는 법.</b> 자금은 1 → (배치 대기) → 2 → 5로 흐르고, 데이터는 1 → 3 → 4로 흘러 4의 "진행" 판정이 있어야 2가 실행된다. 3(위험조정검증)은 <b>Phase 1 — 지금 개발 대상</b>이며 온체인 이력만으로 완결된다. 신뢰도가 만료됐거나 환불 불일치가 발견된 경우에만 3-x(x402 조건부 조회, <b>Phase 2 — 나중에 추가</b>)를 거쳐 4로 들어간다.</div>
+</section>
+
+<!-- ═══════ 2. 역할 ═══════ -->
+<section id="roles">
+  <div class="sec-head"><span class="sec-num">02</span><h2>역할 분배 — 4인, Phase 1 개발 구간 (7/29~8/1)</h2></div>
+  <p class="lead">총 4명이다. 프론트와 AI·데이터를 한 사람(A)이 맡고, 그만큼 체인·에이전트 쪽(옛 R1·R2)을 세 사람(B·C·D)으로 세분화했다. B·C는 <b>같은 Anchor 프로그램(S6)을 나눠서 짜는 관계</b>다 — 서로 다른 프로그램이 아니라 한 프로그램의 다른 instruction을 각자 맡는 것이므로, 계정 구조는 반드시 같이 확정하고 시작해야 한다. 8/2~8/3 제출물 준비(프로덕트 소개서·데모 영상·라이브 배포)는 전원이 함께 하므로 별도 역할을 배정하지 않는다 — §4 참조.</p>
+  <table>
+    <thead><tr><th>역할</th><th>담당 영역</th><th>주요 산출물</th><th>필요 스킬</th><th>담당자</th></tr></thead>
+    <tbody>
+      <tr><td><span class="role rA">A 프론트·AI데이터</span></td><td>STAGE 0(Gemini·UI)·1(구매웹)·6(대시보드) + 백오피스</td><td>S1 구매 웹, S3 백오피스(UI+Gemini 프롬프트), S4 대시보드, 가상 계약서, KOBIS 연동</td><td>React·Solana wallet-adapter·디자인 + Gemini Structured Output·프롬프트 설계</td><td>___</td></tr>
+      <tr><td><span class="role rB">B 체인·자금흐름</span></td><td>STAGE 0b·1(deposit 지원)·2 — 자금이 들어와서 몫이 확정되기까지</td><td>Anchor: <code>init_escrow</code>·<code>deposit</code>·<code>refund_pending</code>·<code>settle_batch</code> + 불변식 ①③ 테스트</td><td>Rust·Anchor·PDA</td><td>___</td></tr>
+      <tr><td><span class="role rC">C 체인·판정집행</span></td><td>STAGE 5 — 판정 결과를 받아 실제로 돈을 보내거나 묶어두기</td><td>Anchor: <code>claim</code>·<code>mark_disputed</code>·<code>resolve_dispute</code> + 인출제한 불변식 ② 테스트</td><td>Rust·Anchor·PDA (B와 같은 프로그램, 다른 instruction 담당)</td><td>___</td></tr>
+      <tr><td><span class="role rD">D 에이전트·판단로직</span></td><td>STAGE 3·4 — 위험조정검증 + 정산실행판단</td><td>S5 정산 에이전트: 온체인 이력 조회, 임계값 조정, 정합성 검증(P3~P5), 판정. <span class="phase2">Phase 2</span> 훅만 마련</td><td>Node·Express (Phase 2부터 x402/pay.sh)</td><td>___</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><b>협업 규칙.</b>
+    <ol>
+      <li>STAGE 4는 D(판정 파이프라인)와 A(Gemini 프롬프트)의 공동 소유다.</li>
+      <li>B와 C는 오늘(7/29) 안에 <code>MovieEscrow</code>·<code>Allocation</code> 계정 구조(필드명·타입)를 함께 확정하고 나서 각자 instruction을 짠다 — 나중에 안 맞으면 되돌리는 데 하루 이상 걸릴 수 있다.</li>
+      <li>인터페이스(정산 규칙 JSON, 온체인 이력 조회 응답 형식, 프로그램 IDL)는 <code>packages/schema</code>에 먼저 커밋하고 나서 각자 병렬 개발한다.</li>
+      <li>B·C가 7/30 마일스톤(deposit→claim 왕복 + 인출 제한)에 실패하면 전원 체인 트랙에 합류한다(SPEC §8 리스크 대응).</li>
+      <li>D는 STAGE 3의 <code>checkTrustFreshness()</code>·<code>checkRefundEvidence()</code> 두 함수를 Phase 1부터 no-op 인터페이스로 열어두고 시작한다 — Phase 2가 이 안에만 들어가도록.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════ 3. 단계별 상세 ═══════ -->
+<section id="stages">
+  <div class="sec-head"><span class="sec-num">03</span><h2>단계별 상세 — Input · Output · 필요 로직 · 결정사항</h2></div>
+  <p class="lead">☐ 항목이 결정할 것. <span style="color:var(--ink-soft)">권장안</span>이 붙은 항목은 이견 없으면 그대로 채택한다. <span class="phase2">Phase 2</span> 표시가 없는 개발 항목은 전부 Phase 1(7/29~8/1) 대상이다.</p>
+
+  <!-- Stage 0 -->
+  <div class="stage">
+    <h3><span class="sn">STAGE 0</span>계약 온보딩 <span class="role rA">A</span> <span class="role rB">B (온체인 등록)</span></h3>
+    <dl class="io">
+      <dt>INPUT</dt><dd>가상 상영계약서 PDF — 문체부 「영화 상영 표준계약서」 양식 기반, 부율(서울 한국영화 5:5)·배급수수료 10%·MG·할인 처리 조항 + <b>의도된 충돌 1건</b></dd>
+      <dt>OUTPUT</dt><dd>승인된 정산 규칙 JSON(vN, SPEC §5 스키마) + 항목별 근거조항·원문·신뢰도 + 충돌 플래그 + 온체인 규칙 해시</dd>
+      <dt>필요 로직</dt><dd><ul>
+        <li>Gemini Structured Output 호출 (스키마 강제, <code>response_mime_type: application/json</code>)</li>
+        <li>충돌 검사: 비율 합계 ≠ 100% / 정산일 상호 불일치 / 할인 처리 기준 누락</li>
+        <li>양측(배급·상영) 승인 상태머신 → 완료 시 <code>init_escrow(rule_hash, ver)</code> 호출</li>
+        <li>추출 결과 캐시 (라이브 호출 실패 시 캐시 표시 — 데모 안전장치)</li>
+        <li>사람 승인 UI — 추출 결과를 배급사·상영자 담당자가 확인·승인 (양측 승인 전 규칙 생성 불가)</li>
+        <li>승인 규칙 온체인 기록 트랜잭션 — 승인 후엔 AI도 변경 불가, 개정은 신규 버전 발행으로만</li>
+      </ul></dd>
+    </dl>
+    <div class="dec"><b>결정할 것</b>
+      <ul>
+        <li>계약서에 <b class="pick">MG 조항 포함 여부</b> — <span class="rec">권장: 포함하되 소액(예: MG 5,000). 워터폴 깊이를 보여주는 재료. 단 일정 밀리면 1순위 컷</span></li>
+        <li>의도된 충돌의 종류 — <span class="rec">권장: "본문 45일 지급 vs 별지 30일 지급" 정산일 불일치 (화면에서 가장 직관적)</span></li>
+        <li>승인 주체 — <span class="rec">권장: 배급·상영 양측 2인 승인 (단일 승인은 "AI가 멋대로" 반론에 취약)</span></li>
+        <li>계약서 작성 담당·완료일 — <span class="rec">A, 7/29 중 초안 / 추출 스키마 필드는 7/29 중 packages/schema 확정</span></li>
+        <li>문체부 표준계약서 다운로드 → 템플릿 확정 — <span class="rec">자동 접근 차단(robots)이라 수동 다운로드 필요. 상영 외 투자·배급 양식 포함 여부 확인 (MG·워터폴 조항 재료)</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Stage 1 -->
+  <div class="stage">
+    <h3><span class="sn">STAGE 1</span>자금 유입 <span class="role rA">A</span> <span class="role rB">B (deposit)</span></h3>
+    <dl class="io">
+      <dt>INPUT</dt><dd>시연자(관객 역할)의 티켓 구매 클릭 — 영화·회차·단가</dd>
+      <dt>OUTPUT</dt><dd>에스크로 PDA 입금 tx(Explorer 확인 가능) + 발권 이벤트 로그(회차·좌석·금액·시각) + 상태 Pending</dd>
+      <dt>필요 로직</dt><dd><ul>
+        <li>모의 티켓 구매 웹페이지 (React) — 실제 예매 사이트 UX, "결제하기" 버튼</li>
+        <li>Phantom 연동 → Solana Pay 결제 (수취 주소 = 영화별 에스크로 PDA)</li>
+        <li>발권·환불 로그 적재 (STAGE 3 위험조정검증이 온체인에서 직접 읽는 원천 데이터)</li>
+        <li>격리 불변식: Pending 자금의 유일한 출구 = 관객 환불</li>
+      </ul></dd>
+    </dl>
+    <div class="note"><b>격리 성립 조건 (설계 불변식).</b> ① 경유 계좌 0개 — 결제 수취 주소가 곧 에스크로 ② 수취 계정에 주인 없음 — PDA(개인키 부존재) ③ 미귀속(Pending) 자금은 전원 인출 불가, 유일한 출구는 관객 환불 ④ 결제의 즉시 최종성(USDC ~400ms). 이 넷이 갖춰질 때만 "결제 순간부터 격리"가 성립한다.</div>
+    <div class="dec"><b>결정할 것</b>
+      <ul>
+        <li>데모 단가·건수 — <span class="rec">권장: 10 USDC × 3건 (STAGE 2 정산 계산과 원 단위 대조 가능한 규모)</span></li>
+        <li>환불 데모 포함 여부 — <span class="rec">권장: 포함 (1건 환불 → Pending에서 관객 반환)</span></li>
+        <li>티켓 영수증 온체인 발급 — <span class="rec">권장: 발권 로그+입금 tx로 갈음, 별도 영수증 계정은 컷 (계정 rent·복잡도 대비 효용 낮음)</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Stage 2 -->
+  <div class="stage">
+    <h3><span class="sn">STAGE 2</span>배치 귀속 <span class="role rB">B</span> <span class="role rD">D (집계 전달)</span></h3>
+    <dl class="io">
+      <dt>INPUT</dt><dd>Pending 총액 + 승인 규칙(vN) + STAGE 4의 "진행" 판정 + STAGE 3 정합성 검증 결과</dd>
+      <dt>OUTPUT</dt><dd>권리자별 Allocation 온체인 기록 (Claimable 전환 대기) — "누가 얼마 받을 자격인지"의 확정</dd>
+      <dt>필요 로직</dt><dd><ul>
+        <li><code>settle_batch</code>: 부과금(가액÷1.03×3%, 반올림) → VAT(잔액÷11) → 부율 분할 → 배급수수료 → MG 상환(잔액 추적) → 투자 상환 → 이익 배분</li>
+        <li>불변식: Σallocated + reserved + disputed + refundable = gross_in</li>
+        <li>규칙 버전 바인딩 — 어떤 입금에 어떤 vN이 적용됐는지 기록</li>
+        <li>환불 처리 — Pending 중 환불은 관객 직접 반환 / 배치 후 환불은 Disputed 전환</li>
+      </ul></dd>
+    </dl>
+    <div class="dec"><b>결정할 것</b>
+      <ul>
+        <li>워터폴 구현 깊이 — <span class="rec">권장: 풀 구현 목표(수수료→MG→상환→배분), 지연 시 "수수료+단순 배분"으로 축소</span></li>
+        <li>공제 계산 위치 — <b class="pick">온체인(프로그램 내) vs 오프체인 계산 후 결과만 기록</b> — <span class="rec">권장: 온체인. "코드가 규칙을 강제한다" 서사의 핵심. 반올림 산식은 u64 정수 연산으로 사전 검증 필수</span></li>
+        <li>환불충당금(reserveRate) 포함 — <span class="rec">권장: 컷 (시간 남으면 슬라이드로만 설명)</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Stage 3 -->
+  <div class="stage">
+    <h3><span class="sn">STAGE 3</span>위험조정검증 <span class="role rD">D</span></h3>
+    <dl class="io">
+      <dt>INPUT</dt><dd>STAGE 1 온체인 발권·환불 로그 + 배치 트리거(P7) + 같은 상영관의 과거 정산 이력(온체인, 있으면)</dd>
+      <dt>OUTPUT</dt><dd>조정된 이상탐지 임계값 + 정합성 검증 결과(환불률·무료비율·발권초과·해시연속성 각각 통과/실패) + <span class="phase2">Phase 2</span> 신뢰도 스코어 + <span class="phase2">Phase 2</span> 증빙 대조 결과</dd>
+      <dt>필요 로직</dt><dd><ul>
+        <li>과거 이력 조회 — 같은 상영관의 이전 정산 배치 기록을 온체인 RPC로 조회(무료), 정산 규모·이상탐지 이력·분쟁 이력 집계</li>
+        <li>임계값 조정 — 이력 없는 신규 상영관은 기본(보수적) 임계값, 이력 좋은 상영관은 정상 임계값 적용</li>
+        <li>정합성 검증 4종 실행: 환불률&gt;10%(P3), 무료비율&gt;15%(P3), 발권수&gt;좌석수(P4), 해시 불연속성(P5) — STAGE 1 로그에서 직접 계산, 외부 데이터 불필요</li>
+      </ul></dd>
+    </dl>
+    <div class="build p2"><b>Phase 2 — Phase 1 완주 후 추가 (x402 두 곳)</b>
+      <ul>
+        <li><code>checkTrustFreshness()</code> 훅: 이력이 없거나 오래됐으면(P1) 신뢰도 조회 API를 x402로 구매(P2 예산 확인 후) → 임계값 조정에 반영</li>
+        <li><code>checkRefundEvidence()</code> 훅: 환불 수치 불일치가 발견되고 금액·불일치 정도가 기준을 넘으면(P9) 증빙 API를 x402로 구매 → 대조해 일치하면 오탐 처리(정산 진행), 불일치 확정 시 보류 유지</li>
+        <li>두 훅 모두 Phase 1에서는 항상 <code>{needed:false}</code>를 반환하는 no-op으로 구현하고, Phase 2에서 내부 로직만 채워 넣는다 (SPEC §7 삽입 지점 참조)</li>
+      </ul>
+    </div>
+    <div class="dec"><b>결정할 것</b>
+      <ul>
+        <li>Phase 2 결제 스택 — <b class="pick">pay.sh 채택 (확정 권장)</b> — <span class="rec">공식 심사 기준 "인프라 연동"에 USDC·Solana Pay·pay.sh가 명시됨. pay.sh는 x402·MPP 동시 지원 — 반복 조회는 MPP 세션 적합성을 발표에서 언급, 데모는 x402 단건으로 충분</span></li>
+        <li>임계값 조정 폭 — <span class="rec">권장: 신규 상영관은 정상 대비 더 엄격하게(예: −30%) — 정확한 수치는 합의 필요</span></li>
+        <li>배치 트리거의 데모 구현 — <b class="pick">실제 Scheduler 대기 vs "정산일 도래" 버튼</b> — <span class="rec">권장: 버튼(시연 통제) + Scheduler는 코드로 존재 증명. "데모에서는 시간을 압축합니다" 1문장 선언</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Stage 4 -->
+  <div class="stage">
+    <h3><span class="sn">STAGE 4</span>정산 실행 판단 <span class="role rD">D</span> <span class="role rA">A (프롬프트)</span></h3>
+    <dl class="io">
+      <dt>INPUT</dt><dd>STAGE 3 검증 결과(조정된 임계값 + 정합성 검증 + <span class="phase2">Phase 2</span> 신뢰도/증빙) + 회차 메타(좌석수·평균 점유율·과거 환불률)</dd>
+      <dt>OUTPUT</dt><dd>회차·금액 단위의 "진행 / 부분 보류" 판정 + 근거 조항·적용 정책·에이전트 권한 범위(지급 의도) + Gemini 자연어 근거 리포트</dd>
+      <dt>필요 로직</dt><dd><ul>
+        <li>STAGE 3 결과 종합 → 진행 vs 부분 보류 최종 판정 확정</li>
+        <li>Gemini 패턴 추론 — 임계 미달이어도 이상한 패턴(예: 심야 회차 점유율 급등) 플래그</li>
+        <li>판정 로그를 자연어로 저장·화면 노출 (룰베이스로 보이면 AI 감점)</li>
+        <li>보류 → <code>mark_disputed(amount)</code>, 정상 → STAGE 2 진행</li>
+      </ul></dd>
+    </dl>
+    <div class="warn"><b>AI 심사 감점 주의.</b> 화면에 "보류됨"만 뜨면 룰베이스 if문으로 보인다. 반드시 <em>왜</em> 보류했는지를 Gemini가 생성한 자연어로 보여줄 것. 분쟁의 본질(부율이 아니라 베이스 금액의 애매함 — 할인·환불·초대권의 유효매출 포함 여부)을 잡아내는 것이 이 판단의 존재 이유다.</div>
+    <div class="dec"><b>결정할 것</b>
+      <ul>
+        <li>데모용 이상 시나리오 <b class="pick">1개 확정</b> — <span class="rec">권장: "무료초대권 비율 초과" (계약 조항→탐지→보류가 한 줄로 연결: "제5조 무료 발권 상한 5% 대비 18% 발권"). 대안: 환불률 급증</span></li>
+        <li>임계값 최종 수치 — <span class="rec">권장: P3=10%/15%, P4=좌석수, 그대로 확정 (계약서 조항과 숫자 일치시킬 것)</span></li>
+        <li>Gemini 패턴 추론의 데모 포함 — <span class="rec">권장: 포함하되 리허설에서 출력 불안정하면 룰+Gemini "설명 생성"으로 축소</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Stage 5 -->
+  <div class="stage">
+    <h3><span class="sn">STAGE 5</span>분배 실행 <span class="role rC">C</span></h3>
+    <dl class="io">
+      <dt>INPUT</dt><dd>Allocated 금액 + 계약상 지급일 도달(데모: 버튼) + STAGE 4 판정</dd>
+      <dt>OUTPUT</dt><dd>극장·배급·제작·투자 지갑 동시 입금 tx(원자적) / Disputed 잔류분 / 부정 인출 거부 tx</dd>
+      <dt>필요 로직</dt><dd><ul>
+        <li>다자 원자 분배 — 전부 성공 or 전부 롤백 (자체 다중 송금 instruction 기본)</li>
+        <li><code>claim</code>: 요청자 Claimable 잔액 초과분 온체인 거부 (데모 클라이맥스)</li>
+        <li>분쟁 해결: <code>resolve_dispute(approve)</code> → 지급 또는 환수</li>
+      </ul></dd>
+    </dl>
+    <div class="dec"><b>결정할 것</b>
+      <ul>
+        <li>분배 방식 — <b class="pick">MPP 연동 vs 자체 다중 송금 instruction</b> — <span class="rec">권장: 자체 구현 기본 + MPP는 시간 되면 스파이크로 타진 (외부 의존성 리스크)</span></li>
+        <li>부정 인출 데모의 행위자 — <span class="rec">권장: "상영자 지갑이 전액 인출 시도"</span></li>
+        <li>분쟁 해결 장면 포함 — <span class="rec">권장: 보류까지만 데모, resolve는 대시보드 버튼 존재로만 표시 (데모 영상 러닝타임 유지)</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Stage 6 -->
+  <div class="stage">
+    <h3><span class="sn">STAGE 6</span>투명 대시보드 <span class="role rA">A</span> <span class="role rD">D (로그 API)</span></h3>
+    <dl class="io">
+      <dt>INPUT</dt><dd>온체인 상태(RPC) + 오프체인 판단 로그(Firestore) + KOBIS 오픈API</dd>
+      <dt>OUTPUT</dt><dd>상태머신 현황 · 권리자별 잔액 · tx 타임라인 · 이상탐지 리포트 · KOBIS 대조 패널</dd>
+      <dt>필요 로직</dt><dd><ul>
+        <li>에스크로 계정 구독/폴링 → 상태 시각화 (Pending→…→Paid/Disputed)</li>
+        <li>tx 항목마다 Explorer 링크</li>
+        <li>KOBIS 일별 박스오피스 호출 — 실존 독립영화 1편 병렬 표시 ("실데이터 연동" 증명)</li>
+      </ul></dd>
+    </dl>
+    <div class="dec"><b>결정할 것</b>
+      <ul>
+        <li>KOBIS 패널 포함 — <span class="rec">권장: 포함 (실데이터 서사)</span></li>
+        <li>신뢰도 스코어(FR-24, 자체 산출) — <span class="rec">권장: 컷. 슬라이드 목업 1장으로 대체</span></li>
+        <li>대조용 실존 독립영화 선정 — <span class="rec">A가 7/30까지 KOBIS에서 상영 중인 독립·예술영화 1편 선정</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 4. 개발 일정 ═══════ -->
+<section id="schedule">
+  <div class="sec-head"><span class="sec-num">04</span><h2>개발 일정 — 7/29 시작, 8/1 개발 완료, 8/3 제출물 완성</h2></div>
+  <p class="lead">핵심 개발은 <b>7/29(수)~8/1(토)</b> 4일 안에 끝낸다. <b>8/2(일)~8/3(월)</b>은 제출물 준비에 전원이 투입된다. x402 Phase 2는 Phase 1이 완주된 뒤 남는 시간에만 시도한다. 아래 각 날짜의 <span style="color:var(--paid);font-weight:600">싱크 체크</span> 는 "이날 두 사람이 서로 맞춰봐야 하는 것"이다 — 각자 따로 만들다가 나중에 안 맞으면 그게 제일 큰 시간 손실이니, 귀찮아도 꼭 하고 넘어가야 한다.</p>
+  <table>
+    <thead><tr><th>날짜</th><th>담당</th><th>목표</th><th>완료 판정</th></tr></thead>
+    <tbody>
+      <tr><td class="id">7/29 수 <span style="color:var(--ink-faint)">(오늘)</span></td><td><span class="role rA">A</span> <span class="role rB">B</span> <span class="role rC">C</span> <span class="role rD">D</span></td><td>환경 세팅 + 뼈대 잡기. A: 계약서 샘플·Gemini 프롬프트 초안 + 구매 웹 뼈대. B·C: Anchor 프로젝트 셋업, 계정 구조부터 같이 정하기. D: STAGE 3 로직 설계 + S5 골격</td><td>전원 로컬 환경에서 최소 1건 동작 확인</td></tr>
+      <tr><td class="id">7/30 목</td><td><span class="role rB">B</span> <span class="role rC">C</span></td><td>B: deposit 완성. C: claim + 인출 제한 완성 <b>(마일스톤)</b>. A: Gemini 추출 완성 + 승인 UI. D: 계속 설계</td><td>타인 몫 claim 시도가 온체인 실패</td></tr>
+      <tr><td class="id">7/31 금</td><td><span class="role rB">B</span> <span class="role rC">C</span> <span class="role rD">D</span> <span class="role rA">A</span></td><td>B: settle_batch 완성. C: mark_disputed·resolve_dispute·refund_pending 완성. D: STAGE 3·4 완성. A: S4 대시보드 구현 — <b>Phase 1 파이프라인 첫 완주 목표</b></td><td>발권→위험조정검증→판정→분배가 x402 없이 한 번 끝까지 돎</td></tr>
+      <tr><td class="id">8/1 토</td><td>전원</td><td>통합 테스트 + 버그 수정, Devnet 이전. <b>시간 남으면</b> Phase 2(신뢰도 조회부터) 시도</td><td>D1~D7(REQ §9) 전부 통과 + <b>개발 종료</b></td></tr>
+      <tr><td class="id">8/2 일</td><td>전원</td><td>제출물 준비 — 프로덕트 소개서(PPT), 데모 영상 촬영 시작</td><td>PPT 초안 완성, 촬영 컷 확보</td></tr>
+      <tr><td class="id">8/3 월</td><td>전원</td><td>Cloud Run 라이브 배포 + 데모 영상 편집 완성 + PPT·README 마감 + <b>제출</b></td><td>배포 URL에서 결제~분배 완주, 제출 완료</td></tr>
+    </tbody>
+  </table>
+
+  <h4>날짜별 확인·싱크 체크포인트 (쉽게 풀어서)</h4>
+  <div class="sync"><b>7/29 — 계정 구조 맞추기</b><br>B와 C는 같은 프로그램(에스크로)을 나눠서 짜는 거라, 오늘 하루가 끝나기 전에 "돈이 어떤 필드에 어떻게 저장되는지"를 서로 화면 보여주면서 맞춰야 해요. 이걸 각자 알아서 정하고 넘어가면, 나중에 B가 만든 걸 C의 코드가 못 읽는 상황이 생겨요. 그리고 D도 오늘 설계한 STAGE 3 로직이 B·C가 정한 필드 이름과 맞는지 한 번 확인해두면 좋아요 — 나중에 온체인 이력 조회할 때 필드명이 다르면 다시 짜야 해요.</div>
+  <div class="sync"><b>7/30 — deposit와 claim이 실제로 서로 통하는지</b><br>B가 만든 deposit으로 돈을 넣고, C가 만든 claim으로 그 돈을 실제로 빼보는 테스트를 오늘 안에 "같이" 돌려봐야 해요. 각자 자기 컴퓨터에서만 테스트하면 잘 되는 것처럼 보여도, 둘을 이어 붙이면 안 되는 경우가 생각보다 자주 있어요. 오늘 이 확인이 늦어지면 다음 날 일정이 그대로 밀려요.</div>
+  <div class="sync"><b>7/31 — 세 사람의 함수가 순서대로 이어지는지</b><br>D가 만드는 판정 로직이 결국 B의 settle_batch랑 C의 mark_disputed를 순서대로 불러 쓰는 구조예요. 오늘은 B·C·D 세 명이 "누가 먼저 실행되고, 그다음 뭐가 실행되는지" 순서를 한 번 말로 맞춰봐야 해요. 이 순서가 안 맞으면 다 만들어놓고도 이어붙이는 순간 STAGE 전체가 안 돌아가요. A도 대시보드가 이 결과를 어떤 형식으로 받을지 D랑 미리 한 번 확인해두면 편해요.</div>
+  <div class="sync"><b>8/1 — 처음부터 끝까지 통으로 한 번 돌려보기</b><br>오늘은 A·B·C·D가 각자 만든 걸 전부 이어 붙여서, 관객 결제부터 지급까지 한 번에 쭉 돌려보는 날이에요. 중간에 하나라도 안 맞으면 그 자리에서 관련된 두 사람이 바로 옆에 앉아서 고쳐야 해요 — 오늘을 넘기면 시연 전까지 다시 통으로 테스트할 시간이 없어요.</div>
+
+  <div class="note"><b>이미 지났어야 할 것 (7/28 기준, 미완이면 오늘 즉시).</b> KOBIS API 키 신청(최우선, 승인 대기 가능성), Gemini API 키, Devnet 지갑 ×5(극장/배급/제작/투자/에이전트 예산), GCP 크레딧, Firestore/Cloud Storage 버킷 생성(계약서 원문·개인정보 저장용 — A 담당, STAGE 0 업로드 기능의 전제조건), 모노레포+Localnet 셋업. 개발은 로컬넷, Devnet은 8/1 이전 및 제출·시연 때만.</div>
+</section>
+
+<!-- ═══════ 5. 전역 결정 ═══════ -->
+<section id="global">
+  <div class="sec-head"><span class="sec-num">05</span><h2>전역 결정사항 — 프로젝트 범위</h2></div>
+  <table>
+    <thead><tr><th>#</th><th>결정 항목</th><th>선택지</th><th>권장안</th><th>결정</th></tr></thead>
+    <tbody>
+      <tr><td class="id">G1</td><td>데모 자금 방식</td><td>A(직접 결제) / B(예치)</td><td><b>A</b> — 격리 증명이 가장 강함. B·C는 로드맵 슬라이드 (SPEC §4)</td><td>___</td></tr>
+      <tr><td class="id">G2</td><td>시간 압축 규칙</td><td>실시간 대기 / 버튼 트리거</td><td>정산일·지급일은 버튼 + "시간 압축" 선언 1문장. Scheduler 코드는 레포에 존재</td><td>___</td></tr>
+      <tr><td class="id">G3</td><td>데모 영화 구성</td><td>가상 1편 / 가상 1편+실존 1편 대조</td><td>가상 1편(정산 대상) + 실존 독립영화 1편(KOBIS 대조 전용)</td><td>___</td></tr>
+      <tr><td class="id">G4</td><td>발표 클라이맥스</td><td>부분 보류 / 부정 인출 차단</td><td>부정 인출 차단을 마지막에 — "정산금이 섞이는 사고는 이 구조에서 불가능" 마무리 멘트</td><td>___</td></tr>
+      <tr><td class="id">G5</td><td>범위 제외 확정</td><td>—</td><td>원화·PG·KYC·멀티플렉스·메인넷·자체산출 신뢰도스코어·충당금·티켓영수증계정 (REQ §10 + 본 문서 컷 항목)</td><td>___</td></tr>
+      <tr><td class="id">G6</td><td>레포·브랜치 전략</td><td>—</td><td>모노레포(SPEC §7 구조), main 보호 + 단계별 브랜치, packages/schema 변경은 전원 리뷰</td><td>___</td></tr>
+      <tr><td class="id">G7</td><td>A~D 이름 배정</td><td>—</td><td>오늘(7/29) 중 확정 — B·C는 7/30 마일스톤까지 전담</td><td>___</td></tr>
+      <tr><td class="id">G8</td><td>제출물 4종 오너</td><td>—</td><td>PPT·데모 영상=전원(8/2~8/3 협의) / README·GitHub=B·C·D 공동 / 라이브 배포 URL=D — 제출 8/3(월)</td><td>___</td></tr>
+      <tr><td class="id">G9</td><td>Phase 2(x402) 착수 조건</td><td>—</td><td>Phase 1 D1~D7(REQ §9) 전부 통과 확인 후에만 착수. 8/1까지 미달성이면 Phase 2는 자동 보류</td><td>___</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════ 6. RACI ═══════ -->
+<section id="raci">
+  <div class="sec-head"><span class="sec-num">06</span><h2>담당 매트릭스 (단계 × 역할)</h2></div>
+  <table>
+    <thead><tr><th>단계</th><th>A 프론트·AI데이터</th><th>B 체인·자금흐름</th><th>C 체인·판정집행</th><th>D 에이전트·판단로직</th></tr></thead>
+    <tbody>
+      <tr><td class="id">0 계약 온보딩</td><td><b>주담당</b> (프롬프트·계약서)</td><td>지원 (해시 등록)</td><td>—</td><td>—</td></tr>
+      <tr><td class="id">1 자금 유입</td><td><b>주담당</b> (구매 웹)</td><td>지원 (deposit)</td><td>—</td><td>—</td></tr>
+      <tr><td class="id">2 배치 귀속</td><td>—</td><td><b>주담당</b></td><td>—</td><td>지원 (집계 전달)</td></tr>
+      <tr><td class="id">3 위험조정검증</td><td>—</td><td>—</td><td>—</td><td><b>주담당</b></td></tr>
+      <tr><td class="id">4 정산 실행 판단</td><td><b>공동</b> (판단 프롬프트)</td><td>—</td><td>—</td><td><b>공동</b> (판정 파이프라인)</td></tr>
+      <tr><td class="id">5 분배 실행</td><td>—</td><td>—</td><td><b>주담당</b></td><td>지원 (서명 호출)</td></tr>
+      <tr><td class="id">6 대시보드</td><td><b>주담당</b> (KOBIS 포함)</td><td>—</td><td>—</td><td>지원 (로그 API)</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><b>진행 순서 제안.</b>
+    <ol>
+      <li>G7 이름 배정 (5분)</li>
+      <li>G1~G9 전역 결정 (10분)</li>
+      <li>단계 카드의 ☐ 항목 순회 — 권장안 이견 없으면 즉시 채택, 이견 있는 것만 토론 (20분)</li>
+      <li>결정 결과를 본 문서에 기입하고 v0.5로 커밋. 미결 항목은 오늘(7/29) 중 결정을 기본값으로 한다.</li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <span>PLAN-INDIE-003 · v0.4</span>
+  <span>다음 개정: 결정사항·담당자 기입 후 v0.5</span>
+</footer>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'neutral',
+    themeVariables: {
+      fontFamily: "'IBM Plex Sans KR', sans-serif",
+      fontSize: '13px',
+      primaryColor: '#EDF1F6',
+      primaryBorderColor: '#2C4A6E',
+      primaryTextColor: '#1C2531',
+      lineColor: '#5B6673',
+      clusterBkg: '#F6F7F5',
+      clusterBorder: '#9AA3AD'
+    },
+    flowchart: { curve: 'basis', htmlLabels: true }
+  });
+</script>
+</body>
+</html>
