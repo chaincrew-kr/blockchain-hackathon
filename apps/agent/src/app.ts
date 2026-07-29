@@ -4,13 +4,23 @@
  */
 import express, { type Express } from "express";
 
+import type { ChainMode } from "./chain/index.js";
 import { errorHandler, notFound, requestContext } from "./middleware.js";
 import type { PipelineDeps } from "./pipeline.js";
 import { batchRouter } from "./routes/batch.js";
 import { logsRouter } from "./routes/logs.js";
 import type { AgentStore } from "./store.js";
 
-export function createApp(store: AgentStore, deps: PipelineDeps): Express {
+export interface AppOptions {
+  /** 체인 연결 모드 — /health로 노출해 스텁 상태를 숨기지 않는다 (이슈 #18) */
+  chainMode?: ChainMode;
+}
+
+export function createApp(
+  store: AgentStore,
+  deps: PipelineDeps,
+  options: AppOptions = {},
+): Express {
   const app = express();
 
   app.disable("x-powered-by");
@@ -18,7 +28,11 @@ export function createApp(store: AgentStore, deps: PipelineDeps): Express {
   app.use(requestContext);
 
   app.get("/health", (_request, response) => {
-    response.json({ status: "ok" });
+    response.json({
+      status: "ok",
+      // "stub"이면 트랜잭션이 가짜다. 대시보드가 이 값을 보고 경고를 띄울 수 있다.
+      chain: options.chainMode ?? "stub",
+    });
   });
 
   app.use("/api", logsRouter(store));

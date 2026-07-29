@@ -15,15 +15,16 @@
 import "dotenv/config";
 
 import { createApp } from "./app.js";
-import { StubChainGateway } from "./chain/gateway.js";
+import { AnchorChainGateway, createChainGateway } from "./chain/index.js";
 import { demoBatch } from "./fixtures/screenings.js";
 import { logger } from "./logger.js";
 import { AgentStore } from "./store.js";
 
 const store = new AgentStore(demoBatch);
-const deps = { chainGateway: new StubChainGateway() };
+const chain = createChainGateway();
+const deps = { chainGateway: chain.gateway };
 
-const app = createApp(store, deps);
+const app = createApp(store, deps, { chainMode: chain.mode });
 
 // Cloud Run은 PORT를 주입한다 — 로컬 개발은 .env의 AGENT_PORT를 계속 쓴다.
 const port = Number(process.env.PORT ?? process.env.AGENT_PORT ?? 4030);
@@ -31,9 +32,18 @@ const port = Number(process.env.PORT ?? process.env.AGENT_PORT ?? 4030);
 const server = app.listen(port, "0.0.0.0", () => {
   logger.info("settlement agent started", {
     port,
-    chainGateway: "stub",
+    chainGateway: chain.mode,
+    authority: chain.authority,
     screenings: store.batch.length,
   });
+
+  // 설정 오류를 데모 도중이 아니라 기동 직후에 드러낸다. 실패해도 서버는 살린다.
+  if (chain.gateway instanceof AnchorChainGateway) {
+    chain.gateway
+      .preflight()
+      .then((info) => logger.info("chain preflight ok", { ...info }))
+      .catch((error) => logger.error("chain preflight failed", error));
+  }
 });
 
 // Cloud Run은 인스턴스를 줄일 때 SIGTERM을 보낸다 — 진행 중인 요청을 흘려보낸다.
