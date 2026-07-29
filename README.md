@@ -302,6 +302,9 @@ blockchain-hackathon/
 자세한 D 파트 진행 상황은 [D 작업 체크리스트](docs/ponyo_work/README.md)에서
 확인할 수 있습니다.
 
+화면·에이전트·Anchor 간 필드, 금액 단위, 상태 전이와 변경 절차는
+[공통 스키마 계약 관리 가이드](docs/SCHEMA_CONTRACT.md)를 기준으로 관리합니다.
+
 ---
 
 ## Collaboration
