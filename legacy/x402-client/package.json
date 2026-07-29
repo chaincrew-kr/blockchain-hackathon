@@ -1,11 +1,13 @@
 {
-  "name": "@chaincrew/agent",
+  "name": "@chaincrew/legacy-x402-client",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "tsx src/client.ts",
     "inspect:402": "tsx src/inspect-payment.ts",
+    "wallet:create": "tsx src/wallet-create.ts",
+    "wallet:address": "tsx src/wallet-address.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

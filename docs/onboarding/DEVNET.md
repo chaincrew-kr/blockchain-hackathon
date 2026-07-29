@@ -30,6 +30,14 @@ Devnet은 별도 체인을 “발급”받는 방식이 아니라 Solana가 운�
    solana-keygen pubkey .secrets/merchant-devnet.json
    ```
 
+   Solana CLI가 없는 환경에서는 프로젝트 명령으로 buyer 지갑을 생성하고 공개
+   주소를 확인할 수 있습니다.
+
+   ```bash
+   npm run wallet:create
+   npm run wallet:address
+   ```
+
 2. `solana config set --url devnet`으로 네트워크를 고정합니다.
 3. [Solana Faucet](https://faucet.solana.com/) 또는 `solana airdrop 2 <주소> --url devnet`으로
    거래 수수료용 Devnet SOL을 받습니다.

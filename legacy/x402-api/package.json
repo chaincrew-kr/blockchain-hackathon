@@ -1,5 +1,5 @@
 {
-  "name": "@chaincrew/api",
+  "name": "@chaincrew/legacy-x402-api",
   "version": "0.1.0",
   "private": true,
   "type": "module",
