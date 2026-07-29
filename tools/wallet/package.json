@@ -1,0 +1,14 @@
+{
+  "name": "@chaincrew/wallet-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "wallet:create": "tsx src/wallet-create.ts",
+    "wallet:address": "tsx src/wallet-address.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@solana/kit": "^5.5.1"
+  }
+}

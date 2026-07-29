@@ -1,0 +1,16 @@
+{
+  "name": "@chaincrew/agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@chaincrew/schema": "*",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}
