@@ -18,19 +18,36 @@
 
 ## A. 지금 혼자 가능 — 의존성 0
 
-### T1 🟡 Docker 이미지 (최우선)
+### T1 ✅ Docker 이미지 — 완료 (2026-07-30)
 
-저장소에 정산 에이전트용 Dockerfile이 아직 없다(`legacy/x402-api/Dockerfile`만
-존재). Cloud Run·Scheduler·Secret Manager·라이브 URL이 전부 D 주담당인데
-착수율이 0%다. **제출 요건인 라이브 URL의 유일한 경로이면서, 체인 연결을 전혀
-기다리지 않는 작업이다.**
+- [x] `apps/agent/Dockerfile` 작성 — 모노레포 workspace 빌드 고려
+- [x] `.dockerignore` 보강 — `.env.*`, `.secrets`, 지갑 키파일 제외
+- [x] 로컬 빌드 후 컨테이너 실행 (이미지 311MB)
+- [x] 컨테이너에서 `/health` 200 확인
+- [x] 컨테이너에서 `POST /api/batch/trigger` → 판정 2건 반환 확인
+- [x] `PORT` 환경변수 수용 (Cloud Run 주입값 — `AGENT_PORT`는 로컬용으로 유지)
 
-- [ ] `apps/agent/Dockerfile` 작성 — 모노레포 workspace 빌드 고려
-- [ ] `.dockerignore` 작성 — `node_modules`, `.env`, `.secrets` 제외
-- [ ] 로컬 빌드 후 컨테이너 실행
-- [ ] 컨테이너에서 `/health` 200 확인
-- [ ] 컨테이너에서 `POST /api/batch/trigger` → 판정 2건 반환 확인
-- [ ] `PORT` 환경변수 수용 (Cloud Run이 주입하는 값 — 현재는 `AGENT_PORT`만 읽음)
+빌드·실행 방법 (컨텍스트는 **저장소 루트**여야 한다):
+
+```bash
+docker build -f apps/agent/Dockerfile -t chaincrew-agent:local .
+docker run --rm -p 4031:4030 chaincrew-agent:local
+curl http://localhost:4031/health
+```
+
+로컬 dev 서버가 4030을 쓰고 있으면 호스트 포트를 바꿔서 띄운다.
+
+컨테이너 검증 결과 — 정상 회차는 `proceed`, 이상 회차는 `partial-hold`로
+90 USDC 격리, 근거 조항까지 반환된다.
+
+```
+SCR-2026-0730-14  proceed       held 0
+SCR-2026-0730-23  partial-hold  held 90000000
+  제5조(무료 발권 상한) — 상한 10.5% 대비 18.2% 발권
+```
+
+임계값이 15%가 아니라 10.5%로 뜨는 건 신규 상영관 강화 배율(−30%)이 적용된
+결과다. 이력이 쌓이면 15%로 돌아온다.
 
 ### T2 🟡 배치 API 견고성
 
@@ -94,13 +111,19 @@ IDL 없이도 연결 계층은 미리 짤 수 있다. instruction 호출부만 �
 
 ## C. 배포 — D 주담당이나 GCP 계정 인증 필요
 
-로컬에 `gcloud` CLI가 설치돼 있지 않다. 스크립트·설정·문서는 미리 준비할 수
-있지만 실제 배포 명령은 세령 계정 인증이 필요하다.
+**⛔ 현재 최대 병목: GCP 결제 계정이 0개다.** Cloud Run은 무료 한도 안에서
+쓰더라도 프로젝트에 결제 계정이 연결돼 있어야 배포된다.
+
+[HACKATHON.md](../team/HACKATHON.md) 기준으로 신규 계정 **$300 체험판**을 신청하면
+되고, 개인 Gmail 계정이 필수인데 로그인 계정(`03.ryeong@gmail.com`)이 조건을
+만족한다. 크레딧은 **가입일로부터 90일 만료**라 신청 시점을 데모 일정과 맞춰야
+한다. 카드 등록은 본인확인용이며 체험판 중에는 청구되지 않는다.
 
 ### T7 🔑 Cloud Run
 
-- [ ] `gcloud` CLI 설치 및 로그인
-- [ ] GCP 프로젝트·리전 결정 후 팀에 공유
+- [x] `gcloud` CLI 설치 (578.0.0) 및 로그인 (`03.ryeong@gmail.com`)
+- [ ] **결제 계정 생성 — $300 체험판 신청 (선행 조건, 세령 직접)**
+- [ ] GCP 프로젝트·리전 결정 후 팀에 공유 (리전은 서울 `asia-northeast3` 권장)
 - [ ] fixture/stub 버전 먼저 배포 → `/health` 확인
 - [ ] 배포 스크립트 또는 명령을 문서화 (재현 가능하게)
 

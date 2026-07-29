@@ -35,7 +35,9 @@ app.get("/health", (_request, response) => {
 app.use("/api", logsRouter(store));
 app.use("/api", batchRouter(store, deps));
 
-const port = Number(process.env.AGENT_PORT ?? 4030);
-app.listen(port, () => {
-  console.log(`settlement agent listening on http://localhost:${port}`);
+// Cloud Run은 PORT를 주입한다 — 로컬 개발은 .env의 AGENT_PORT를 계속 쓴다.
+const port = Number(process.env.PORT ?? process.env.AGENT_PORT ?? 4030);
+// 컨테이너에서는 0.0.0.0으로 바인딩해야 외부에서 닿는다.
+app.listen(port, "0.0.0.0", () => {
+  console.log(`settlement agent listening on port ${port}`);
 });
