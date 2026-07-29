@@ -112,6 +112,6 @@ Phase 2는 상시 경로가 아닙니다. Phase 1은 외부 유료 데이터 없
 
 ## 기준 문서
 
-- [요구사항 정의서](<indie_cinema_requirements.html>)
-- [개발 스펙](<indie_cinema_product_spec.html>)
+- [요구사항 정의서](indie_cinema_requirements.html)
+- [개발 스펙](indie_cinema_product_spec.html)
 - [최종 실행계획서](<최종 실행계획서.html>)

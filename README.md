@@ -75,6 +75,6 @@ npm run wallet:create theater # Devnet 지갑 생성 (.secrets/theater-devnet.js
 ## 참고 자료
 
 - [실행계획서 PLAN-INDIE-003](<docs/최종 실행계획서.html>) — 흐름·역할·일정·결정사항
-- [디자인 시스템](<docs/DESIGN (1).md>) — void black + Dusk Violet
+- [디자인 시스템](docs/DESIGN.md) — void black + Dusk Violet
 - [Anchor](https://www.anchor-lang.com/) · [Solana Pay](https://docs.solanapay.com/) · [pay.sh](https://pay.sh/docs) (Phase 2)
 - [KOBIS 오픈API](https://www.kobis.or.kr/kobisopenapi/homepg/main/main.do) · [Gemini Structured Output](https://ai.google.dev/gemini-api/docs/structured-output)
