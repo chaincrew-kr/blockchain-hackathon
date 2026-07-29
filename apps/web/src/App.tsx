@@ -50,9 +50,7 @@ export function App() {
 
       <footer>
         <span>UI v0.1 — PLAN-INDIE-003 화면 S1 · S0 · S6</span>
-        <span>
-          디자인 시스템: docs/DESIGN (1).md — void black · dusk violet
-        </span>
+        <span>디자인 시스템: docs/DESIGN.md — void black · dusk violet</span>
       </footer>
     </>
   );
