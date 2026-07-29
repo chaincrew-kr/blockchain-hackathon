@@ -2,7 +2,8 @@
 
 > 기준일: 2026-07-30
 > 범위 정의는 [README.md](README.md), 막힌 항목은 GitHub 이슈 [#5](https://github.com/chaincrew-kr/blockchain-hackathon/issues/5)~[#9](https://github.com/chaincrew-kr/blockchain-hackathon/issues/9).
-> 팀에 리뷰·결정을 요청 중인 항목은 [TEAM_REVIEW.md](TEAM_REVIEW.md).
+> 팀에 리뷰·결정을 요청 중인 항목은 [TEAM_REVIEW.md](TEAM_REVIEW.md),
+> 제출 마감 역산은 [DEADLINE.md](DEADLINE.md) — **8/3(월) 마감, 남은 4일**.
 
 `feature/agent-settlement-pipeline` 기준으로 STAGE 3·4 로직은 fixture/stub으로
 완주한다(타입 검사 통과, 테스트 13개 통과). 이 문서는 **그 다음에 D가 무엇을
