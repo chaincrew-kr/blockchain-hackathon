@@ -22,16 +22,25 @@ interface TestServer {
 const servers: TestServer[] = [];
 
 async function start(deps: PipelineDeps, store = new AgentStore(demoBatch)) {
-  const server = createApp(store, deps).listen(0);
+  // 테스트 서버를 외부 인터페이스(0.0.0.0)에 노출하지 않고 loopback에만 연다.
+  const server = createApp(store, deps).listen(0, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
   const { port } = server.address() as AddressInfo;
 
   const handle: TestServer = {
     url: `http://127.0.0.1:${port}`,
-    close: () =>
-      new Promise<void>((resolve) => {
-        server.close(() => resolve());
-      }),
+    close: async () => {
+      // Node fetch(undici)는 keep-alive 소켓을 재사용한다. 테스트가 끝난 뒤
+      // 연결부터 끊고 listener를 닫아야 server.close 콜백이 소켓 만료까지
+      // 기다리지 않는다.
+      server.closeAllConnections();
+      await new Promise<void>((resolve, reject) => {
+        server.close((error) => {
+          if (error) reject(error);
+          else resolve();
+        });
+      });
+    },
   };
   servers.push(handle);
   return { ...handle, store };
@@ -121,6 +130,39 @@ describe("POST /api/batch/trigger — 멱등성", () => {
     const again = await fetch(`${url}/api/batch/trigger`, { method: "POST" });
     expect((await again.json()).replayed).toBe(false);
     expect(gateway.calls).toHaveLength(4);
+  });
+
+  it("실행 중 reset 요청은 409이고 진행 중인 정산은 유지된다", async () => {
+    const gateway = new SlowChainGateway(50);
+    const { url, store } = await start({ chainGateway: gateway });
+
+    const trigger = fetch(`${url}/api/batch/trigger`, { method: "POST" });
+
+    // trigger 요청이 서버에 도달해 실행 슬롯을 점유할 때까지 기다린다.
+    await new Promise<void>((resolve, reject) => {
+      const deadline = Date.now() + 1_000;
+      const poll = () => {
+        if (store.runState === "running") {
+          resolve();
+          return;
+        }
+        if (Date.now() >= deadline) {
+          reject(new Error("batch did not enter running state"));
+          return;
+        }
+        setTimeout(poll, 5);
+      };
+      poll();
+    });
+
+    const reset = await fetch(`${url}/api/batch/reset`, { method: "POST" });
+    expect(reset.status).toBe(409);
+    expect((await reset.json()).error.code).toBe("batch_in_progress");
+
+    const completed = await trigger;
+    expect(completed.status).toBe(200);
+    expect(store.runState).toBe("completed");
+    expect(gateway.calls).toHaveLength(2);
   });
 });
 
