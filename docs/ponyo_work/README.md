@@ -5,8 +5,9 @@
 > 기준 문서: `REQ-INDIE-001 v0.2`, `SPEC-INDIE-002 v0.5`,
 > `PLAN-INDIE-003 v0.4`
 >
-> `docs/team/TEAM_PLAN.md`와 기존 `PRODUCT_BRIEF.md` 내용은 역할 판단의 기준으로
-> 사용하지 않는다.
+> 폐기된 `docs/team/TEAM_PLAN.md`와 2026-07-30 재작성 이전 Product Brief는 역할
+> 판단의 기준으로 사용하지 않는다. 현재 `docs/PRODUCT_BRIEF.md`는 유효한 요약
+> 문서다.
 
 ## 현재 상태 — 2026-07-30
 

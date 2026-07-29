@@ -11,7 +11,7 @@
 ## 분석 자료
 
 - `solana_top25_winners_analysis_light.html` — Solana Frontier Top 25 수상작 전수
-  분석 + 우리 방향(OpenBench) 검토. **제품 주제 논의의 출발점이니 꼭 읽어보세요.**
-  (브라우저로 열면 검색·필터 가능)
+  분석 + 초기 OpenBench 아이디어 검토. 제품 확정 전 탐색 기록으로 보존하며,
+  현재 독립영화 정산 제품의 사양은 아닙니다. (브라우저로 열면 검색·필터 가능)
 
 해커톤 일정·제출물 요건은 [팀 해커톤 개요](../team/HACKATHON.md) 참고.
