@@ -140,15 +140,49 @@ D**다. A의 프롬프트가 확정되기 전에도 D 몫은 전부 구현할 �
 데모에서 "보류됨"만 뜨고 이유가 룰베이스로 보이면 감점 항목이라, D5 완료 기준
 3개 중 1개가 여기에 걸려 있다.
 
-### T6 🟡 AnchorChainGateway 골격
+### T6 ✅ AnchorChainGateway 골격 — 완료 (2026-07-30)
 
-IDL 없이도 연결 계층은 미리 짤 수 있다. instruction 호출부만 비워두면 IDL이
-들어오는 날 붙이는 시간이 줄어든다.
+마감이 4일이라 원래 순서(T4 → T6)를 바꿔 먼저 처리했다. IDL이 도착하는 순간의
+연결 시간을 줄이는 게 지금 가장 값어치 있는 준비다.
 
-- [ ] `@coral-xyz/anchor` 의존성 추가
-- [ ] Connection · Provider · 서명 키페어 로딩
-- [ ] Anchor 에러 → HTTP 응답 매핑
+- [x] `@coral-xyz/anchor` 0.32.1 의존성 추가
+- [x] Connection · Provider · 서명 키페어 로딩 (`chain/keypair.ts`)
+- [x] Anchor 에러 → HTTP 응답 매핑 (온체인 `EscrowError` 5종 힌트 포함)
+- [x] 환경변수 기반 stub ↔ anchor 자동 선택 (`chain/index.ts`)
+- [x] `preflight()` — RPC 버전·프로그램 배포 여부·authority 잔액 확인
+- [x] `GET /health`에 `chain` 모드 노출 (이슈 #18 투명성)
 - [ ] instruction 호출부는 비워둠 ([#6](https://github.com/chaincrew-kr/blockchain-hackathon/issues/6) 시그니처 확정 대기)
+
+**IDL 도착 시 채울 곳은 `anchor-gateway.ts`의 `callInstruction()` 한 곳뿐이다.**
+연결·지갑·에러 매핑·로깅은 전부 준비돼 있다.
+
+```ts
+const program = new Program(idl, this.programId, this.provider);
+const signature = await program.methods.settleBatch(...).accounts({...}).rpc();
+return { txSignature: signature };
+```
+
+계정 목록과 인자는 #6에서 B·C가 확정한 뒤에 채운다 — 지금 추측해서 쓰면 틀린
+코드를 리뷰하게 된다.
+
+동작 방식:
+
+| 환경변수 상태                | 모드     | tx 서명            |
+| ---------------------------- | -------- | ------------------ |
+| RPC·PROGRAM_ID·KEYPATH 모두  | `anchor` | 실제 (IDL 대기 중) |
+| 하나라도 비었을 때           | `stub`   | `STUB_…` (가짜)    |
+| anchor 설정 오류 (키파일 등) | `stub`   | `STUB_…` (가짜)    |
+
+설정이 잘못돼도 서버는 죽지 않고 스텁으로 내려앉는다 — 데모 도중 서버가 죽는
+것보다 낫다. 대신 **가짜라는 사실이 로그와 `/health`에 드러난다.**
+
+```
+WARNING  chain gateway falling back to stub — transactions are fake
+         missingEnv: [SOLANA_RPC_URL, SOLANA_PROGRAM_ID, AGENT_KEYPAIR_PATH]
+GET /health → {"status":"ok","chain":"stub"}
+```
+
+테스트 29 → 40개.
 
 ---
 
@@ -223,9 +257,10 @@ IDL 없이도 연결 계층은 미리 짤 수 있다. instruction 호출부만 �
 
 1. ~~**T1** Docker~~ ✅ 완료
 2. ~~**T2** 배치 API 견고성~~ ✅ 완료
-3. **T4** 픽스처 확대 — 회귀 안전망을 먼저 깔고 T5·T6을 건드린다
-4. **T5** Gemini — D5 완료 기준이자 심사 감점 항목
-5. **T3** CORS — A의 배포 URL 나오면 즉시 마무리
-6. **T6** Anchor 골격 — IDL 도착 대비
-7. **T7~T9** Cloud Run 배포 — `gcloud` 준비되는 대로
+3. ~~**T6** Anchor 골격~~ ✅ 완료 — 마감 4일이라 T4보다 먼저 처리
+4. **T4** 픽스처 확대 — 검증 4종 중 3종이 아직 회귀 테스트 공백
+5. **T5** Gemini — D5 완료 기준이나 8/3에는 템플릿으로도 제출 가능
+6. **T3** CORS — A의 배포 URL 나오면 즉시 마무리
+7. ~~**T7~T9** Cloud Run 배포~~ — 8/3 기준 **후순위**. 라이브 URL은 권장
+   항목이라 디벨롭 기간에 채운다 ([DEADLINE.md](DEADLINE.md))
 8. ⛔ 해제되는 순서대로 D 구간 연결
