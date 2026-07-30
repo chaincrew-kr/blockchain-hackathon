@@ -13,9 +13,12 @@ import type {
   ScreeningMeta,
   VerificationResult,
 } from "@chaincrew/schema";
-
-import { DEMO_CONTRACT_TERMS, type ContractTerms } from "./contract.js";
-import { templateNarrative, type NarrativeGenerator } from "./narrative.js";
+import {
+  DEMO_CONTRACT_TERMS,
+  templateNarrative,
+  type ContractTerms,
+  type NarrativeGenerator,
+} from "@chaincrew/ai-data";
 
 /** 비율(0~1) → 백분율 문자열. 비율이 아닌 값에는 쓰지 말 것. */
 function percent(rate: number): string {

@@ -10,9 +10,9 @@ import type {
   ScreeningMeta,
   VerificationResult,
 } from "@chaincrew/schema";
+import { DEMO_CONTRACT_TERMS } from "@chaincrew/ai-data";
 import { describe, expect, it } from "vitest";
 
-import { DEMO_CONTRACT_TERMS } from "../src/judge/contract.js";
 import { judgeSettlement } from "../src/judge/index.js";
 
 const thresholds: AdjustedThresholds = {
