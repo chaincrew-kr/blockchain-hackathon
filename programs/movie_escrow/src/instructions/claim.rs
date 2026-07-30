@@ -1,6 +1,6 @@
 //! [C] STAGE 5: 권리자 인출 — 자기 몫만, 남은 만큼만.
 //!
-//! 인출 제한 불변식 ② (C 테스트 담당): claim 금액 ≤ claimable − claimed
+//! 인출 제한 불변식 ②: claim 금액 ≤ claimable − claimed − disputed
 //! 봉투 이동: escrow.allocated → escrow.paid_out
 
 use anchor_lang::prelude::*;
@@ -69,6 +69,8 @@ pub fn handler(ctx: Context<Claim>, amount: u64) -> Result<()> {
         .allocation
         .claimable
         .checked_sub(ctx.accounts.allocation.claimed)
+        .ok_or(EscrowError::MathOverflow)?
+        .checked_sub(ctx.accounts.allocation.disputed)
         .ok_or(EscrowError::MathOverflow)?;
     require!(amount <= remaining, EscrowError::ExceedsClaimable);
 
