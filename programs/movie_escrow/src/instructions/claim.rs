@@ -60,7 +60,8 @@ pub fn handler(ctx: Context<Claim>, amount: u64) -> Result<()> {
     require!(amount > 0, EscrowError::InvalidState);
 
     require!(
-        ctx.accounts.escrow.state == EscrowState::Allocated,
+        ctx.accounts.escrow.state == EscrowState::Allocated
+            || ctx.accounts.escrow.state == EscrowState::Disputed,
         EscrowError::InvalidState
     );
 
