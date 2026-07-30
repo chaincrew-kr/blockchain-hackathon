@@ -50,9 +50,15 @@ pub mod movie_escrow {
         instructions::verify_escrow::handler(ctx)
     }
 
-    /// STAGE 2: 공제 워터폴 실행 후 권리자별 Allocation 확정.
-    pub fn settle_batch(ctx: Context<SettleBatch>) -> Result<()> {
-        instructions::settle_batch::handler(ctx)
+    /// STAGE 2: 공제 워터폴 실행 후 권리자별 Allocation 확정 (축소 워터폴 —
+    /// 부과금·VAT·부율 분할·배급수수료. MG·투자 상환·이익 배분은 미구현).
+    pub fn settle_batch(
+        ctx: Context<SettleBatch>,
+        theater_bps: u16,
+        distributor_bps: u16,
+        distribution_fee_bps: u16,
+    ) -> Result<()> {
+        instructions::settle_batch::handler(ctx, theater_bps, distributor_bps, distribution_fee_bps)
     }
 
     // ── C 판정집행 ──────────────────────────────────────────────────────
