@@ -6,6 +6,7 @@
  */
 import type {
   AdjustedThresholds,
+  CheckResult,
   OnchainHistorySummary,
   Phase2HookResult,
   ScreeningMeta,
@@ -13,25 +14,38 @@ import type {
   VerificationResult,
 } from "@chaincrew/schema";
 
-/** 기본(보수적) 임계값 — 계약서 조항 숫자와 일치시킬 것 (실행계획서 STAGE 4 결정) */
-const DEFAULT_THRESHOLDS = {
+import { GENESIS_HASH, hashTicketEvent } from "./hash.js";
+import { FixtureHistoryProvider, type HistoryProvider } from "./history.js";
+
+/**
+ * 정산 보류를 거는 이상탐지 임계값 — SPEC §5 `disputeThresholds` 및
+ * 실행계획서 STAGE 4 권장안(P3=10%/15%) 그대로.
+ *
+ * ⚠️ 계약서의 무료 발권 상한(`compTicketCap`, 0.05)과 **같은 값이 아니다.**
+ *   계약 상한 초과 → 계약 위반
+ *   이 값 초과     → 자금 격리
+ * 계약 위반이라고 곧바로 돈을 묶지 않으려는 완충이므로 일치시키면 안 된다.
+ * 계약 조항 값은 @chaincrew/ai-data가 근거 문구용으로 관리한다.
+ */
+export const DEFAULT_THRESHOLDS = {
   maxRefundRate: 0.1,
   maxFreeRate: 0.15,
 } as const;
 
-/** 같은 상영관의 이전 정산 배치를 온체인 RPC로 집계한다. */
+/**
+ * 신규(이력 없는) 상영관 임계값 강화 배율 — 권장안 −30%.
+ * TODO(팀 합의): 조정 폭 최종 수치 확정 (실행계획서 STAGE 3 결정 항목)
+ */
+export const NEW_THEATER_TIGHTEN_FACTOR = 0.7;
+
+const defaultHistoryProvider: HistoryProvider = new FixtureHistoryProvider();
+
+/** 같은 상영관의 이전 정산 배치 집계 — provider 주입으로 체인 미연결 시에도 동작. */
 export async function fetchTheaterHistory(
   theater: string,
+  provider: HistoryProvider = defaultHistoryProvider,
 ): Promise<OnchainHistorySummary> {
-  // TODO(D): getProgramAccounts로 과거 배치 기록 조회 → 집계
-  return {
-    theater,
-    settledBatchCount: 0,
-    totalSettledAmount: 0,
-    anomalyCount: 0,
-    disputeCount: 0,
-    isNew: true,
-  };
+  return provider.fetchTheaterHistory(theater);
 }
 
 /** 이력 좋은 상영관은 정상 임계값, 신규는 보수적(더 엄격) 임계값. */
@@ -39,12 +53,84 @@ export function adjustThresholds(
   history: OnchainHistorySummary,
   meta: ScreeningMeta,
 ): AdjustedThresholds {
-  // TODO(D): 조정 폭(신규 −30% 권장안) 팀 합의 후 반영
-  const tighten = history.isNew ? 0.7 : 1;
+  const tighten = history.isNew ? NEW_THEATER_TIGHTEN_FACTOR : 1;
   return {
     maxRefundRate: DEFAULT_THRESHOLDS.maxRefundRate * tighten,
     maxFreeRate: DEFAULT_THRESHOLDS.maxFreeRate * tighten,
     maxTicketsPerScreening: meta.seatCount,
+  };
+}
+
+/** 소수점 4자리 반올림 — observed 값이 대시보드에 그대로 노출되므로 보기 좋게. */
+function round4(value: number): number {
+  return Math.round(value * 10_000) / 10_000;
+}
+
+/** P3 환불률: 환불 건수 / 발권 건수 */
+function checkRefundRate(
+  events: TicketEvent[],
+  thresholds: AdjustedThresholds,
+): CheckResult {
+  const issues = events.filter((e) => e.kind === "issue").length;
+  const refunds = events.filter((e) => e.kind === "refund").length;
+  const rate = issues === 0 ? 0 : refunds / issues;
+  return {
+    check: "refund-rate",
+    passed: rate <= thresholds.maxRefundRate,
+    observed: round4(rate),
+    threshold: thresholds.maxRefundRate,
+  };
+}
+
+/** P3 무료 발권 비율: 금액 0인 발권 / 전체 발권 */
+function checkFreeRate(
+  events: TicketEvent[],
+  thresholds: AdjustedThresholds,
+): CheckResult {
+  const issues = events.filter((e) => e.kind === "issue");
+  const free = issues.filter((e) => e.amount === 0).length;
+  const rate = issues.length === 0 ? 0 : free / issues.length;
+  return {
+    check: "free-rate",
+    passed: rate <= thresholds.maxFreeRate,
+    observed: round4(rate),
+    threshold: thresholds.maxFreeRate,
+  };
+}
+
+/** P4 발권 초과: 발권 건수 > 좌석수 */
+function checkOverIssue(
+  events: TicketEvent[],
+  thresholds: AdjustedThresholds,
+): CheckResult {
+  const issues = events.filter((e) => e.kind === "issue").length;
+  return {
+    check: "over-issue",
+    passed: issues <= thresholds.maxTicketsPerScreening,
+    observed: issues,
+    threshold: thresholds.maxTicketsPerScreening,
+  };
+}
+
+/** P5 해시 연속성: 각 이벤트의 prevHash가 직전 이벤트 해시와 일치하는지 */
+function checkHashChain(events: TicketEvent[]): CheckResult {
+  let expected = GENESIS_HASH;
+  for (const [i, event] of events.entries()) {
+    if (event.prevHash !== expected) {
+      return {
+        check: "hash-chain",
+        passed: false,
+        observed: `broken at #${i} (${event.txSignature})`,
+        threshold: "continuous",
+      };
+    }
+    expected = hashTicketEvent(event);
+  }
+  return {
+    check: "hash-chain",
+    passed: true,
+    observed: "continuous",
+    threshold: "continuous",
   };
 }
 
@@ -54,13 +140,17 @@ export function verifyIntegrity(
   thresholds: AdjustedThresholds,
   meta: ScreeningMeta,
 ): VerificationResult {
-  // TODO(D): events에서 직접 계산 — 외부 데이터 불필요
-  void events;
+  const checks: CheckResult[] = [
+    checkRefundRate(events, thresholds),
+    checkFreeRate(events, thresholds),
+    checkOverIssue(events, thresholds),
+    checkHashChain(events),
+  ];
   return {
     screeningId: meta.screeningId,
     thresholds,
-    checks: [],
-    allPassed: false,
+    checks,
+    allPassed: checks.every((c) => c.passed),
   };
 }
 

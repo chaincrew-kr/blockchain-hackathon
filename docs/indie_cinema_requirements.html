@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>요구사항 정의서 — 독립영화관 온체인 정산 인프라</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F7F5;
+  --ink:#1C2531;
+  --ink-soft:#5B6673;
+  --ink-faint:#9AA3AD;
+  --line:#D9DEE2;
+  --blue:#2C4A6E;
+  --blue-wash:#EDF1F6;
+  --stamp:#BE3A28;
+  --stamp-wash:#F9EEEC;
+  --paid:#2E6B52;
+  --paid-wash:#EBF3EF;
+  --mono:'IBM Plex Mono',monospace;
+  --body:'IBM Plex Sans KR',sans-serif;
+  --disp:'Hahmlet',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px 96px}
+
+/* ── 표지 (전표 헤더) ───────────────── */
+header{border-bottom:3px double var(--ink);padding:56px 0 32px;margin-bottom:8px}
+.doc-meta{display:flex;flex-wrap:wrap;gap:8px 24px;font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);letter-spacing:.04em;margin-bottom:28px}
+.doc-meta b{color:var(--ink);font-weight:600}
+h1{font-family:var(--disp);font-weight:700;font-size:clamp(26px,4.6vw,40px);line-height:1.3;letter-spacing:-.01em}
+h1 small{display:block;font-family:var(--body);font-weight:500;font-size:15px;color:var(--ink-soft);margin-top:10px;letter-spacing:.02em}
+.stampbox{display:inline-block;margin-top:24px;padding:6px 14px;border:2px solid var(--stamp);color:var(--stamp);font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;transform:rotate(-1.6deg);border-radius:2px}
+
+/* ── 목차 ───────────────── */
+nav{display:flex;flex-wrap:wrap;gap:6px 18px;padding:18px 0;border-bottom:1px solid var(--line);font-size:13px}
+nav a{color:var(--blue);text-decoration:none;font-weight:500}
+nav a:hover,nav a:focus-visible{text-decoration:underline}
+nav a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* ── 섹션 공통 ───────────────── */
+section{margin-top:64px}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:24px}
+.sec-num{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink-faint);letter-spacing:.1em}
+h2{font-family:var(--disp);font-weight:600;font-size:22px}
+h3{font-family:var(--disp);font-weight:600;font-size:16.5px;margin:28px 0 12px}
+p.lead{color:var(--ink-soft)}
+p+p{margin-top:10px}
+em{font-style:normal;background:linear-gradient(transparent 62%,#DCE6F1 62%);padding:0 1px}
+
+/* ── 표 ───────────────── */
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:12px}
+th{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-align:left;color:var(--ink-soft);border-bottom:2px solid var(--ink);padding:8px 10px;white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:9px 10px;vertical-align:top}
+td.id{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue);white-space:nowrap}
+td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;white-space:nowrap}
+.pM{color:var(--stamp)}.pS{color:var(--blue)}.pC{color:var(--ink-faint)}
+tr:hover td{background:#fff}
+
+/* ── 시그니처: 티켓 반권 플로우 ───────────────── */
+.strip{margin-top:8px}
+.stub{position:relative;background:#FFFFFF;border:1px solid var(--line);border-left:none;margin:0 0 22px 26px;padding:20px 24px 20px 34px;box-shadow:0 1px 0 rgba(28,37,49,.06)}
+/* 절취선 + 펀치홀 */
+.stub::before{content:"";position:absolute;left:0;top:0;bottom:0;width:0;border-left:2px dashed var(--ink-faint)}
+.stub::after{content:"";position:absolute;left:-27px;top:0;bottom:0;width:26px;
+  background-image:radial-gradient(circle 3.5px at 13px 12px, var(--paper) 98%, transparent), linear-gradient(var(--blue-wash),var(--blue-wash));
+  background-size:26px 24px,100% 100%;border:1px solid var(--line);border-right:none}
+.stub .tag{position:absolute;left:-27px;top:50%;transform:translate(0,-50%) rotate(180deg);writing-mode:vertical-rl;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.18em;color:var(--blue);width:26px;text-align:center;z-index:1}
+.stub h4{font-family:var(--disp);font-size:16px;font-weight:600;display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.stub h4 .st{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--ink-faint);letter-spacing:.06em}
+.stub .desc{margin-top:6px;font-size:13.5px;color:var(--ink-soft)}
+.stub .frs{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.frchip{font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--blue);background:var(--blue-wash);border:1px solid #C9D5E4;padding:2px 8px;border-radius:2px}
+.caution{margin-top:12px;background:var(--stamp-wash);border-left:3px solid var(--stamp);padding:10px 14px;font-size:13px}
+.caution b{font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--stamp);letter-spacing:.1em;display:block;margin-bottom:3px}
+.arrow{margin:-10px 0 12px 38px;color:var(--ink-faint);font-family:var(--mono);font-size:13px}
+.money{background:var(--paid-wash);border-left:3px solid var(--paid)}
+.money b{color:var(--paid)}
+
+/* ── 코드/수식 ───────────────── */
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.75;background:#fff;border:1px solid var(--line);border-top:3px solid var(--ink);padding:16px 18px;overflow-x:auto;margin-top:12px}
+code{font-family:var(--mono);font-size:.92em;background:#fff;border:1px solid var(--line);padding:0 5px;border-radius:2px}
+
+/* ── 상태머신 ───────────────── */
+.states{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;margin-top:12px}
+.state{border:1.5px solid var(--ink);padding:5px 12px;font-weight:600;background:#fff;border-radius:2px}
+.state.warn{border-color:var(--stamp);color:var(--stamp)}
+.state.ok{border-color:var(--paid);color:var(--paid)}
+.states .a{color:var(--ink-faint)}
+
+/* ── 노트 ───────────────── */
+.note{border:1px solid var(--line);border-left:3px solid var(--blue);background:#fff;padding:14px 18px;font-size:13.5px;margin-top:16px}
+.note b{color:var(--blue)}
+
+footer{margin-top:80px;border-top:3px double var(--ink);padding-top:16px;font-family:var(--mono);font-size:11px;color:var(--ink-faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+@media (max-width:620px){
+  .stub{margin-left:22px;padding:16px 16px 16px 24px}
+  .stub::after{left:-23px;width:22px;background-size:22px 24px}
+  .stub .tag{left:-23px;width:22px}
+  th,td{padding:7px 6px}
+  .hidemobile{display:none}
+}
+@media print{
+  body{background:#fff}
+  nav{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="doc-meta">
+    <span>문서번호 <b>REQ-INDIE-001</b></span>
+    <span>버전 <b>v0.2</b></span>
+    <span>작성일 <b>2026-07-29</b></span>
+    <span>분류 <b>요구사항 정의서</b></span>
+  </div>
+  <h1>독립영화관 온체인 정산 인프라
+    <small>계약 기반 티켓 수익 자동 분리·검증·지급 시스템 — AI 정산 에이전트 &amp; Solana 에스크로</small>
+  </h1>
+  <div class="stampbox">티켓값은, 결제되는 순간부터 각자의 몫이다</div>
+</header>
+
+<nav aria-label="목차">
+  <a href="#s1">1 개요</a>
+  <a href="#s2">2 용어</a>
+  <a href="#s3">3 액터</a>
+  <a href="#s4">4 시스템 플로우</a>
+  <a href="#s5">5 기능 요구사항</a>
+  <a href="#s6">6 에이전트 정책</a>
+  <a href="#s7">7 데이터 경계</a>
+  <a href="#s8">8 비기능 요구사항</a>
+  <a href="#s9">9 수용 기준</a>
+  <a href="#s10">10 범위 외</a>
+</nav>
+
+<!-- ═══════════ 1. 개요 ═══════════ -->
+<section id="s1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>개요</h2></div>
+  <p class="lead">국내 영화 티켓 매출은 극장 운영사·예매 사업자에게 먼저 집중된 뒤 사후 정산된다. 중간 사업자가 회생절차에 들어가면 이미 발생한 배급사·제작사·위탁상영관의 몫까지 함께 묶인다(메가박스 사태: 배급대금 약 150억, 위탁상영관 미정산 약 70~80억).</p>
+  <p>본 시스템은 <em>티켓 결제금이 결제 순간부터 영화별 에스크로에 격리</em>되고, AI 정산 에이전트가 승인된 계약 규칙에 따라 검증·귀속·지급하는 결제 인프라다. 초기 대상은 자체 발권 인프라가 빈약해 새 결제 레일을 적용할 수 있는 <em>독립·예술영화 전용관, 영화제, 공동체 상영</em>이다. 어떤 사업자도, 플랫폼 운영자조차, 타인의 확정 몫에 접근할 수 없다.</p>
+  <div class="note"><b>설계 제1원칙.</b> AI는 돈을 임의로 나누지 않는다. 돈의 분배는 사람이 승인한 결정론적 규칙이 실행하고, AI는 규칙의 생성(계약 해석)과 집행의 검증(이상 탐지)을 담당한다.</div>
+</section>
+
+<!-- ═══════════ 2. 용어 ═══════════ -->
+<section id="s2">
+  <div class="sec-head"><span class="sec-num">02</span><h2>용어 정의</h2></div>
+  <table>
+    <thead><tr><th>용어</th><th>정의</th></tr></thead>
+    <tbody>
+      <tr><td class="id">정산 규칙</td><td>계약서에서 추출·승인된 결정론적 분배 규칙. 고정 JSON 스키마, 버전 관리 대상</td></tr>
+      <tr><td class="id">에스크로 PDA</td><td>영화별 자금 격리 계정. 개인키가 존재하지 않으며 프로그램 로직만이 자금을 이동시킴</td></tr>
+      <tr><td class="id">귀속(Allocation)</td><td>티켓 단위로 각 권리자의 몫을 계산해 에스크로 내부 장부에 확정하는 행위</td></tr>
+      <tr><td class="id">워터폴</td><td>배급 풀 내부의 순차 분배: 배급수수료 → 투자금 상환 → 손익분기 후 이익 배분</td></tr>
+      <tr><td class="id">부분 보류</td><td>이상이 감지된 금액만 Disputed로 격리하고 나머지는 정상 지급하는 동작</td></tr>
+      <tr><td class="id">위험조정검증</td><td>온체인 발권·환불 이력을 근거로 이상탐지 임계값을 조정하고 정합성(환불률·좌석·해시)을 확인하는 절차. 기본은 온체인 이력만으로 완결됨</td></tr>
+      <tr><td class="id">신뢰도 조회 <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint)">x402 사용처①</span></td><td>신규 상영관이거나 이력이 오래된 경우, 외부 신뢰도 데이터를 x402로 유료 조회해 위험조정에 반영 (Phase 2 — 합의 필요)</td></tr>
+      <tr><td class="id">증빙 조회 <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint)">x402 사용처②</span></td><td>정합성 검증에서 환불 수치 불일치가 발견된 경우에 한해, 외부 증빙 데이터를 x402로 유료 조회해 오탐 여부를 대조 (Phase 2 — 합의 필요)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════ 3. 액터 ═══════════ -->
+<section id="s3">
+  <div class="sec-head"><span class="sec-num">03</span><h2>액터와 지갑</h2></div>
+  <table>
+    <thead><tr><th>액터</th><th>역할</th><th>지갑</th></tr></thead>
+    <tbody>
+      <tr><td>관객</td><td>티켓 구매, 환불 요청</td><td>데모: Phantom / 확장: 임베디드(소셜 로그인)</td></tr>
+      <tr><td>상영자 (독립영화관·영화제)</td><td>상영 개설, 규칙 승인, 자기 몫 인출</td><td>임베디드 지갑</td></tr>
+      <tr><td>배급사</td><td>영화·계약 등록, 규칙 승인, 자기 몫 인출</td><td>임베디드 지갑</td></tr>
+      <tr><td>제작사 / 투자사</td><td>워터폴 수령</td><td>임베디드 지갑</td></tr>
+      <tr><td><b>정산 에이전트</b></td><td>온체인 이력 조회·위험조정검증·이상 탐지·지급 서명 (Phase 2: 신뢰도·증빙 조건부 조회)</td><td>자체 지갑 (Phase 2부터 x402 예산 한도 내)</td></tr>
+      <tr><td>에스크로 프로그램</td><td>격리·귀속·인출 제한 강제</td><td>PDA (개인키 없음)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════ 4. 플로우 (시그니처) ═══════════ -->
+<section id="s4">
+  <div class="sec-head"><span class="sec-num">04</span><h2>시스템 플로우</h2></div>
+  <p class="lead">각 단계는 절취선으로 이어진 하나의 티켓이다. 왼쪽 반권의 번호가 단계, 붉은 스탬프가 설계상 반드시 지켜야 할 주의점이다.</p>
+
+  <div class="strip">
+
+    <div class="stub">
+      <span class="tag">F·01</span>
+      <h4>계약서 파일 수신 <span class="st">PDF 업로드</span></h4>
+      <p class="desc">배급사가 영화 프로젝트를 생성하고 배급·상영 계약서 원문을 업로드한다.</p>
+      <div class="frs"><span class="frchip">FR-01</span></div>
+    </div>
+    <div class="arrow">↓</div>
+
+    <div class="stub">
+      <span class="tag">F·02</span>
+      <h4>처리 — Gemini 추출 <span class="st">Structured Output</span></h4>
+      <p class="desc">배분율·공제 항목·정산일·환불 처리 기준을 고정 JSON 스키마로 추출. 각 값에 근거 조항·원문 인용·신뢰도(%)를 부착하고, 비율 합계 오류·정산일 불일치 등 충돌을 탐지한다.</p>
+      <div class="frs"><span class="frchip">FR-02</span><span class="frchip">FR-03</span></div>
+      <div class="caution"><b>⚠ CAUTION — 사람 승인</b>AI 분석 결과는 배급사·상영자 양측 담당자의 승인 없이는 규칙이 되지 않는다. "AI가 돈을 임의로 나누지 않는다"의 안전장치. <span class="frchip">FR-04</span></div>
+    </div>
+    <div class="arrow">↓</div>
+
+    <div class="stub">
+      <span class="tag">F·03</span>
+      <h4>계약 분배 규칙 확정 <span class="st">JSON · 버전 부여</span></h4>
+      <p class="desc">승인된 조건을 결정론적 규칙 <code>ruleVersion: N</code>으로 확정한다. 공제 조항의 법 개정(예: 영화발전기금 부과금 폐지→부활) 시 버전만 갱신하면 이후 매출에 자동 반영된다.</p>
+      <div class="frs"><span class="frchip">FR-05</span></div>
+    </div>
+    <div class="arrow">↓</div>
+
+    <div class="stub">
+      <span class="tag">F·04</span>
+      <h4>체인단에 등록 <span class="st">Solana Devnet</span></h4>
+      <p class="desc">규칙을 등록하고 영화별 에스크로 PDA를 초기화한다.</p>
+      <div class="frs"><span class="frchip">FR-06</span><span class="frchip">FR-07</span></div>
+      <div class="caution"><b>⚠ CAUTION — 온체인 최소화</b>올라가는 것은 <em>계약서 해시 + 규칙 해시 + 버전</em>뿐이다. 계약서 원문·개인정보는 오프체인(Firestore/Cloud Storage)에 저장한다.</div>
+    </div>
+    <div class="arrow">↓</div>
+
+    <div class="stub">
+      <span class="tag">F·05</span>
+      <h4>티켓 데이터 수신 <span class="st">발권 = 결제</span></h4>
+      <p class="desc">상영자가 회차를 개설하고, 관객이 Solana Pay QR로 결제한다. 발권 이벤트가 회차·좌석·금액·시각과 함께 기록된다.</p>
+      <div class="frs"><span class="frchip">FR-08</span><span class="frchip">FR-09</span><span class="frchip">FR-10</span></div>
+      <div class="caution money"><b>⚠ CORE — 데이터보다 돈이 먼저 들어온다</b>결제금이 에스크로 PDA로 <em>직접 유입</em>된다(방식 A). 티켓 "데이터"만 받으면 기존 정산 계산기와 다를 게 없다. 돈이 처음부터 어떤 사업자의 잔고에도 찍히지 않는 것이 본 시스템의 존재 이유다.</div>
+      <div class="caution"><b>⚠ CAUTION — 검증 단계</b>정산일 접근 시 에이전트가 온체인 발권·환불 이력으로 위험조정검증을 수행하고, 해시 연속성·산술 일치를 확인한 뒤 이상을 탐지한다(P3~P5). 신규 상영관이거나 환불 불일치가 발견된 경우에 한해 신뢰도·증빙을 x402로 조건부 조회한다(Phase 2, 정책 P1·P2·P9 — 합의 필요). <span class="frchip">FR-13</span> <span class="frchip">FR-14</span> <span class="frchip">FR-15</span> <span class="frchip">FR-16</span></div>
+    </div>
+    <div class="arrow">↓</div>
+
+    <div class="stub">
+      <span class="tag">F·06</span>
+      <h4>개수 × 가격 <span class="st">분배 기준액 산출</span></h4>
+      <p class="desc">티켓 단위로 정산 기준액을 계산한다.</p>
+      <pre>분배 기준액 = (발권 수 × 단가) − 환불 − 공제
+공제 = 기금 3% (전용상영관은 면제 → rate 0)
+     + 부가세 = 잔액 × 1/11   ← 10%가 아님. 10,000원 기준 909원</pre>
+      <div class="frs"><span class="frchip">FR-11</span><span class="frchip">FR-12</span></div>
+    </div>
+    <div class="arrow">↓</div>
+
+    <div class="stub">
+      <span class="tag">F·07</span>
+      <h4>분배 <span class="st">두 겹 구조</span></h4>
+      <p class="desc"><b>① 즉시 귀속</b> — 극장 몫과 배급 풀 몫이 티켓 단위로 즉시 Allocation된다. 극장 몫은 지급일 도달 시 바로 인출 가능(현행 수개월 사후정산 대비 유동성 개선). <b>② 워터폴</b> — 배급 풀 내부에서 배급수수료 → 투자금 상환(누적) → 손익분기 도달 시 비율 전환(6:4)이 순차 실행된다.</p>
+      <div class="frs"><span class="frchip">FR-19</span><span class="frchip">FR-20</span><span class="frchip">FR-21</span></div>
+      <div class="caution"><b>⚠ CAUTION — 부분 보류</b>이상 금액만 Disputed로 격리하고 나머지는 지급을 멈추지 않는다. 예: 1,000 중 분쟁 50 → 950 즉시 지급, 50만 보류 + Gemini 자연어 보류 리포트. 문제 하나로 전체 정산이 멈추는 기존 방식과의 결정적 차이. <span class="frchip">FR-17</span> <span class="frchip">FR-18</span> <span class="frchip">FR-22</span></div>
+    </div>
+    <div class="arrow">↓</div>
+
+    <div class="stub">
+      <span class="tag">F·08</span>
+      <h4>대시보드 <span class="st">공개 조회</span></h4>
+      <p class="desc">발권·귀속·지급·보류 실시간 현황과 온체인 tx 링크를 모든 참여자에게 공개한다. 정산 이력이 쌓이면 상영자별 <em>정산 신뢰도 스코어</em>를 산출한다 — 소형관이 배급사를 유치하는 무기가 된다.</p>
+      <div class="frs"><span class="frchip">FR-23</span><span class="frchip">FR-24</span></div>
+    </div>
+  </div>
+
+  <h3>에스크로 상태 머신</h3>
+  <div class="states">
+    <span class="state">Pending</span><span class="a">→</span>
+    <span class="state">Verified</span><span class="a">→</span>
+    <span class="state">Allocated</span><span class="a">→</span>
+    <span class="state">Claimable</span><span class="a">→</span>
+    <span class="state ok">Paid</span>
+    <span class="a">/</span>
+    <span class="state warn">Disputed</span><span class="a">→</span>
+    <span class="state">Resolved</span>
+  </div>
+</section>
+
+<!-- ═══════════ 5. 기능 요구사항 ═══════════ -->
+<section id="s5">
+  <div class="sec-head"><span class="sec-num">05</span><h2>기능 요구사항</h2></div>
+  <p class="lead">우선순위: <span class="pM" style="font-family:var(--mono);font-size:12px">M</span> 필수(데모 성립 조건) · <span class="pS" style="font-family:var(--mono);font-size:12px">S</span> 권장(심사 가점) · <span class="pC" style="font-family:var(--mono);font-size:12px">C</span> 선택(시간 남으면)</p>
+
+  <h3>계약 → 규칙 (F·01 ~ F·04)</h3>
+  <table>
+    <thead><tr><th>ID</th><th>요구사항</th><th>설명</th><th>우선</th><th class="hidemobile">모듈</th></tr></thead>
+    <tbody>
+      <tr><td class="id">FR-01</td><td>계약서 업로드</td><td>PDF 업로드, Cloud Storage 저장, 프로젝트 메타데이터 등록</td><td class="pri pM">M</td><td class="hidemobile">콘솔</td></tr>
+      <tr><td class="id">FR-02</td><td>계약 조건 추출</td><td>Gemini Structured Output으로 고정 스키마 JSON 생성. 항목별 근거 조항·원문·신뢰도 부착</td><td class="pri pM">M</td><td class="hidemobile">AI</td></tr>
+      <tr><td class="id">FR-03</td><td>충돌·누락 탐지</td><td>배분율 합계 ≠ 100%, 정산일 상호 불일치, 할인 처리 기준 누락 등 자동 플래그</td><td class="pri pS">S</td><td class="hidemobile">AI</td></tr>
+      <tr><td class="id">FR-04</td><td>승인 워크플로</td><td>배급사·상영자 양측 승인 완료 전에는 규칙 생성 불가</td><td class="pri pM">M</td><td class="hidemobile">콘솔</td></tr>
+      <tr><td class="id">FR-05</td><td>규칙 버전 관리</td><td>승인 규칙에 버전 부여. 기존 버전은 불변, 개정은 신규 버전 발행으로만</td><td class="pri pM">M</td><td class="hidemobile">백엔드</td></tr>
+      <tr><td class="id">FR-06</td><td>온체인 등록</td><td>계약서 해시·규칙 해시·버전을 온체인 기록</td><td class="pri pM">M</td><td class="hidemobile">체인</td></tr>
+      <tr><td class="id">FR-07</td><td>에스크로 초기화</td><td>영화별 PDA vault 생성. 권리자 지갑 목록·규칙 버전 바인딩</td><td class="pri pM">M</td><td class="hidemobile">체인</td></tr>
+    </tbody>
+  </table>
+
+  <h3>발권 → 귀속 (F·05 ~ F·06)</h3>
+  <table>
+    <thead><tr><th>ID</th><th>요구사항</th><th>설명</th><th>우선</th><th class="hidemobile">모듈</th></tr></thead>
+    <tbody>
+      <tr><td class="id">FR-08</td><td>상영 회차 개설</td><td>일시·좌석수·단가 설정. 좌석수는 발권 상한으로 온체인 검증에 사용</td><td class="pri pM">M</td><td class="hidemobile">콘솔</td></tr>
+      <tr><td class="id">FR-09</td><td>에스크로 직접 결제</td><td>Solana Pay 결제금이 영화별 PDA로 직접 유입. 중간 계좌 경유 금지</td><td class="pri pM">M</td><td class="hidemobile">체인</td></tr>
+      <tr><td class="id">FR-10</td><td>티켓 영수증</td><td>회차·좌석·금액·시각을 담은 온체인 영수증 발급</td><td class="pri pS">S</td><td class="hidemobile">체인</td></tr>
+      <tr><td class="id">FR-11</td><td>실시간 귀속</td><td>결제 확인 즉시 공제→분할 계산, 권리자별 Allocation 기록</td><td class="pri pM">M</td><td class="hidemobile">체인</td></tr>
+      <tr><td class="id">FR-12</td><td>환불 처리</td><td>환불 윈도우 내: 해당 티켓 Allocation 역산 후 관객 반환. 윈도우 밖: Disputed 전환</td><td class="pri pS">S</td><td class="hidemobile">체인</td></tr>
+    </tbody>
+  </table>
+
+  <h3>검증 → 지급 (F·05 검증 ~ F·07)</h3>
+  <table>
+    <thead><tr><th>ID</th><th>요구사항</th><th>설명</th><th>우선</th><th class="hidemobile">모듈</th></tr></thead>
+    <tbody>
+      <tr><td class="id">FR-13</td><td>신뢰·증빙 조회 API <span style="color:var(--ink-faint)">(Phase 2)</span></td><td>신규 상영관 신뢰도 및 환불 불일치 증빙을 서명·타임스탬프 부착해 x402 유료 엔드포인트(402 응답)로 제공 — <b>합의 필요</b></td><td class="pri pS">S</td><td class="hidemobile">API</td></tr>
+      <tr><td class="id">FR-14</td><td>에이전트 조건부 자율 구매 <span style="color:var(--ink-faint)">(Phase 2)</span></td><td>신뢰도 조회(신규·이력만료 시)·증빙 조회(환불 불일치 시) 트리거 조건에 따라 에이전트가 x402 결제를 스스로 판단·실행(P1·P2·P9) — <b>합의 필요</b></td><td class="pri pS">S</td><td class="hidemobile">에이전트</td></tr>
+      <tr><td class="id">FR-15</td><td>온체인 정합성 검증</td><td>발권·결제·환불 로그와 에스크로 잔액의 산술 일치, 해시 연속성 확인 — 외부 데이터 없이 온체인 이력만으로 완결</td><td class="pri pM">M</td><td class="hidemobile">에이전트</td></tr>
+      <tr><td class="id">FR-16</td><td>위험조정 이상 탐지</td><td>과거 정산 이력 기반 임계값 조정 + 임계값 룰(P3~P5) + Gemini 패턴 추론. 판단 근거를 자연어로 로깅</td><td class="pri pM">M</td><td class="hidemobile">AI</td></tr>
+      <tr><td class="id">FR-17</td><td>부분 보류</td><td>이상 금액만 Disputed 격리. 정상 금액 지급은 중단되지 않음</td><td class="pri pM">M</td><td class="hidemobile">체인</td></tr>
+      <tr><td class="id">FR-18</td><td>보류 리포트</td><td>보류 사유·근거 조항·필요 조치를 Gemini가 자연어 리포트로 생성</td><td class="pri pS">S</td><td class="hidemobile">AI</td></tr>
+      <tr><td class="id">FR-19</td><td>지급 실행</td><td>Claimable 도달분을 다중 수령자에게 원자적 분배(전부 성공 또는 전부 롤백)</td><td class="pri pM">M</td><td class="hidemobile">체인</td></tr>
+      <tr><td class="id">FR-20</td><td>워터폴 실행</td><td>수수료 → 상환(누적 추적) → 손익분기 도달 시 분배율 자동 전환</td><td class="pri pS">S</td><td class="hidemobile">체인</td></tr>
+      <tr><td class="id">FR-21</td><td>인출 제한</td><td>각 지갑은 자기 Claimable 잔액까지만 인출 가능. 초과 요청은 온체인 거부</td><td class="pri pM">M</td><td class="hidemobile">체인</td></tr>
+      <tr><td class="id">FR-22</td><td>분쟁 해결</td><td>Disputed 건에 대해 양측 담당자 승인/기각 → 지급 또는 환수(Resolved)</td><td class="pri pS">S</td><td class="hidemobile">콘솔</td></tr>
+    </tbody>
+  </table>
+
+  <h3>대시보드 (F·08)</h3>
+  <table>
+    <thead><tr><th>ID</th><th>요구사항</th><th>설명</th><th>우선</th><th class="hidemobile">모듈</th></tr></thead>
+    <tbody>
+      <tr><td class="id">FR-23</td><td>정산 대시보드</td><td>발권·귀속·지급·보류 현황 + 온체인 tx 링크 실시간 표시</td><td class="pri pM">M</td><td class="hidemobile">프론트</td></tr>
+      <tr><td class="id">FR-24</td><td>신뢰도 스코어</td><td>정시 지급률·분쟁률·데이터 정합성 기반 상영자 스코어 산출·공개</td><td class="pri pC">C</td><td class="hidemobile">백엔드</td></tr>
+      <tr><td class="id">FR-25</td><td>KOBIS 대사</td><td>자체 발권 합계와 KOBIS 오픈API 일별 집계 비교 표시 (실데이터 연동)</td><td class="pri pC">C</td><td class="hidemobile">백엔드</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════ 6. 에이전트 정책 ═══════════ -->
+<section id="s6">
+  <div class="sec-head"><span class="sec-num">06</span><h2>정산 에이전트 정책</h2></div>
+  <p class="lead">에이전트의 자율성은 아래 정책의 범위 안에서만 성립한다. 정책 밖의 판단은 사람에게 넘긴다. <b>P1·P2·P9는 Phase 2(x402 조건부 조회) 전용이며 팀 합의 전 초안이다</b> — 티켓 판매 데이터를 외부에서 가져오지 않는다는 전제(완전 온체인 기본 경로) 위에서 작성했다.</p>
+  <table>
+    <thead><tr><th>ID</th><th>정책</th><th>동작</th></tr></thead>
+    <tbody>
+      <tr><td class="id">P1</td><td>신뢰도 조회 신선도 <span style="color:var(--ink-faint)">(Phase 2)</span></td><td>신규 상영관이거나 마지막 신뢰도 조회 후 일정 기간 경과 시에만 재조회 <b>(기간 기준 — 합의 필요)</b></td></tr>
+      <tr><td class="id">P2</td><td>지출 한도 <span style="color:var(--ink-faint)">(Phase 2)</span></td><td>API 호출 비용 ≤ 0.01 USDC이고 예산 지갑 잔액 내일 때만 자동 결제 <b>(사용처별 상한 배분 — 합의 필요)</b></td></tr>
+      <tr><td class="id">P3</td><td>환불·무료 임계</td><td>환불률 &gt; 10% 또는 무료티켓 비율 &gt; 15% → 해당 회차 지급 보류</td></tr>
+      <tr><td class="id">P4</td><td>물리적 정합성</td><td>발권 수 &gt; 좌석 수 → 초과분 Disputed</td></tr>
+      <tr><td class="id">P5</td><td>해시 연속성</td><td>매출 데이터 해시가 이전 기록과 불일치 → 즉시 지급 중단 + 알림</td></tr>
+      <tr><td class="id">P6</td><td>서명 범위</td><td>정상 판정분에만 지급 트랜잭션 서명. 판단이 불확실하면 보류가 기본값</td></tr>
+      <tr><td class="id">P7</td><td>배치 트리거</td><td>정산일 도달 / 회차 종료+환불 윈도우 경과 / 누적액 임계치</td></tr>
+      <tr><td class="id">P8</td><td>담보 감시 <span style="color:var(--ink-faint)">(방식 B 전용·로드맵)</span></td><td>예치 잔액 ≥ 미정산 누적액 상시 추적, 위반 시 접수 중단</td></tr>
+      <tr><td class="id">P9</td><td>증빙 조회 트리거 <span style="color:var(--ink-faint)">(Phase 2)</span></td><td>환불 수치 불일치 발견 시, 금액·불일치 정도가 기준을 넘을 때만 증빙 조회 <b>(정확한 기준값 — 합의 필요)</b></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════ 7. 데이터 경계 ═══════════ -->
+<section id="s7">
+  <div class="sec-head"><span class="sec-num">07</span><h2>온체인 / 오프체인 데이터 경계</h2></div>
+  <table>
+    <thead><tr><th>온체인 (Solana Devnet)</th><th>오프체인 (Firestore · Cloud Storage)</th></tr></thead>
+    <tbody>
+      <tr><td>계약서 해시, 정산 규칙 해시·버전 이력</td><td>계약서 원문 PDF</td></tr>
+      <tr><td>에스크로 잔액·권리자별 Allocation</td><td>사업자·관객 개인정보</td></tr>
+      <tr><td>티켓 영수증(회차·금액·시각)</td><td>상세 발권 로그 원본</td></tr>
+      <tr><td>지급·보류·환불·Resolved 기록</td><td>Gemini 분석 원문·보류 리포트 전문</td></tr>
+      <tr><td>매출 검증 데이터 해시·검증 결과</td><td>에이전트 판단 로그(Cloud Logging)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════ 8. 비기능 ═══════════ -->
+<section id="s8">
+  <div class="sec-head"><span class="sec-num">08</span><h2>비기능 요구사항</h2></div>
+  <table>
+    <thead><tr><th>ID</th><th>항목</th><th>기준</th></tr></thead>
+    <tbody>
+      <tr><td class="id">NFR-01</td><td>원자성</td><td>다중 수령자 지급은 전부 성공 또는 전부 롤백. 부분 성공 상태 금지</td></tr>
+      <tr><td class="id">NFR-02</td><td>규칙 불변성</td><td>승인된 규칙 버전은 수정 불가. 어떤 매출에 어떤 버전이 적용됐는지 추적 가능</td></tr>
+      <tr><td class="id">NFR-03</td><td>감사 가능성</td><td>모든 지급은 "규칙 버전 + 입력 데이터 해시 + 계산 결과"로 제3자 재검증 가능</td></tr>
+      <tr><td class="id">NFR-04</td><td>지연</td><td>결제 확인 ≤ 30초(Devnet), 귀속 계산 즉시, 검증 데이터 응답 ≤ 1초</td></tr>
+      <tr><td class="id">NFR-05</td><td>키 보안</td><td>에이전트 키는 Secret Manager 관리. 프론트에 개인키 노출 금지</td></tr>
+      <tr><td class="id">NFR-06</td><td>개인정보</td><td>온체인에는 개인 식별 정보를 기록하지 않음 (지갑 주소·해시만)</td></tr>
+      <tr><td class="id">NFR-07</td><td>실데이터 원칙</td><td>데모의 정상 경로는 실제 발권·실제 트랜잭션으로 구성. 목업은 이상 시나리오 주입에만 허용</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════ 9. 수용 기준 ═══════════ -->
+<section id="s9">
+  <div class="sec-head"><span class="sec-num">09</span><h2>수용 기준 — 데모 시나리오</h2></div>
+  <p class="lead">아래 7개 장면이 끊김 없이 시연되면 v0.1 완료로 본다.</p>
+  <table>
+    <thead><tr><th>#</th><th>장면</th><th>합격 조건</th></tr></thead>
+    <tbody>
+      <tr><td class="id">D1</td><td>계약 → 규칙</td><td>업로드한 계약서에서 근거 조항·신뢰도가 표시된 추출 결과가 나오고, 심어둔 충돌 1건이 탐지되며, 양측 승인 후 규칙 해시가 온체인에 기록됨</td></tr>
+      <tr><td class="id">D2</td><td>발권 결제</td><td>관객 지갑 3건의 결제가 에스크로 PDA에 유입되고 Explorer에서 확인됨</td></tr>
+      <tr><td class="id">D3</td><td>실시간 귀속</td><td>티켓 단위로 기금·부가세·극장·배급 풀 분리가 화면에 표시됨 (부가세 = 1/11 정확 계산)</td></tr>
+      <tr><td class="id">D4</td><td>위험조정검증</td><td>에이전트가 온체인 이력 조회 → 임계값 조정 → 정합성 검증(환불·좌석·해시)을 사람 개입 없이 수행하고 진행/보류를 판정함</td></tr>
+      <tr><td class="id">D4-x <span style="color:var(--ink-faint)">(Phase 2·시간 남으면)</span></td><td>조건부 자율 조회</td><td>신뢰도 만료 또는 환불 불일치 상황에서 에이전트가 신선도 판단 → 402 응답 수신 → 정책 확인 → x402 결제 → 조회 결과 반영을 사람 개입 없이 수행</td></tr>
+      <tr><td class="id">D5</td><td>부분 보류</td><td>주입된 이상(환불률 초과)에 대해 정상 950 지급 / 50만 보류되고 자연어 보류 리포트가 생성됨</td></tr>
+      <tr><td class="id">D6</td><td>인출 차단</td><td>상영자 지갑의 전액 인출 시도가 자기 몫까지만 성공하고 초과분은 온체인에서 거부됨</td></tr>
+      <tr><td class="id">D7</td><td>대시보드</td><td>전 과정의 상태·tx 링크가 대시보드에 표시됨</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════ 10. 범위 외 ═══════════ -->
+<section id="s10">
+  <div class="sec-head"><span class="sec-num">10</span><h2>범위 외 (Out of Scope)</h2></div>
+  <table>
+    <thead><tr><th>항목</th><th>사유 / 향후 계획</th></tr></thead>
+    <tbody>
+      <tr><td>원화 결제·PG 연동</td><td>전자금융·수탁 규제 검토 필요. 로드맵: 증빙 PoC → 신탁계좌 파일럿 → 라이선스 확장</td></tr>
+      <tr><td>실계약·실권리자 온보딩</td><td>해커톤은 가상 계약·테스트 지갑으로 구조 증명</td></tr>
+      <tr><td>KYC / AML</td><td>실자금 단계에서 파트너(결제사·신탁은행) 경유로 처리</td></tr>
+      <tr><td>멀티플렉스 발권망 연동</td><td>접근 불가 전제. 독립영화관·영화제가 유일한 진입점이라는 것이 전략의 일부</td></tr>
+      <tr><td>영비법 39조 통합전산망 전송 의무 대응</td><td>방식 A(자체 발권) 상용화 시 발권 데이터의 통전망 전송 의무 준수/대행 범위 검토 필요 — 비상설 상영(영화제·공동체 상영)의 적용 여부 포함. 영진위 사업자 연동 절차 문의 결과 반영 예정</td></tr>
+      <tr><td>메인넷 배포</td><td>전 기능 Devnet 한정</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<footer>
+  <span>REQ-INDIE-001 · v0.2</span>
+  <span>다음 개정: 정책 P1·P2·P9(합의 필요) 확정 후 v0.3</span>
+</footer>
+
+</div>
+</body>
+</html>
