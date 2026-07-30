@@ -67,6 +67,8 @@ export const ruleConflicts: RuleConflict[] = [
 
 // ── S6 대시보드 ──────────────────────────────────────────────────────
 export const snapshot: DashboardSnapshot = {
+  movieId: "indie-2026-001",
+  contractHash: "0x" + "11".repeat(32),
   status: "allocated",
   grossIn: 180.0,
   pending: 0.0,
