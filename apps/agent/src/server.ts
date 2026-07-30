@@ -14,6 +14,8 @@
  */
 import "dotenv/config";
 
+import { createNarrativeGeneratorFromEnv } from "@chaincrew/ai-data";
+
 import { createApp } from "./app.js";
 import { StubChainGateway } from "./chain/gateway.js";
 import { demoBatch } from "./fixtures/screenings.js";
@@ -21,7 +23,11 @@ import { logger } from "./logger.js";
 import { AgentStore } from "./store.js";
 
 const store = new AgentStore(demoBatch);
-const deps = { chainGateway: new StubChainGateway() };
+const narrative = createNarrativeGeneratorFromEnv();
+const deps = {
+  chainGateway: new StubChainGateway(),
+  narrativeGenerator: narrative.generator,
+};
 
 const app = createApp(store, deps);
 
@@ -32,6 +38,7 @@ const server = app.listen(port, "0.0.0.0", () => {
   logger.info("settlement agent started", {
     port,
     chainGateway: "stub",
+    narrativeGenerator: narrative.mode,
     screenings: store.batch.length,
   });
 });

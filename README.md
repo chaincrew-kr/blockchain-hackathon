@@ -250,6 +250,7 @@ blockchain-hackathon/
 │   ├── web/                 # [A] 구매 웹 · 계약 백오피스 · 대시보드
 │   └── agent/               # [D] 위험조정검증 · 정산 판단 · 로그 API
 ├── packages/
+│   ├── ai-data/             # [A] Gemini 판정 설명 · KOBIS 클라이언트
 │   └── schema/              # 팀 공용 TypeScript 인터페이스 · IDL
 ├── programs/
 │   └── movie_escrow/        # [B·C] Anchor 에스크로 프로그램
@@ -315,6 +316,7 @@ feature/* → dev → main
 
 - 모든 기능은 `feature/*` 브랜치에서 개발하고 PR로 `dev`에 통합합니다.
 - `packages/schema` 변경은 전원 리뷰가 필요합니다.
+- `packages/ai-data`는 A가 소유하고, D는 공개 인터페이스만 사용합니다.
 - 지갑·개인키·API 키는 Git에 커밋하지 않습니다.
 - 지갑·정산 코드 PR은 B·C 중 한 명이 추가 확인합니다.
 - D의 판정 파이프라인은 B·C의 Anchor IDL과 A의 대시보드 API 계약을 함께
