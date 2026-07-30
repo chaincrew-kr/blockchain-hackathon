@@ -1,6 +1,6 @@
 //! [담당: B·C] S6 영화 정산 에스크로 — 단일 Anchor 프로그램.
 //!
-//! B(자금흐름): init_escrow · deposit · refund_pending · settle_batch
+//! B(자금흐름): init_escrow · deposit · refund_pending · verify_escrow · settle_batch
 //! C(판정집행): claim · mark_disputed · resolve_dispute
 //!
 //! ⚠️ 계정 구조(state.rs)는 B·C가 7/29 중 함께 확정한 뒤 각자 instruction을
@@ -10,6 +10,7 @@
 use anchor_lang::prelude::*;
 
 pub mod error;
+pub mod guards;
 pub mod instructions;
 pub mod state;
 
@@ -42,6 +43,11 @@ pub mod movie_escrow {
     /// STAGE 1: Pending 자금의 유일한 출구 — 관객 환불 (격리 불변식 ③).
     pub fn refund_pending(ctx: Context<RefundPending>, amount: u64) -> Result<()> {
         instructions::refund_pending::handler(ctx, amount)
+    }
+
+    /// STAGE 3→2 게이트: D의 위험조정검증 통과를 온체인에 기록 (Pending → Verified).
+    pub fn verify_escrow(ctx: Context<VerifyEscrow>) -> Result<()> {
+        instructions::verify_escrow::handler(ctx)
     }
 
     /// STAGE 2: 공제 워터폴 실행 후 권리자별 Allocation 확정.
