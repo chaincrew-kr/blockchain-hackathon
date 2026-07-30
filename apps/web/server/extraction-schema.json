@@ -1,0 +1,285 @@
+{
+  "type": "OBJECT",
+  "required": ["rule", "evidence", "conflicts", "overallConfidence"],
+  "properties": {
+    "rule": {
+      "type": "OBJECT",
+      "description": "SPEC-INDIE-002 §5 정산 규칙 스키마와 동일한 형태. 사람 승인 후 그대로 온체인 고정 대상이 됨.",
+      "required": [
+        "revenueBase",
+        "regionSplit",
+        "deductions",
+        "waterfall",
+        "ticketPolicy",
+        "settlementTerms",
+        "disputeThresholds"
+      ],
+      "properties": {
+        "revenueBase": {
+          "type": "STRING",
+          "enum": ["TICKET_GROSS"]
+        },
+        "regionSplit": {
+          "type": "ARRAY",
+          "items": {
+            "type": "OBJECT",
+            "required": ["region", "nationality", "split"],
+            "properties": {
+              "region": {
+                "type": "STRING",
+                "enum": ["SEOUL", "NON_SEOUL"],
+                "description": "서울 소재 상영관이면 SEOUL, 그 외 지역이면 NON_SEOUL. 계약서 원문이 한글이어도 이 두 코드 중 하나로만 채운다."
+              },
+              "nationality": {
+                "type": "STRING",
+                "enum": ["KR", "FOREIGN"],
+                "description": "한국영화면 KR, 외국영화면 FOREIGN."
+              },
+              "split": {
+                "type": "OBJECT",
+                "required": ["THEATER", "DISTRIBUTOR_POOL"],
+                "properties": {
+                  "THEATER": {
+                    "type": "NUMBER"
+                  },
+                  "DISTRIBUTOR_POOL": {
+                    "type": "NUMBER"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deductions": {
+          "type": "ARRAY",
+          "items": {
+            "type": "OBJECT",
+            "required": [
+              "id",
+              "formula",
+              "round",
+              "order",
+              "exemptionCondition"
+            ],
+            "properties": {
+              "id": {
+                "type": "STRING",
+                "enum": ["FILM_FUND", "VAT"],
+                "description": "영화발전기금이면 FILM_FUND, 부가가치세면 VAT. 이 두 값 외에 계약서에 다른 공제 항목이 있으면 conflicts에 WARNING으로 별도 기록하고 이 필드엔 가장 가까운 값을 임시로 채운다."
+              },
+              "formula": {
+                "type": "STRING"
+              },
+              "round": {
+                "type": "STRING",
+                "enum": ["NEAREST", "FLOOR", "CEIL"]
+              },
+              "order": {
+                "type": "INTEGER"
+              },
+              "exemptionCondition": {
+                "type": "STRING",
+                "description": "면제 조건 원문 요약. 없으면 빈 문자열."
+              }
+            }
+          }
+        },
+        "waterfall": {
+          "type": "ARRAY",
+          "description": "SPEC-INDIE-002 §5 waterfall 구조와 동일. 스텝 타입에 따라 쓰는 필드가 다름 — 안 쓰는 필드는 0 또는 빈 문자열로 채운다.",
+          "items": {
+            "type": "OBJECT",
+            "required": [
+              "step",
+              "type",
+              "party",
+              "rate",
+              "mgAmount",
+              "mgCurrency",
+              "recoupUntil",
+              "profitSplit"
+            ],
+            "properties": {
+              "step": {
+                "type": "INTEGER"
+              },
+              "type": {
+                "type": "STRING",
+                "enum": ["FEE", "MG_RECOUP", "RECOUP", "PROFIT_SPLIT"]
+              },
+              "party": {
+                "type": "STRING",
+                "enum": [
+                  "THEATER",
+                  "DISTRIBUTOR",
+                  "INVESTORS",
+                  "PRODUCER",
+                  "NONE"
+                ],
+                "description": "단일 수령자 스텝(FEE/MG_RECOUP/RECOUP)에서 '그 단계의 돈을 받는 쪽'을 고정 코드로 표기. 계약서 원문의 한글 호칭(예: 투자자·배급자)을 그대로 쓰지 말고 반드시 이 코드로 변환. PROFIT_SPLIT 스텝처럼 해당 없으면 NONE."
+              },
+              "rate": {
+                "type": "NUMBER",
+                "description": "FEE 스텝의 배급수수료율. 그 외 스텝은 0."
+              },
+              "mgAmount": {
+                "type": "NUMBER",
+                "description": "MG_RECOUP 스텝의 최소보장금 금액. 그 외 스텝은 0."
+              },
+              "mgCurrency": {
+                "type": "STRING",
+                "enum": ["KRW", "NONE"],
+                "description": "MG_RECOUP 금액의 통화. 본 시스템은 원화 기준으로 통일하므로 KRW 고정. 해당 없는 스텝은 NONE."
+              },
+              "recoupUntil": {
+                "type": "STRING",
+                "description": "RECOUP 스텝이 상환하는 기준. 예: 'TOTAL_PRODUCTION_COST'. 그 외 스텝은 빈 문자열."
+              },
+              "profitSplit": {
+                "type": "OBJECT",
+                "description": "PROFIT_SPLIT 스텝에서만 사용. 그 외 스텝은 INVESTORS:0, PRODUCER:0.",
+                "required": ["INVESTORS", "PRODUCER"],
+                "properties": {
+                  "INVESTORS": {
+                    "type": "NUMBER"
+                  },
+                  "PRODUCER": {
+                    "type": "NUMBER"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ticketPolicy": {
+          "type": "OBJECT",
+          "required": [
+            "settlementBase",
+            "discountBearer",
+            "compTicketCap",
+            "refundWindow",
+            "postShowRefund",
+            "reserveRate"
+          ],
+          "properties": {
+            "settlementBase": {
+              "type": "STRING",
+              "enum": ["ACTUAL_PAID", "LIST_PRICE"]
+            },
+            "discountBearer": {
+              "type": "STRING",
+              "enum": ["PRO_RATA", "THEATER", "DISTRIBUTOR_POOL", "UNSPECIFIED"]
+            },
+            "compTicketCap": {
+              "type": "NUMBER"
+            },
+            "refundWindow": {
+              "type": "STRING",
+              "enum": ["UNTIL_SHOWTIME", "FIXED_DAYS", "UNSPECIFIED"]
+            },
+            "postShowRefund": {
+              "type": "STRING",
+              "enum": ["MANUAL_REVIEW", "AUTO_DENY", "UNSPECIFIED"]
+            },
+            "reserveRate": {
+              "type": "NUMBER"
+            }
+          }
+        },
+        "settlementTerms": {
+          "type": "OBJECT",
+          "description": "계약서에 등장하는 모든 기한을 각각의 의미별로 분리 — 뭉뚱그리지 않는다.",
+          "required": [
+            "reportDeadlineDays",
+            "paymentDeadlineDays",
+            "lateInterestRateAnnual"
+          ],
+          "properties": {
+            "reportDeadlineDays": {
+              "type": "INTEGER",
+              "description": "상영 종료 후 실적 내역을 보고해야 하는 기한(일)"
+            },
+            "paymentDeadlineDays": {
+              "type": "INTEGER",
+              "description": "실제 대금 지급 기한(일). 본문과 특약이 다르면 conflicts에 기록하고, 여기엔 특약(나중에 합의된 것) 값을 넣는다."
+            },
+            "lateInterestRateAnnual": {
+              "type": "NUMBER",
+              "description": "지연손해금 연 이자율"
+            }
+          }
+        },
+        "disputeThresholds": {
+          "type": "OBJECT",
+          "required": ["refundRate", "freeTicketRate"],
+          "properties": {
+            "refundRate": {
+              "type": "NUMBER",
+              "description": "환불률이 이 값을 초과하면 해당 회차 지급을 보류하는 임계값. 계약서에 명시적으로 이 임계값(예: '환불률 O%를 초과하면...')이 없으면, ticketPolicy.reserveRate(환불충당금 비율) 같은 다른 목적의 숫자를 절대 가져다 쓰지 말고 REQ-INDIE-001 P3 기본값 0.10을 넣은 뒤 conflicts에 '계약서에 명시 없어 시스템 기본값(10%) 적용'을 WARNING으로 기록한다."
+            },
+            "freeTicketRate": {
+              "type": "NUMBER",
+              "description": "무료티켓 비율이 이 값을 초과하면 지급을 보류하는 임계값. ticketPolicy.compTicketCap(계약서상 무료입장 한도)이 명시되어 있으면 그 값을 그대로 쓴다. 없으면 REQ-INDIE-001 P3 기본값 0.15를 넣고 conflicts에 WARNING으로 기록한다."
+            }
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "ARRAY",
+      "description": "rule의 각 필드가 어느 조항에서 나왔는지. fieldPath는 rule 내부 경로(dot notation, 배열은 인덱스).",
+      "items": {
+        "type": "OBJECT",
+        "required": ["fieldPath", "sourceClause", "sourceQuote", "confidence"],
+        "properties": {
+          "fieldPath": {
+            "type": "STRING",
+            "description": "예: 'regionSplit[0].split', 'waterfall[1].value'"
+          },
+          "sourceClause": {
+            "type": "STRING",
+            "description": "예: '제12조 2단계'"
+          },
+          "sourceQuote": {
+            "type": "STRING",
+            "description": "근거가 된 원문 발췌 (짧게, 핵심 문장만)"
+          },
+          "confidence": {
+            "type": "NUMBER",
+            "description": "0.0~1.0"
+          }
+        }
+      }
+    },
+    "conflicts": {
+      "type": "ARRAY",
+      "description": "값이 애매하거나, 같은 항목에 대해 조항끼리 서로 다르게 기재된 경우 전부 기록.",
+      "items": {
+        "type": "OBJECT",
+        "required": ["field", "description", "conflictingClauses", "severity"],
+        "properties": {
+          "field": {
+            "type": "STRING"
+          },
+          "description": {
+            "type": "STRING"
+          },
+          "conflictingClauses": {
+            "type": "ARRAY",
+            "items": {
+              "type": "STRING"
+            }
+          },
+          "severity": {
+            "type": "STRING",
+            "enum": ["BLOCKING", "WARNING"]
+          }
+        }
+      }
+    },
+    "overallConfidence": {
+      "type": "NUMBER",
+      "description": "전체 추출 결과에 대한 종합 신뢰도 0.0~1.0"
+    }
+  }
+}
