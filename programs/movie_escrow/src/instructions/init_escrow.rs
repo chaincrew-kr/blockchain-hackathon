@@ -1,21 +1,69 @@
 //! [B] STAGE 0b: 승인 규칙 해시 등록 + 에스크로 초기화.
 
 use anchor_lang::prelude::*;
+use anchor_spl::associated_token::AssociatedToken;
+use anchor_spl::token::{Mint, Token, TokenAccount};
 
-use crate::error::EscrowError;
+use crate::state::{EscrowState, MovieEscrow};
 
 #[derive(Accounts)]
+#[instruction(movie_id: String)]
 pub struct InitEscrow<'info> {
-    // TODO(B): MovieEscrow PDA init, USDC vault(ATA) 생성, authority 지정
+    #[account(mut)]
     pub payer: Signer<'info>,
+
+    #[account(
+        init,
+        payer = payer,
+        space = 8 + MovieEscrow::INIT_SPACE,
+        seeds = [b"escrow", movie_id.as_bytes()],
+        bump,
+    )]
+    pub escrow: Account<'info, MovieEscrow>,
+
+    /// 이미 존재하는 USDC 민트(로컬넷 테스트에선 임시로 만든 mint를 씀).
+    pub usdc_mint: Account<'info, Mint>,
+
+    /// escrow PDA가 소유하는 USDC 토큰 계정 — ATA로 생성.
+    #[account(
+        init,
+        payer = payer,
+        associated_token::mint = usdc_mint,
+        associated_token::authority = escrow,
+    )]
+    pub vault: Account<'info, TokenAccount>,
+
+    /// CHECK: 정산 에이전트 지갑 주소를 저장만 함 — 서명 검증은 아직 안 함 (TODO(B/C))
+    pub authority: UncheckedAccount<'info>,
+
+    pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
 }
 
 pub fn handler(
-    _ctx: Context<InitEscrow>,
-    _rule_hash: [u8; 32],
-    _rule_version: u16,
+    ctx: Context<InitEscrow>,
+    movie_id: String,
+    contract_hash: [u8; 32],
+    rule_hash: [u8; 32],
+    rule_version: u16,
 ) -> Result<()> {
-    // TODO(B): rule_hash·version 기록 — 이후 개정은 신규 버전 발행으로만
-    err!(EscrowError::NotImplemented)
+    let escrow = &mut ctx.accounts.escrow;
+    escrow.movie_id = movie_id;
+    escrow.authority = ctx.accounts.authority.key();
+    escrow.usdc_mint = ctx.accounts.usdc_mint.key();
+    escrow.vault = ctx.accounts.vault.key();
+    escrow.contract_hash = contract_hash;
+    escrow.rule_hash = rule_hash;
+    escrow.rule_version = rule_version;
+    escrow.state = EscrowState::Pending;
+    escrow.gross_in = 0;
+    escrow.pending = 0;
+    escrow.allocated = 0;
+    escrow.disputed = 0;
+    escrow.paid_out = 0;
+    escrow.refunded = 0;
+    escrow.batch_count = 0;
+    escrow.bump = ctx.bumps.escrow;
+    Ok(())
 }

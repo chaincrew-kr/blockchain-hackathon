@@ -23,6 +23,20 @@ cp target/idl/movie_escrow.json packages/schema/idl/
 cp target/types/movie_escrow.ts packages/schema/idl/
 ```
 
+⚠️ **로컬 validator에 deploy할 땐 SBPF v3로 빌드해야 합니다** — 지금 solana-cli
+4.1.1(`Anchor.toml`의 `solana_version`)엔 `SIMD-0500`(SBPF v0/v1/v2 deploy 금지)이
+활성화돼 있어서, 기본(`anchor build`, v0) 빌드는 deploy 시
+`invalid account data for instruction`로 실패합니다. `anchor build`의 IDL 생성
+단계가 `--arch`를 못 받아들이는 버그가 있어서, SBF 바이너리만 따로 v3로
+다시 빌드한 뒤 deploy하세요 (IDL은 그대로 써도 됨, 인터페이스가 안 바뀌었으면):
+
+```bash
+cargo build-sbf --arch v3 --manifest-path programs/movie_escrow/Cargo.toml
+solana --url http://127.0.0.1:8899 program deploy --use-rpc \
+  target/deploy/movie_escrow.so \
+  --program-id target/deploy/movie_escrow-keypair.json
+```
+
 - 개발은 localnet(`solana-test-validator`), Devnet 이전은 8/1.
 - 모든 스텁은 `NotImplemented` 에러를 반환합니다. 구현 시 각 파일의 TODO와
   불변식(①③=B, ②=C) 테스트를 함께 작성하세요.
