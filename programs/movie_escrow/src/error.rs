@@ -12,4 +12,6 @@ pub enum EscrowError {
     MathOverflow,
     #[msg("Rule hash does not match the approved settlement rule")]
     RuleHashMismatch,
+    #[msg("Signer is not the beneficiary of this allocation")]
+    Unauthorized,
 }
