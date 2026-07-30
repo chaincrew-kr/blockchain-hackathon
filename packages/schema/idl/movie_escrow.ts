@@ -5,101 +5,72 @@
  * IDL can be found at `target/idl/movie_escrow.json`.
  */
 export type MovieEscrow = {
-  "address": "C65w81oX73ngPa6PjdLR49rsXag9kM1mRD1rPT21NTik",
-  "metadata": {
-    "name": "movieEscrow",
-    "version": "0.1.0",
-    "spec": "0.1.0"
-  },
-  "instructions": [
+  address: "C65w81oX73ngPa6PjdLR49rsXag9kM1mRD1rPT21NTik";
+  metadata: {
+    name: "movieEscrow";
+    version: "0.1.0";
+    spec: "0.1.0";
+  };
+  instructions: [
     {
-      "name": "claim",
-      "docs": [
-        "STAGE 5: 권리자 인출 — 자기 Claimable 잔액 초과분은 온체인 거부."
-      ],
-      "discriminator": [
-        62,
-        198,
-        214,
-        193,
-        213,
-        159,
-        108,
-        210
-      ],
-      "accounts": [
+      name: "claim";
+      docs: [
+        "STAGE 5: 권리자 인출 — 자기 Claimable 잔액 초과분은 온체인 거부.",
+      ];
+      discriminator: [62, 198, 214, 193, 213, 159, 108, 210];
+      accounts: [
         {
-          "name": "beneficiary",
-          "signer": true
-        }
-      ],
-      "args": [
+          name: "beneficiary";
+          signer: true;
+        },
+      ];
+      args: [
         {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
+          name: "amount";
+          type: "u64";
+        },
+      ];
     },
     {
-      "name": "deposit",
-      "docs": [
-        "STAGE 1: 관객 결제 → 에스크로 PDA 입금 (상태 Pending)."
-      ],
-      "discriminator": [
-        242,
-        35,
-        198,
-        137,
-        82,
-        225,
-        242,
-        182
-      ],
-      "accounts": [
+      name: "deposit";
+      docs: ["STAGE 1: 관객 결제 → 에스크로 PDA 입금 (상태 Pending)."];
+      discriminator: [242, 35, 198, 137, 82, 225, 242, 182];
+      accounts: [
         {
-          "name": "payer",
-          "writable": true,
-          "signer": true
+          name: "payer";
+          writable: true;
+          signer: true;
         },
         {
-          "name": "escrow",
-          "writable": true,
-          "pda": {
-            "seeds": [
+          name: "escrow";
+          writable: true;
+          pda: {
+            seeds: [
               {
-                "kind": "const",
-                "value": [
-                  101,
-                  115,
-                  99,
-                  114,
-                  111,
-                  119
-                ]
+                kind: "const";
+                value: [101, 115, 99, 114, 111, 119];
               },
               {
-                "kind": "account",
-                "path": "escrow.movie_id",
-                "account": "movieEscrow"
-              }
-            ]
-          }
+                kind: "account";
+                path: "escrow.movie_id";
+                account: "movieEscrow";
+              },
+            ];
+          };
         },
         {
-          "name": "payerTokenAccount",
-          "docs": [
-            "관객의 USDC 계정 — 여기서 vault로 이체된다."
-          ],
-          "writable": true,
-          "pda": {
-            "seeds": [
+          name: "payerTokenAccount";
+          docs: ["관객의 USDC 계정 — 여기서 vault로 이체된다."];
+          writable: true;
+          pda: {
+            seeds: [
               {
-                "kind": "account",
-                "path": "payer"
+                kind: "account";
+                path: "payer";
               },
               {
-                "kind": "const",
-                "value": [
+                kind: "const";
+                value: [
                   6,
                   221,
                   246,
@@ -131,18 +102,18 @@ export type MovieEscrow = {
                   126,
                   255,
                   0,
-                  169
-                ]
+                  169,
+                ];
               },
               {
-                "kind": "account",
-                "path": "escrow.usdc_mint",
-                "account": "movieEscrow"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
+                kind: "account";
+                path: "escrow.usdc_mint";
+                account: "movieEscrow";
+              },
+            ];
+            program: {
+              kind: "const";
+              value: [
                 140,
                 151,
                 37,
@@ -174,95 +145,75 @@ export type MovieEscrow = {
                 219,
                 233,
                 248,
-                89
-              ]
-            }
-          }
+                89,
+              ];
+            };
+          };
         },
         {
-          "name": "vault",
-          "docs": [
-            "escrow가 소유한 vault — 경유 계좌 0개, 수취 주소가 곧 에스크로."
-          ],
-          "writable": true
+          name: "vault";
+          docs: [
+            "escrow가 소유한 vault — 경유 계좌 0개, 수취 주소가 곧 에스크로.",
+          ];
+          writable: true;
         },
         {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        }
-      ],
-      "args": [
+          name: "tokenProgram";
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+        },
+      ];
+      args: [
         {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
+          name: "amount";
+          type: "u64";
+        },
+      ];
     },
     {
-      "name": "initEscrow",
-      "docs": [
-        "STAGE 0b: 승인된 정산 규칙 해시를 등록하며 에스크로 초기화."
-      ],
-      "discriminator": [
-        70,
-        46,
-        40,
-        23,
-        6,
-        11,
-        81,
-        139
-      ],
-      "accounts": [
+      name: "initEscrow";
+      docs: ["STAGE 0b: 승인된 정산 규칙 해시를 등록하며 에스크로 초기화."];
+      discriminator: [70, 46, 40, 23, 6, 11, 81, 139];
+      accounts: [
         {
-          "name": "payer",
-          "writable": true,
-          "signer": true
+          name: "payer";
+          writable: true;
+          signer: true;
         },
         {
-          "name": "escrow",
-          "writable": true,
-          "pda": {
-            "seeds": [
+          name: "escrow";
+          writable: true;
+          pda: {
+            seeds: [
               {
-                "kind": "const",
-                "value": [
-                  101,
-                  115,
-                  99,
-                  114,
-                  111,
-                  119
-                ]
+                kind: "const";
+                value: [101, 115, 99, 114, 111, 119];
               },
               {
-                "kind": "arg",
-                "path": "movieId"
-              }
-            ]
-          }
+                kind: "arg";
+                path: "movieId";
+              },
+            ];
+          };
         },
         {
-          "name": "usdcMint",
-          "docs": [
-            "이미 존재하는 USDC 민트(로컬넷 테스트에선 임시로 만든 mint를 씀)."
-          ]
+          name: "usdcMint";
+          docs: [
+            "이미 존재하는 USDC 민트(로컬넷 테스트에선 임시로 만든 mint를 씀).",
+          ];
         },
         {
-          "name": "vault",
-          "docs": [
-            "escrow PDA가 소유하는 USDC 토큰 계정 — ATA로 생성."
-          ],
-          "writable": true,
-          "pda": {
-            "seeds": [
+          name: "vault";
+          docs: ["escrow PDA가 소유하는 USDC 토큰 계정 — ATA로 생성."];
+          writable: true;
+          pda: {
+            seeds: [
               {
-                "kind": "account",
-                "path": "escrow"
+                kind: "account";
+                path: "escrow";
               },
               {
-                "kind": "const",
-                "value": [
+                kind: "const";
+                value: [
                   6,
                   221,
                   246,
@@ -294,17 +245,17 @@ export type MovieEscrow = {
                   126,
                   255,
                   0,
-                  169
-                ]
+                  169,
+                ];
               },
               {
-                "kind": "account",
-                "path": "usdcMint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
+                kind: "account";
+                path: "usdcMint";
+              },
+            ];
+            program: {
+              kind: "const";
+              value: [
                 140,
                 151,
                 37,
@@ -336,143 +287,108 @@ export type MovieEscrow = {
                 219,
                 233,
                 248,
-                89
-              ]
-            }
-          }
+                89,
+              ];
+            };
+          };
         },
         {
-          "name": "authority"
+          name: "authority";
         },
         {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          name: "tokenProgram";
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
         },
         {
-          "name": "associatedTokenProgram",
-          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+          name: "associatedTokenProgram";
+          address: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
         },
         {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
+          name: "systemProgram";
+          address: "11111111111111111111111111111111";
+        },
+      ];
+      args: [
         {
-          "name": "movieId",
-          "type": "string"
+          name: "movieId";
+          type: "string";
         },
         {
-          "name": "contractHash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
+          name: "contractHash";
+          type: {
+            array: ["u8", 32];
+          };
         },
         {
-          "name": "ruleHash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
+          name: "ruleHash";
+          type: {
+            array: ["u8", 32];
+          };
         },
         {
-          "name": "ruleVersion",
-          "type": "u16"
-        }
-      ]
+          name: "ruleVersion";
+          type: "u16";
+        },
+      ];
     },
     {
-      "name": "markDisputed",
-      "docs": [
-        "STAGE 4→5: 보류 판정분을 Disputed로 격리."
-      ],
-      "discriminator": [
-        136,
-        86,
-        152,
-        120,
-        3,
-        21,
-        223,
-        251
-      ],
-      "accounts": [
+      name: "markDisputed";
+      docs: ["STAGE 4→5: 보류 판정분을 Disputed로 격리."];
+      discriminator: [136, 86, 152, 120, 3, 21, 223, 251];
+      accounts: [
         {
-          "name": "authority",
-          "signer": true
-        }
-      ],
-      "args": [
+          name: "authority";
+          signer: true;
+        },
+      ];
+      args: [
         {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
+          name: "amount";
+          type: "u64";
+        },
+      ];
     },
     {
-      "name": "refundPending",
-      "docs": [
-        "STAGE 1: Pending 자금의 유일한 출구 — 관객 환불 (격리 불변식 ③)."
-      ],
-      "discriminator": [
-        70,
-        207,
-        125,
-        172,
-        197,
-        218,
-        120,
-        112
-      ],
-      "accounts": [
+      name: "refundPending";
+      docs: [
+        "STAGE 1: Pending 자금의 유일한 출구 — 관객 환불 (격리 불변식 ③).",
+      ];
+      discriminator: [70, 207, 125, 172, 197, 218, 120, 112];
+      accounts: [
         {
-          "name": "payer",
-          "signer": true
+          name: "payer";
+          signer: true;
         },
         {
-          "name": "escrow",
-          "writable": true,
-          "pda": {
-            "seeds": [
+          name: "escrow";
+          writable: true;
+          pda: {
+            seeds: [
               {
-                "kind": "const",
-                "value": [
-                  101,
-                  115,
-                  99,
-                  114,
-                  111,
-                  119
-                ]
+                kind: "const";
+                value: [101, 115, 99, 114, 111, 119];
               },
               {
-                "kind": "account",
-                "path": "escrow.movie_id",
-                "account": "movieEscrow"
-              }
-            ]
-          }
+                kind: "account";
+                path: "escrow.movie_id";
+                account: "movieEscrow";
+              },
+            ];
+          };
         },
         {
-          "name": "payerTokenAccount",
-          "docs": [
-            "환불을 받는 계정 — 반드시 payer 본인 소유 ATA."
-          ],
-          "writable": true,
-          "pda": {
-            "seeds": [
+          name: "payerTokenAccount";
+          docs: ["환불을 받는 계정 — 반드시 payer 본인 소유 ATA."];
+          writable: true;
+          pda: {
+            seeds: [
               {
-                "kind": "account",
-                "path": "payer"
+                kind: "account";
+                path: "payer";
               },
               {
-                "kind": "const",
-                "value": [
+                kind: "const";
+                value: [
                   6,
                   221,
                   246,
@@ -504,18 +420,18 @@ export type MovieEscrow = {
                   126,
                   255,
                   0,
-                  169
-                ]
+                  169,
+                ];
               },
               {
-                "kind": "account",
-                "path": "escrow.usdc_mint",
-                "account": "movieEscrow"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
+                kind: "account";
+                path: "escrow.usdc_mint";
+                account: "movieEscrow";
+              },
+            ];
+            program: {
+              kind: "const";
+              value: [
                 140,
                 151,
                 37,
@@ -547,700 +463,563 @@ export type MovieEscrow = {
                 219,
                 233,
                 248,
-                89
-              ]
-            }
-          }
+                89,
+              ];
+            };
+          };
         },
         {
-          "name": "vault",
-          "writable": true
+          name: "vault";
+          writable: true;
         },
         {
-          "name": "tokenProgram",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        }
-      ],
-      "args": [
+          name: "tokenProgram";
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+        },
+      ];
+      args: [
         {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
+          name: "amount";
+          type: "u64";
+        },
+      ];
     },
     {
-      "name": "resolveDispute",
-      "docs": [
-        "STAGE 5: 분쟁 해결 — approve면 지급, 아니면 환수."
-      ],
-      "discriminator": [
-        231,
-        6,
-        202,
-        6,
-        96,
-        103,
-        12,
-        230
-      ],
-      "accounts": [
+      name: "resolveDispute";
+      docs: ["STAGE 5: 분쟁 해결 — approve면 지급, 아니면 환수."];
+      discriminator: [231, 6, 202, 6, 96, 103, 12, 230];
+      accounts: [
         {
-          "name": "authority",
-          "signer": true
-        }
-      ],
-      "args": [
+          name: "authority";
+          signer: true;
+        },
+      ];
+      args: [
         {
-          "name": "approve",
-          "type": "bool"
-        }
-      ]
+          name: "approve";
+          type: "bool";
+        },
+      ];
     },
     {
-      "name": "settleBatch",
-      "docs": [
+      name: "settleBatch";
+      docs: [
         "STAGE 2: 공제 워터폴 실행 후 권리자별 Allocation 확정 (축소 워터폴 —",
-        "부과금·VAT·부율 분할·배급수수료. MG·투자 상환·이익 배분은 미구현)."
-      ],
-      "discriminator": [
-        22,
-        2,
-        21,
-        223,
-        225,
-        122,
-        163,
-        214
-      ],
-      "accounts": [
+        "부과금·VAT·부율 분할·배급수수료. MG·투자 상환·이익 배분은 미구현).",
+      ];
+      discriminator: [22, 2, 21, 223, 225, 122, 163, 214];
+      accounts: [
         {
-          "name": "authority",
-          "docs": [
+          name: "authority";
+          docs: [
             "정산 에이전트 — escrow.authority와 일치해야 하고, Allocation PDA",
-            "3개(Theater/Distributor/Producer)의 rent를 지불한다."
-          ],
-          "writable": true,
-          "signer": true,
-          "relations": [
-            "escrow"
-          ]
+            "3개(Theater/Distributor/Producer)의 rent를 지불한다.",
+          ];
+          writable: true;
+          signer: true;
+          relations: ["escrow"];
         },
         {
-          "name": "escrow",
-          "writable": true,
-          "pda": {
-            "seeds": [
+          name: "escrow";
+          writable: true;
+          pda: {
+            seeds: [
               {
-                "kind": "const",
-                "value": [
-                  101,
-                  115,
-                  99,
-                  114,
-                  111,
-                  119
-                ]
+                kind: "const";
+                value: [101, 115, 99, 114, 111, 119];
               },
               {
-                "kind": "account",
-                "path": "escrow.movie_id",
-                "account": "movieEscrow"
-              }
-            ]
-          }
+                kind: "account";
+                path: "escrow.movie_id";
+                account: "movieEscrow";
+              },
+            ];
+          };
         },
         {
-          "name": "theaterAllocation",
-          "writable": true
+          name: "theaterAllocation";
+          writable: true;
         },
         {
-          "name": "theaterWallet"
+          name: "theaterWallet";
         },
         {
-          "name": "distributorAllocation",
-          "writable": true
+          name: "distributorAllocation";
+          writable: true;
         },
         {
-          "name": "distributorWallet"
+          name: "distributorWallet";
         },
         {
-          "name": "producerAllocation",
-          "writable": true
+          name: "producerAllocation";
+          writable: true;
         },
         {
-          "name": "producerWallet"
+          name: "producerWallet";
         },
         {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
+          name: "systemProgram";
+          address: "11111111111111111111111111111111";
+        },
+      ];
+      args: [
         {
-          "name": "theaterBps",
-          "type": "u16"
+          name: "theaterBps";
+          type: "u16";
         },
         {
-          "name": "distributorBps",
-          "type": "u16"
+          name: "distributorBps";
+          type: "u16";
         },
         {
-          "name": "distributionFeeBps",
-          "type": "u16"
-        }
-      ]
+          name: "distributionFeeBps";
+          type: "u16";
+        },
+      ];
     },
     {
-      "name": "verifyEscrow",
-      "docs": [
-        "STAGE 3→2 게이트: D의 위험조정검증 통과를 온체인에 기록 (Pending → Verified)."
-      ],
-      "discriminator": [
-        49,
-        158,
-        248,
-        220,
-        144,
-        22,
-        29,
-        84
-      ],
-      "accounts": [
+      name: "verifyEscrow";
+      docs: [
+        "STAGE 3→2 게이트: D의 위험조정검증 통과를 온체인에 기록 (Pending → Verified).",
+      ];
+      discriminator: [49, 158, 248, 220, 144, 22, 29, 84];
+      accounts: [
         {
-          "name": "authority",
-          "docs": [
-            "정산 에이전트 — escrow.authority와 일치해야 함."
-          ],
-          "signer": true,
-          "relations": [
-            "escrow"
-          ]
+          name: "authority";
+          docs: ["정산 에이전트 — escrow.authority와 일치해야 함."];
+          signer: true;
+          relations: ["escrow"];
         },
         {
-          "name": "escrow",
-          "writable": true,
-          "pda": {
-            "seeds": [
+          name: "escrow";
+          writable: true;
+          pda: {
+            seeds: [
               {
-                "kind": "const",
-                "value": [
-                  101,
-                  115,
-                  99,
-                  114,
-                  111,
-                  119
-                ]
+                kind: "const";
+                value: [101, 115, 99, 114, 111, 119];
               },
               {
-                "kind": "account",
-                "path": "escrow.movie_id",
-                "account": "movieEscrow"
-              }
-            ]
-          }
-        }
-      ],
-      "args": []
-    }
-  ],
-  "accounts": [
+                kind: "account";
+                path: "escrow.movie_id";
+                account: "movieEscrow";
+              },
+            ];
+          };
+        },
+      ];
+      args: [];
+    },
+  ];
+  accounts: [
     {
-      "name": "allocation",
-      "discriminator": [
-        147,
-        154,
-        3,
-        177,
-        155,
-        25,
-        131,
-        176
-      ]
+      name: "allocation";
+      discriminator: [147, 154, 3, 177, 155, 25, 131, 176];
     },
     {
-      "name": "movieEscrow",
-      "discriminator": [
-        138,
-        94,
-        182,
-        102,
-        213,
-        155,
-        229,
-        13
-      ]
-    }
-  ],
-  "events": [
+      name: "movieEscrow";
+      discriminator: [138, 94, 182, 102, 213, 155, 229, 13];
+    },
+  ];
+  events: [
     {
-      "name": "depositEvent",
-      "discriminator": [
-        120,
-        248,
-        61,
-        83,
-        31,
-        142,
-        107,
-        144
-      ]
+      name: "depositEvent";
+      discriminator: [120, 248, 61, 83, 31, 142, 107, 144];
     },
     {
-      "name": "refundEvent",
-      "discriminator": [
-        176,
-        159,
-        218,
-        59,
-        94,
-        213,
-        129,
-        218
-      ]
+      name: "refundEvent";
+      discriminator: [176, 159, 218, 59, 94, 213, 129, 218];
     },
     {
-      "name": "settledEvent",
-      "discriminator": [
-        117,
-        207,
-        196,
-        174,
-        197,
-        200,
-        11,
-        67
-      ]
+      name: "settledEvent";
+      discriminator: [117, 207, 196, 174, 197, 200, 11, 67];
     },
     {
-      "name": "verifiedEvent",
-      "discriminator": [
-        51,
-        118,
-        13,
-        104,
-        219,
-        212,
-        45,
-        93
-      ]
-    }
-  ],
-  "errors": [
+      name: "verifiedEvent";
+      discriminator: [51, 118, 13, 104, 219, 212, 45, 93];
+    },
+  ];
+  errors: [
     {
-      "code": 6000,
-      "name": "notImplemented",
-      "msg": "Instruction not implemented yet"
+      code: 6000;
+      name: "notImplemented";
+      msg: "Instruction not implemented yet";
     },
     {
-      "code": 6001,
-      "name": "exceedsClaimable",
-      "msg": "Claim amount exceeds claimable balance"
+      code: 6001;
+      name: "exceedsClaimable";
+      msg: "Claim amount exceeds claimable balance";
     },
     {
-      "code": 6002,
-      "name": "invalidState",
-      "msg": "Invalid escrow state for this instruction"
+      code: 6002;
+      name: "invalidState";
+      msg: "Invalid escrow state for this instruction";
     },
     {
-      "code": 6003,
-      "name": "mathOverflow",
-      "msg": "Arithmetic overflow in settlement math"
+      code: 6003;
+      name: "mathOverflow";
+      msg: "Arithmetic overflow in settlement math";
     },
     {
-      "code": 6004,
-      "name": "ruleHashMismatch",
-      "msg": "Rule hash does not match the approved settlement rule"
+      code: 6004;
+      name: "ruleHashMismatch";
+      msg: "Rule hash does not match the approved settlement rule";
     },
     {
-      "code": 6005,
-      "name": "invalidWaterfallParams",
-      "msg": "Waterfall split parameters are invalid (rates must sum to 100%)"
-    }
-  ],
-  "types": [
+      code: 6005;
+      name: "invalidWaterfallParams";
+      msg: "Waterfall split parameters are invalid (rates must sum to 100%)";
+    },
+  ];
+  types: [
     {
-      "name": "allocation",
-      "docs": [
+      name: "allocation";
+      docs: [
         "권리자별 몫 (STAGE 2 산출, escrow + beneficiary별 PDA).",
         "",
         "인출 제한 불변식 ② (C 테스트 담당): claim 금액 ≤ claimable − claimed",
         "",
         "D 확인: 지금은 필드 추가 불필요. D의 ChainGateway가 escrow당 최대 4개",
         "(Theater/Distributor/Producer/Investor) PDA를 미리 계산해서 조회할 예정 —",
-        "seeds = [b\"allocation\", movie_id.as_bytes(), role as u8]. 역할이 없으면",
+        'seeds = [b"allocation", movie_id.as_bytes(), role as u8]. 역할이 없으면',
         "계정 자체가 없는 것(에러 아님)으로 처리. 나중에 실제로 필요해지면 그때",
-        "필드 추가."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
+        "필드 추가.",
+      ];
+      type: {
+        kind: "struct";
+        fields: [
           {
-            "name": "escrow",
-            "type": "pubkey"
+            name: "escrow";
+            type: "pubkey";
           },
           {
-            "name": "beneficiary",
-            "docs": [
-              "극장/배급/제작/투자 지갑"
-            ],
-            "type": "pubkey"
+            name: "beneficiary";
+            docs: ["극장/배급/제작/투자 지갑"];
+            type: "pubkey";
           },
           {
-            "name": "role",
-            "type": {
-              "defined": {
-                "name": "beneficiaryRole"
-              }
-            }
+            name: "role";
+            type: {
+              defined: {
+                name: "beneficiaryRole";
+              };
+            };
           },
           {
-            "name": "claimable",
-            "docs": [
-              "인출 가능 확정액"
-            ],
-            "type": "u64"
+            name: "claimable";
+            docs: ["인출 가능 확정액"];
+            type: "u64";
           },
           {
-            "name": "claimed",
-            "docs": [
-              "인출 완료 누계"
-            ],
-            "type": "u64"
+            name: "claimed";
+            docs: ["인출 완료 누계"];
+            type: "u64";
           },
           {
-            "name": "ruleVersion",
-            "docs": [
-              "어떤 규칙 vN으로 계산됐는지 바인딩 (STAGE 2)"
-            ],
-            "type": "u16"
+            name: "ruleVersion";
+            docs: ["어떤 규칙 vN으로 계산됐는지 바인딩 (STAGE 2)"];
+            type: "u16";
           },
           {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
+            name: "bump";
+            type: "u8";
+          },
+        ];
+      };
     },
     {
-      "name": "beneficiaryRole",
-      "type": {
-        "kind": "enum",
-        "variants": [
+      name: "beneficiaryRole";
+      type: {
+        kind: "enum";
+        variants: [
           {
-            "name": "theater"
+            name: "theater";
           },
           {
-            "name": "distributor"
+            name: "distributor";
           },
           {
-            "name": "producer"
+            name: "producer";
           },
           {
-            "name": "investor"
-          }
-        ]
-      }
+            name: "investor";
+          },
+        ];
+      };
     },
     {
-      "name": "depositEvent",
-      "docs": [
-        "STAGE 1 발권 이벤트 — D의 STAGE 3 위험조정검증이 온체인에서 직접 읽는 원천 데이터."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
+      name: "depositEvent";
+      docs: [
+        "STAGE 1 발권 이벤트 — D의 STAGE 3 위험조정검증이 온체인에서 직접 읽는 원천 데이터.",
+      ];
+      type: {
+        kind: "struct";
+        fields: [
           {
-            "name": "escrow",
-            "type": "pubkey"
+            name: "escrow";
+            type: "pubkey";
           },
           {
-            "name": "movieId",
-            "type": "string"
+            name: "movieId";
+            type: "string";
           },
           {
-            "name": "payer",
-            "type": "pubkey"
+            name: "payer";
+            type: "pubkey";
           },
           {
-            "name": "amount",
-            "type": "u64"
+            name: "amount";
+            type: "u64";
           },
           {
-            "name": "grossIn",
-            "type": "u64"
+            name: "grossIn";
+            type: "u64";
           },
           {
-            "name": "pending",
-            "type": "u64"
+            name: "pending";
+            type: "u64";
           },
           {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
+            name: "timestamp";
+            type: "i64";
+          },
+        ];
+      };
     },
     {
-      "name": "escrowState",
-      "docs": [
-        "에스크로 상태머신 — packages/schema의 EscrowStatus와 값 대응 (B·C 합의)."
-      ],
-      "type": {
-        "kind": "enum",
-        "variants": [
+      name: "escrowState";
+      docs: [
+        "에스크로 상태머신 — packages/schema의 EscrowStatus와 값 대응 (B·C 합의).",
+      ];
+      type: {
+        kind: "enum";
+        variants: [
           {
-            "name": "pending"
+            name: "pending";
           },
           {
-            "name": "verified"
+            name: "verified";
           },
           {
-            "name": "allocated"
+            name: "allocated";
           },
           {
-            "name": "paid"
+            name: "paid";
           },
           {
-            "name": "disputed"
-          }
-        ]
-      }
+            name: "disputed";
+          },
+        ];
+      };
     },
     {
-      "name": "movieEscrow",
-      "docs": [
-        "영화별 에스크로 (PDA — seeds = [b\"escrow\", movie_id.as_bytes()], 개인키 부존재).",
+      name: "movieEscrow";
+      docs: [
+        '영화별 에스크로 (PDA — seeds = [b"escrow", movie_id.as_bytes()], 개인키 부존재).',
         "",
         "불변식 ①③ (B 테스트 담당):",
         "gross_in = pending + allocated + disputed + paid_out + refunded",
-        "Pending 자금의 유일한 출구 = refund_pending"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
+        "Pending 자금의 유일한 출구 = refund_pending",
+      ];
+      type: {
+        kind: "struct";
+        fields: [
           {
-            "name": "movieId",
-            "docs": [
-              "PDA 시드로 쓰이지만 시드는 역산 불가하므로 조회 편의를 위해 별도 저장."
-            ],
-            "type": "string"
+            name: "movieId";
+            docs: [
+              "PDA 시드로 쓰이지만 시드는 역산 불가하므로 조회 편의를 위해 별도 저장.",
+            ];
+            type: "string";
           },
           {
-            "name": "authority",
-            "docs": [
-              "판정 서명 권한 (정산 에이전트)"
-            ],
-            "type": "pubkey"
+            name: "authority";
+            docs: ["판정 서명 권한 (정산 에이전트)"];
+            type: "pubkey";
           },
           {
-            "name": "usdcMint",
-            "type": "pubkey"
+            name: "usdcMint";
+            type: "pubkey";
           },
           {
-            "name": "vault",
-            "docs": [
-              "에스크로 USDC 토큰 계정"
-            ],
-            "type": "pubkey"
+            name: "vault";
+            docs: ["에스크로 USDC 토큰 계정"];
+            type: "pubkey";
           },
           {
-            "name": "contractHash",
-            "docs": [
-              "계약서 원문(PDF) 해시 — rule_hash가 실제로 이 원문에서 나왔는지 증명하는 축"
-            ],
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
+            name: "contractHash";
+            docs: [
+              "계약서 원문(PDF) 해시 — rule_hash가 실제로 이 원문에서 나왔는지 증명하는 축",
+            ];
+            type: {
+              array: ["u8", 32];
+            };
           },
           {
-            "name": "ruleHash",
-            "docs": [
-              "승인된 정산 규칙 vN(JSON)의 해시 (STAGE 0) — 승인 후 변경 불가"
-            ],
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
+            name: "ruleHash";
+            docs: [
+              "승인된 정산 규칙 vN(JSON)의 해시 (STAGE 0) — 승인 후 변경 불가",
+            ];
+            type: {
+              array: ["u8", 32];
+            };
           },
           {
-            "name": "ruleVersion",
-            "type": "u16"
+            name: "ruleVersion";
+            type: "u16";
           },
           {
-            "name": "state",
-            "type": {
-              "defined": {
-                "name": "escrowState"
-              }
-            }
+            name: "state";
+            type: {
+              defined: {
+                name: "escrowState";
+              };
+            };
           },
           {
-            "name": "grossIn",
-            "docs": [
-              "총 유입 누계"
-            ],
-            "type": "u64"
+            name: "grossIn";
+            docs: ["총 유입 누계"];
+            type: "u64";
           },
           {
-            "name": "pending",
-            "docs": [
-              "미귀속(Pending) — 전원 인출 불가"
-            ],
-            "type": "u64"
+            name: "pending";
+            docs: ["미귀속(Pending) — 전원 인출 불가"];
+            type: "u64";
           },
           {
-            "name": "allocated",
-            "docs": [
-              "settle_batch로 귀속 확정된 합계"
-            ],
-            "type": "u64"
+            name: "allocated";
+            docs: ["settle_batch로 귀속 확정된 합계"];
+            type: "u64";
           },
           {
-            "name": "disputed",
-            "docs": [
-              "보류 격리분"
-            ],
-            "type": "u64"
+            name: "disputed";
+            docs: ["보류 격리분"];
+            type: "u64";
           },
           {
-            "name": "paidOut",
-            "docs": [
-              "지급 완료 누계"
-            ],
-            "type": "u64"
+            name: "paidOut";
+            docs: ["지급 완료 누계"];
+            type: "u64";
           },
           {
-            "name": "refunded",
-            "docs": [
-              "관객 환불 누계"
-            ],
-            "type": "u64"
+            name: "refunded";
+            docs: ["관객 환불 누계"];
+            type: "u64";
           },
           {
-            "name": "batchCount",
-            "type": "u32"
+            name: "batchCount";
+            type: "u32";
           },
           {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
+            name: "bump";
+            type: "u8";
+          },
+        ];
+      };
     },
     {
-      "name": "refundEvent",
-      "docs": [
-        "STAGE 1 환불 이벤트 — DepositEvent와 대칭, D의 STAGE 3가 읽는 원천 데이터."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
+      name: "refundEvent";
+      docs: [
+        "STAGE 1 환불 이벤트 — DepositEvent와 대칭, D의 STAGE 3가 읽는 원천 데이터.",
+      ];
+      type: {
+        kind: "struct";
+        fields: [
           {
-            "name": "escrow",
-            "type": "pubkey"
+            name: "escrow";
+            type: "pubkey";
           },
           {
-            "name": "movieId",
-            "type": "string"
+            name: "movieId";
+            type: "string";
           },
           {
-            "name": "payer",
-            "type": "pubkey"
+            name: "payer";
+            type: "pubkey";
           },
           {
-            "name": "amount",
-            "type": "u64"
+            name: "amount";
+            type: "u64";
           },
           {
-            "name": "pending",
-            "type": "u64"
+            name: "pending";
+            type: "u64";
           },
           {
-            "name": "refunded",
-            "type": "u64"
+            name: "refunded";
+            type: "u64";
           },
           {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
+            name: "timestamp";
+            type: "i64";
+          },
+        ];
+      };
     },
     {
-      "name": "settledEvent",
-      "docs": [
-        "STAGE 2 정산 완료 이벤트 — D의 온체인 이력 조회 대상."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
+      name: "settledEvent";
+      docs: ["STAGE 2 정산 완료 이벤트 — D의 온체인 이력 조회 대상."];
+      type: {
+        kind: "struct";
+        fields: [
           {
-            "name": "escrow",
-            "type": "pubkey"
+            name: "escrow";
+            type: "pubkey";
           },
           {
-            "name": "movieId",
-            "type": "string"
+            name: "movieId";
+            type: "string";
           },
           {
-            "name": "gross",
-            "type": "u64"
+            name: "gross";
+            type: "u64";
           },
           {
-            "name": "levy",
-            "type": "u64"
+            name: "levy";
+            type: "u64";
           },
           {
-            "name": "vat",
-            "type": "u64"
+            name: "vat";
+            type: "u64";
           },
           {
-            "name": "theaterAmount",
-            "type": "u64"
+            name: "theaterAmount";
+            type: "u64";
           },
           {
-            "name": "distributionFee",
-            "type": "u64"
+            name: "distributionFee";
+            type: "u64";
           },
           {
-            "name": "producerAmount",
-            "type": "u64"
+            name: "producerAmount";
+            type: "u64";
           },
           {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
+            name: "timestamp";
+            type: "i64";
+          },
+        ];
+      };
     },
     {
-      "name": "verifiedEvent",
-      "docs": [
-        "STAGE 3 검증 통과 이벤트 — D의 온체인 이력 조회 대상."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
+      name: "verifiedEvent";
+      docs: ["STAGE 3 검증 통과 이벤트 — D의 온체인 이력 조회 대상."];
+      type: {
+        kind: "struct";
+        fields: [
           {
-            "name": "escrow",
-            "type": "pubkey"
+            name: "escrow";
+            type: "pubkey";
           },
           {
-            "name": "movieId",
-            "type": "string"
+            name: "movieId";
+            type: "string";
           },
           {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
-    }
-  ]
+            name: "timestamp";
+            type: "i64";
+          },
+        ];
+      };
+    },
+  ];
 };
