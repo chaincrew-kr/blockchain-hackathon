@@ -34,6 +34,8 @@ export interface RuleConflict {
 /** 양측 승인을 거쳐 확정된 정산 규칙. 해시가 온체인(init_escrow)에 등록된다. */
 export interface SettlementRule {
   version: number;
+  /** 에스크로 PDA 시드로 쓰이는 식별자 — Anchor state.rs의 movie_id와 동일 값 */
+  movieId: string;
   movieTitle: string;
   /** 부율 — 예: 서울 한국영화 5:5 */
   revenueShare: { theater: number; distributor: number };
@@ -67,6 +69,12 @@ export interface SettlementRule {
   clauses: ExtractedClause[];
   conflicts: RuleConflict[];
   approvals: { distributor: boolean; theater: boolean };
+  /**
+   * 계약서 원문(PDF) 해시(hex). 온체인 contract_hash와 일치해야 한다.
+   * ruleHash(추출된 규칙 JSON의 해시)와는 다른 축 — 원문↔추출규칙 두 지점을
+   * 각각 증명한다.
+   */
+  contractHash: string | null;
   /** 승인 완료 후 계산된 규칙 해시(hex). 온체인 rule_hash와 일치해야 한다 */
   ruleHash: string | null;
 }
@@ -186,6 +194,10 @@ export interface TimelineEntry {
 }
 
 export interface DashboardSnapshot {
+  /** Anchor state.rs의 movie_id — 에스크로 PDA 조회에 사용 */
+  movieId: string;
+  /** 계약서 원문 해시(hex) — SettlementRule.contractHash와 동일 값 */
+  contractHash: string;
   status: EscrowStatus;
   grossIn: number;
   pending: number;
