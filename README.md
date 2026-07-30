@@ -264,6 +264,10 @@ blockchain-hackathon/
 └── package.json
 ```
 
+Anchor instruction별 B·C 담당은
+[`programs/movie_escrow/README.md`](programs/movie_escrow/README.md)의 역할표를
+기준으로 합니다.
+
 ---
 
 ## Tech Stack
@@ -317,6 +321,9 @@ feature/* → dev → main
 - 모든 기능은 `feature/*` 브랜치에서 개발하고 PR로 `dev`에 통합합니다.
 - `packages/schema` 변경은 전원 리뷰가 필요합니다.
 - `packages/ai-data`는 A가 소유하고, D는 공개 인터페이스만 사용합니다.
+- B·C는 [movie_escrow 역할표](programs/movie_escrow/README.md)에 정의된
+  instruction 파일을 각각 담당하고 `state.rs`, `lib.rs`, `error.rs`, `mod.rs`는
+  공동으로 확인합니다.
 - 지갑·개인키·API 키는 Git에 커밋하지 않습니다.
 - 지갑·정산 코드 PR은 B·C 중 한 명이 추가 확인합니다.
 - D의 판정 파이프라인은 B·C의 Anchor IDL과 A의 대시보드 API 계약을 함께
