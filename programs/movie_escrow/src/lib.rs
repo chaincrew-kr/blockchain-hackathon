@@ -15,7 +15,7 @@ pub mod state;
 
 use instructions::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("C65w81oX73ngPa6PjdLR49rsXag9kM1mRD1rPT21NTik");
 
 #[program]
 pub mod movie_escrow {
@@ -26,10 +26,12 @@ pub mod movie_escrow {
     /// STAGE 0b: 승인된 정산 규칙 해시를 등록하며 에스크로 초기화.
     pub fn init_escrow(
         ctx: Context<InitEscrow>,
+        movie_id: String,
+        contract_hash: [u8; 32],
         rule_hash: [u8; 32],
         rule_version: u16,
     ) -> Result<()> {
-        instructions::init_escrow::handler(ctx, rule_hash, rule_version)
+        instructions::init_escrow::handler(ctx, movie_id, contract_hash, rule_hash, rule_version)
     }
 
     /// STAGE 1: 관객 결제 → 에스크로 PDA 입금 (상태 Pending).
