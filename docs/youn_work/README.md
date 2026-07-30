@@ -7,7 +7,10 @@
 ## 현재 상태 — 2026-07-30
 
 - ✅ 완료: `init_escrow`, `deposit`, `refund_pending` 구현 + 테스트 통과 + `dev` merge 완료
-- 🟡 진행 대기: `settle_batch` (D와 워터폴 출력 구조 합의 필요)
+- ✅ 완료: `verify_escrow` 구현 — STAGE 3→2 게이트(Pending → Verified), `dev` merge 완료 (PR #27)
+- ✅ 완료: CI `npm ci` lockfile 불완전 문제 수정 (PR #26)
+- ✅ 완료: D와 `Allocation` 출력 구조 합의 — 필드 추가 불필요, 역할별(최대 4개) PDA를 `[b"allocation", movie_id, role_byte]` 시드로 조회 (커밋 e11555b)
+- ✅ 완료: `settle_batch` 구현(축소 워터폴) + 테스트 통과 + localnet 배포 확인
 - ⬜ 미완료: `authority` 서명 검증 (C 담당 instruction들과 공유되는 문제)
 
 ## 결정 사항
@@ -39,13 +42,33 @@
 - escrow PDA 서명 CPI로 vault → 관객 반환, `pending -= amount`(초과 시 자동 거부), `refunded += amount`
 - 테스트: 정상 환불, 초과 환불 거부, 타인 계정 환불 거부
 
+### `verify_escrow` (STAGE 3→2 게이트)
+
+- D의 STAGE 3 위험조정검증 통과를 온체인에 기록 — `Pending → Verified` 전환만 담당
+- `guards::require_state`로 `settle_batch`가 `Verified` 상태만 받아들이도록 가드
+- `has_one = authority`로 escrow.authority 본인만 호출 가능
+- 테스트: 타인 호출 거부, 정상 전환, 이미 Verified인 상태에서 재호출 거부
+
+### `settle_batch` (STAGE 2, 축소 워터폴)
+
+- 팀 결정: 계산 위치는 **온체인**(Rust에서 직접 나눗셈·반올림), 워터폴 깊이는 **축소**(부과금→VAT→부율 분할→배급수수료까지만; MG 상환·투자 상환·이익 배분은 핸들러 하단에 주석으로만 남김 — 재개 시 언급해줄 것)
+- 순서: 부과금(가액÷1.03×3%, 반올림) → VAT(잔액÷11, 내림) → 부율 분할(`theater_bps`/`distributor_bps`, 합 10000 강제) → 배급수수료(`distribution_fee_bps`, 배급 몫에서 공제) → 잔액 전액 Producer
+- 부과금·VAT는 어떤 Allocation에도 안 묶이는 통계상 지급으로 보고 `pending → paid_out` 직행, 나머지 3개 몫은 `pending → allocated` + Theater/Distributor/Producer Allocation PDA(`init`) 생성. Investor Allocation은 축소판에서 몫이 항상 0이라 아예 만들지 않음
+- 규칙 파라미터(`*_bps`)는 인자로 받아 authority 서명만으로 신뢰 — `rule_hash` 대조 검증은 SettlementRule 인코딩 방식이 아직 B·D 간 미확정(`docs/SCHEMA_CONTRACT.md` §11)이라 TODO로 남김
+- 테스트: Pending 상태에서 호출 거부, bps 합 100% 아닐 때 거부, 타인 호출 거부, 정상 실행 시 손 계산값과 온체인 결과 일치 + 불변식① 확인
+
 ## PR 이력
 
 - #21 `feat/escrow-fund-flow → dev` — 툴체인 고정 + state.rs 스키마 확정
 - #24 `feat/escrow-fund-flow → dev` — init_escrow/deposit/refund_pending 구현
+- #26 `feat/escrow-fund-flow → dev` — CI `npm ci` lockfile 불완전 문제 수정
+- #27 `feat/escrow-fund-flow → dev` — verify_escrow 구현 (STAGE 3→2 게이트)
+- #28 `feat/escrow-fund-flow → dev` — Allocation 구조체 필드 확장 관련 주석 추가 (D 확인 반영)
+- (다음 PR) `feat/escrow-fund-flow → dev` — settle_batch 구현 (축소 워터폴)
 
 ## 다음 할 일
 
-1. **`settle_batch` 시작 전 D와 맞출 것**: 워터폴 결과(`Allocation` 배열) 구조가 D의 Agent가 기대하는 형태와 맞는지 (`docs/SCHEMA_CONTRACT.md` §11 "권리자 잔액" 항목 — B·D 미결정)
-2. 공제 계산 위치(온체인 vs 오프체인), 워터폴 구현 깊이(풀 vs 축소) — 팀 결정 필요
-3. `authority` 서명 검증 — C와 공동 설계 필요
+1. `authority` 서명 검증 — C와 공동 설계 필요
+2. `settle_batch` 풀 워터폴(MG 상환·투자 상환·이익 배분) — `MovieEscrow`에 `mg_remaining`/`investment_remaining` 필드 추가 필요, 지금은 `settle_batch.rs` 핸들러 하단에 주석으로만 위치 표시해둠
+3. `rule_hash` 온체인 검증 — SettlementRule → 해시 인코딩 방식 B·D 합의 필요 (`docs/SCHEMA_CONTRACT.md` §11), 합의되면 `settle_batch`의 `*_bps` 인자를 해시 대조로 검증하도록 보강
+4. `docs/SCHEMA_CONTRACT.md` §11 "권리자 잔액"·`ruleHash` 행 — 위 결정들 반영해 갱신 필요

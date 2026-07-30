@@ -12,6 +12,8 @@ pub enum EscrowError {
     MathOverflow,
     #[msg("Rule hash does not match the approved settlement rule")]
     RuleHashMismatch,
+    #[msg("Waterfall split parameters are invalid (rates must sum to 100%)")]
+    InvalidWaterfallParams,
     #[msg("Signer is not the beneficiary of this allocation")]
     Unauthorized,
 }
