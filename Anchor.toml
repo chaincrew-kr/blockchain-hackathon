@@ -1,5 +1,12 @@
 # Anchor 워크스페이스 설정 — B·C가 관리.
 # 프로그램 ID는 placeholder다. `anchor keys sync`로 각자 키에 맞춰 갱신할 것.
+
+# anchor-lang 0.31.1이 기본 추천하는 solana 2.1.0/platform-tools v1.43(rustc 1.79)은
+# edition2024를 쓰는 최신 crates.io 의존성(zeroize_derive, block-buffer 등)을 못 빌드함.
+# solana_version을 명시로 고정해 팀 전원이 같은(더 최신) 툴체인을 쓰도록 강제.
+[toolchain]
+solana_version = "4.1.1"
+
 [features]
 resolver = true
 skip-lint = false
