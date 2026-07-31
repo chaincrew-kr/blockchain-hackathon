@@ -12,6 +12,7 @@ import type {
   SettlementRule,
 } from "@chaincrew/schema";
 import type { ExtractionApiResponse } from "./api";
+import { movieIdFromContractHash } from "./hash";
 
 type Evidence = ExtractionApiResponse["evidence"][number];
 
@@ -60,8 +61,15 @@ export interface AdaptedExtraction {
   parties: PartyNames;
 }
 
-/** 서버 응답을 화면이 쓰는 형태로 변환한다. */
-export function adaptExtraction(api: ExtractionApiResponse): AdaptedExtraction {
+/**
+ * 서버 응답을 화면이 쓰는 형태로 변환한다.
+ * @param contractHash 업로드한 PDF 원본의 SHA-256 해시(hex). 호출부(BackofficePage)에서
+ *   lib/hash.ts의 sha256Hex()로 미리 계산해서 넘겨준다. movieId도 이 값에서 파생된다.
+ */
+export function adaptExtraction(
+  api: ExtractionApiResponse,
+  contractHash: string,
+): AdaptedExtraction {
   const { rule, evidence, conflicts, parties } = api;
 
   // 정산일 충돌 여부 (있으면 "정산일" 행에 conflict 배지 표시)
@@ -114,6 +122,7 @@ export function adaptExtraction(api: ExtractionApiResponse): AdaptedExtraction {
 
   const settlementRule: SettlementRule = {
     version: 1, // STAGE 0 첫 추출 = v1. 재추출/개정 로직은 아직 없음.
+    movieId: movieIdFromContractHash(contractHash),
     movieTitle: parties.movieTitle,
     revenueShare: {
       theater: region?.split.THEATER ?? 0,
@@ -130,6 +139,7 @@ export function adaptExtraction(api: ExtractionApiResponse): AdaptedExtraction {
     clauses,
     conflicts: ruleConflicts,
     approvals: { distributor: false, theater: false },
+    contractHash,
     ruleHash: null, // 온체인 등록(init_escrow) 이후 B가 채워줄 값
   };
 

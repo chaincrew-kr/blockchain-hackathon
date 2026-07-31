@@ -13,6 +13,7 @@ import type { SettlementRule } from "@chaincrew/schema";
 
 import { extractContract } from "../../lib/api";
 import { adaptExtraction, type PartyNames } from "../../lib/adaptExtraction";
+import { sha256Hex } from "../../lib/hash";
 
 const STEPS = [
   { n: "01", t: "계약서 업로드", s: "now" },
@@ -34,9 +35,15 @@ export function BackofficePage() {
     setLoading(true);
     setError(null);
     try {
-      const apiResult = await extractContract(file);
-      const { rule: settlementRule, parties: partyNames } =
-        adaptExtraction(apiResult);
+      // 계약서 원문 해시는 서버 응답과 무관하게 브라우저에서 직접 계산 (FR-06 원칙)
+      const [apiResult, contractHash] = await Promise.all([
+        extractContract(file),
+        sha256Hex(await file.arrayBuffer()),
+      ]);
+      const { rule: settlementRule, parties: partyNames } = adaptExtraction(
+        apiResult,
+        contractHash,
+      );
       setRule(settlementRule);
       setParties(partyNames);
     } catch (err) {
@@ -270,6 +277,16 @@ export function BackofficePage() {
                 온체인 등록{" "}
                 <span className="muted">— init_escrow(rule_hash, ver)</span>
               </h2>
+              <div className="label">movieId (에스크로 PDA 시드)</div>
+              <div className="hash-box" style={{ marginBottom: 14 }}>
+                {rule.movieId}
+              </div>
+              <div className="label">
+                계약서 원문 해시 (SHA-256, 브라우저 계산)
+              </div>
+              <div className="hash-box" style={{ marginBottom: 14 }}>
+                {rule.contractHash}
+              </div>
               <div className="label">규칙 해시 (SHA-256, 승인 후 확정)</div>
               <div className="hash-box">
                 {rule.ruleHash ??
