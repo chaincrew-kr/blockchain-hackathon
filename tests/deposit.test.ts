@@ -93,7 +93,7 @@ describe("deposit", () => {
 
   it("transfers USDC into the vault and updates gross_in/pending", async () => {
     await program.methods
-      .deposit(new anchor.BN(DEPOSIT_AMOUNT))
+      .deposit("SCR-1", "A12", new anchor.BN(DEPOSIT_AMOUNT))
       .accounts({
         payer: provider.wallet.publicKey,
         escrow: escrowPda,
@@ -114,7 +114,7 @@ describe("deposit", () => {
 
   it("accumulates across multiple deposits", async () => {
     await program.methods
-      .deposit(new anchor.BN(DEPOSIT_AMOUNT))
+      .deposit("SCR-1", "A13", new anchor.BN(DEPOSIT_AMOUNT))
       .accounts({
         payer: provider.wallet.publicKey,
         escrow: escrowPda,
@@ -132,7 +132,7 @@ describe("deposit", () => {
   it("rejects a zero-amount deposit", async () => {
     await expect(
       program.methods
-        .deposit(new anchor.BN(0))
+        .deposit("SCR-1", "A14", new anchor.BN(0))
         .accounts({
           payer: provider.wallet.publicKey,
           escrow: escrowPda,

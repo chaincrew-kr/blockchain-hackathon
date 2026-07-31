@@ -160,7 +160,10 @@ export type MovieEscrow = {
     },
     {
       name: "deposit";
-      docs: ["STAGE 1: 관객 결제 → 에스크로 PDA 입금 (상태 Pending)."];
+      docs: [
+        "STAGE 1: 관객 결제 → 에스크로 PDA 입금 (상태 Pending). `screening_id`/",
+        "`seat`는 D의 P5 해시 연속성 검증 원천 데이터 (이슈 #8).",
+      ];
       discriminator: [242, 35, 198, 137, 82, 225, 242, 182];
       accounts: [
         {
@@ -290,6 +293,14 @@ export type MovieEscrow = {
         },
       ];
       args: [
+        {
+          name: "screeningId";
+          type: "string";
+        },
+        {
+          name: "seat";
+          type: "string";
+        },
         {
           name: "amount";
           type: "u64";
@@ -635,6 +646,14 @@ export type MovieEscrow = {
         },
       ];
       args: [
+        {
+          name: "screeningId";
+          type: "string";
+        },
+        {
+          name: "seat";
+          type: "string";
+        },
         {
           name: "amount";
           type: "u64";
@@ -1008,7 +1027,10 @@ export type MovieEscrow = {
     {
       name: "depositEvent";
       docs: [
-        "STAGE 1 발권 이벤트 — D의 STAGE 3 위험조정검증이 온체인에서 직접 읽는 원천 데이터.",
+        "STAGE 1 발권 이벤트 — D의 STAGE 3 위험조정검증(P5 해시 연속성 포함)이",
+        "오프체인에서 읽는 원천 데이터. `TicketEvent`(packages/schema)와 필드",
+        '대응: kind="issue"(이벤트 종류로 암시), screening_id→screeningId,',
+        "seat→seat, amount→amount, timestamp(ms)→timestamp.",
       ];
       type: {
         kind: "struct";
@@ -1026,6 +1048,14 @@ export type MovieEscrow = {
             type: "pubkey";
           },
           {
+            name: "screeningId";
+            type: "string";
+          },
+          {
+            name: "seat";
+            type: "string";
+          },
+          {
             name: "amount";
             type: "u64";
           },
@@ -1039,6 +1069,10 @@ export type MovieEscrow = {
           },
           {
             name: "timestamp";
+            docs: [
+              "unix ms — D는 ms를 전제로 한다 (packages/schema). Solana",
+              "Clock::unix_timestamp는 초 단위라 여기서 ×1000 해서 맞춘다.",
+            ];
             type: "i64";
           },
         ];
@@ -1214,7 +1248,8 @@ export type MovieEscrow = {
     {
       name: "refundEvent";
       docs: [
-        "STAGE 1 환불 이벤트 — DepositEvent와 대칭, D의 STAGE 3가 읽는 원천 데이터.",
+        "STAGE 1 환불 이벤트 — DepositEvent와 대칭, D의 P5 해시 연속성 검증이",
+        '오프체인에서 읽는 원천 데이터 (kind="refund", 이슈 #8).',
       ];
       type: {
         kind: "struct";
@@ -1232,6 +1267,14 @@ export type MovieEscrow = {
             type: "pubkey";
           },
           {
+            name: "screeningId";
+            type: "string";
+          },
+          {
+            name: "seat";
+            type: "string";
+          },
+          {
             name: "amount";
             type: "u64";
           },
@@ -1245,6 +1288,7 @@ export type MovieEscrow = {
           },
           {
             name: "timestamp";
+            docs: ["unix ms — DepositEvent와 동일하게 ×1000."];
             type: "i64";
           },
         ];
