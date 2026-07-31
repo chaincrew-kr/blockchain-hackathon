@@ -40,10 +40,19 @@ describe("claim", () => {
   const THEATER_BPS = 5000;
   const DISTRIBUTOR_BPS = 5000;
   const DISTRIBUTION_FEE_BPS = 1000;
+  const INVESTOR_PROFIT_BPS = 0;
 
   // settle_batch.test.ts와 동일한 인코딩이어야 한다.
   const RULE_HASH = createHash("sha256")
-    .update([RULE_VERSION, THEATER_BPS, DISTRIBUTOR_BPS, DISTRIBUTION_FEE_BPS].join("|"))
+    .update(
+      [
+        RULE_VERSION,
+        THEATER_BPS,
+        DISTRIBUTOR_BPS,
+        DISTRIBUTION_FEE_BPS,
+        INVESTOR_PROFIT_BPS,
+      ].join("|"),
+    )
     .digest();
 
   const EXPECTED_THEATER = 4_413_063;
@@ -55,6 +64,7 @@ describe("claim", () => {
   const theaterWallet = Keypair.generate();
   const distributorWallet = Keypair.generate();
   const producerWallet = Keypair.generate();
+  const investorWallet = Keypair.generate();
 
   function allocationPda(movieId: string, role: number) {
     return PublicKey.findProgramAddressSync(
@@ -83,9 +93,12 @@ describe("claim", () => {
     await program.methods
       .initEscrow(
         movieId,
+        Keypair.generate().publicKey,
         Array.from(new Uint8Array(32).fill(1)),
         Array.from(RULE_HASH),
         RULE_VERSION,
+        new anchor.BN(0),
+        new anchor.BN(0),
       )
       .accounts({
         payer: provider.wallet.publicKey,
@@ -125,6 +138,7 @@ describe("claim", () => {
         THEATER_BPS,
         DISTRIBUTOR_BPS,
         DISTRIBUTION_FEE_BPS,
+        INVESTOR_PROFIT_BPS,
       )
       .accounts({
         authority: authority.publicKey,
@@ -135,6 +149,8 @@ describe("claim", () => {
         distributorWallet: distributorWallet.publicKey,
         producerAllocation: allocationPda(movieId, 2),
         producerWallet: producerWallet.publicKey,
+        investorAllocation: allocationPda(movieId, 3),
+        investorWallet: investorWallet.publicKey,
         systemProgram: PublicKey.default,
       })
       .signers([authority])

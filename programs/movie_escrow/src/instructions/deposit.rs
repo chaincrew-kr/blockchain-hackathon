@@ -66,19 +66,23 @@ pub fn handler(
     seat: String,
     amount: u64,
 ) -> Result<()> {
-    require!(amount > 0, EscrowError::InvalidState);
-
-    token::transfer(
-        CpiContext::new(
-            ctx.accounts.token_program.to_account_info(),
-            Transfer {
-                from: ctx.accounts.payer_token_account.to_account_info(),
-                to: ctx.accounts.vault.to_account_info(),
-                authority: ctx.accounts.payer.to_account_info(),
-            },
-        ),
-        amount,
-    )?;
+    // 이슈 #8 잔여 항목 — 팀 결정(2026-08-01): 0원 무료 발권을 체인에 허용.
+    // D의 무료 발권 비율(P3) 검증이 온체인 데이터로 잡히려면 무료 티켓도
+    // TicketEvent(amount=0)로 로그에 남아야 한다. amount=0이면 SPL transfer
+    // 자체를 생략 — 실어 봐야 무의미한 0-lamport 이체라 CPI를 아낀다.
+    if amount > 0 {
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    from: ctx.accounts.payer_token_account.to_account_info(),
+                    to: ctx.accounts.vault.to_account_info(),
+                    authority: ctx.accounts.payer.to_account_info(),
+                },
+            ),
+            amount,
+        )?;
+    }
 
     let escrow = &mut ctx.accounts.escrow;
     escrow.gross_in = escrow

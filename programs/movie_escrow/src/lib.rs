@@ -24,15 +24,29 @@ pub mod movie_escrow {
 
     // ── B 자금흐름 ──────────────────────────────────────────────────────
 
-    /// STAGE 0b: 승인된 정산 규칙 해시를 등록하며 에스크로 초기화.
+    /// STAGE 0b: 승인된 정산 규칙 해시를 등록하며 에스크로 초기화. `theater`는
+    /// 이슈 #5(D의 상영관 이력 조회용), `mg_amount`/`investment_amount`는
+    /// 이슈 #7 풀 워터폴의 MG·투자 상환 한도 초기값.
     pub fn init_escrow(
         ctx: Context<InitEscrow>,
         movie_id: String,
+        theater: Pubkey,
         contract_hash: [u8; 32],
         rule_hash: [u8; 32],
         rule_version: u16,
+        mg_amount: u64,
+        investment_amount: u64,
     ) -> Result<()> {
-        instructions::init_escrow::handler(ctx, movie_id, contract_hash, rule_hash, rule_version)
+        instructions::init_escrow::handler(
+            ctx,
+            movie_id,
+            theater,
+            contract_hash,
+            rule_hash,
+            rule_version,
+            mg_amount,
+            investment_amount,
+        )
     }
 
     /// STAGE 1: 관객 결제 → 에스크로 PDA 입금 (상태 Pending). `screening_id`/
@@ -62,8 +76,8 @@ pub mod movie_escrow {
     }
 
     /// STAGE 2: 회차(screening) 단위 공제 워터폴 실행 후 권리자별 Allocation에
-    /// 누적 확정 (축소 워터폴 — 부과금·VAT·부율 분할·배급수수료. MG·투자
-    /// 상환·이익 배분은 미구현). `amount`는 escrow.pending 전체가 아니라
+    /// 누적 확정 (풀 워터폴 — 부과금·VAT·부율 분할·배급수수료·MG 상환·투자
+    /// 상환·이익 배분, 이슈 #7). `amount`는 escrow.pending 전체가 아니라
     /// 이번 회차 순매출만 가리킨다 (이슈 #6).
     pub fn settle_batch(
         ctx: Context<SettleBatch>,
@@ -72,6 +86,7 @@ pub mod movie_escrow {
         theater_bps: u16,
         distributor_bps: u16,
         distribution_fee_bps: u16,
+        investor_profit_bps: u16,
     ) -> Result<()> {
         instructions::settle_batch::handler(
             ctx,
@@ -80,6 +95,7 @@ pub mod movie_escrow {
             theater_bps,
             distributor_bps,
             distribution_fee_bps,
+            investor_profit_bps,
         )
     }
 
