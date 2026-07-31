@@ -50,15 +50,26 @@ pub mod movie_escrow {
         instructions::verify_escrow::handler(ctx)
     }
 
-    /// STAGE 2: 공제 워터폴 실행 후 권리자별 Allocation 확정 (축소 워터폴 —
-    /// 부과금·VAT·부율 분할·배급수수료. MG·투자 상환·이익 배분은 미구현).
+    /// STAGE 2: 회차(screening) 단위 공제 워터폴 실행 후 권리자별 Allocation에
+    /// 누적 확정 (축소 워터폴 — 부과금·VAT·부율 분할·배급수수료. MG·투자
+    /// 상환·이익 배분은 미구현). `amount`는 escrow.pending 전체가 아니라
+    /// 이번 회차 순매출만 가리킨다 (이슈 #6).
     pub fn settle_batch(
         ctx: Context<SettleBatch>,
+        screening_id: String,
+        amount: u64,
         theater_bps: u16,
         distributor_bps: u16,
         distribution_fee_bps: u16,
     ) -> Result<()> {
-        instructions::settle_batch::handler(ctx, theater_bps, distributor_bps, distribution_fee_bps)
+        instructions::settle_batch::handler(
+            ctx,
+            screening_id,
+            amount,
+            theater_bps,
+            distributor_bps,
+            distribution_fee_bps,
+        )
     }
 
     // ── C 판정집행 ──────────────────────────────────────────────────────

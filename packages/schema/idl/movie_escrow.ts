@@ -686,16 +686,18 @@ export type MovieEscrow = {
     {
       name: "settleBatch";
       docs: [
-        "STAGE 2: 공제 워터폴 실행 후 권리자별 Allocation 확정 (축소 워터폴 —",
-        "부과금·VAT·부율 분할·배급수수료. MG·투자 상환·이익 배분은 미구현).",
+        "STAGE 2: 회차(screening) 단위 공제 워터폴 실행 후 권리자별 Allocation에",
+        "누적 확정 (축소 워터폴 — 부과금·VAT·부율 분할·배급수수료. MG·투자",
+        "상환·이익 배분은 미구현). `amount`는 escrow.pending 전체가 아니라",
+        "이번 회차 순매출만 가리킨다 (이슈 #6).",
       ];
       discriminator: [22, 2, 21, 223, 225, 122, 163, 214];
       accounts: [
         {
           name: "authority";
           docs: [
-            "정산 에이전트 — escrow.authority와 일치해야 하고, Allocation PDA",
-            "3개(Theater/Distributor/Producer)의 rent를 지불한다.",
+            "정산 에이전트 — escrow.authority와 일치해야 하고, Allocation PDA를",
+            "(처음 나오는 회차라면) 새로 만드는 rent를 지불한다.",
           ];
           writable: true;
           signer: true;
@@ -720,6 +722,7 @@ export type MovieEscrow = {
         },
         {
           name: "theaterAllocation";
+          docs: ["같은 영화의 여러 회차가 이 계정에 순서대로 누적된다."];
           writable: true;
         },
         {
@@ -745,6 +748,14 @@ export type MovieEscrow = {
         },
       ];
       args: [
+        {
+          name: "screeningId";
+          type: "string";
+        },
+        {
+          name: "amount";
+          type: "u64";
+        },
         {
           name: "theaterBps";
           type: "u16";
@@ -1282,7 +1293,10 @@ export type MovieEscrow = {
     },
     {
       name: "settledEvent";
-      docs: ["STAGE 2 정산 완료 이벤트 — D의 온체인 이력 조회 대상."];
+      docs: [
+        "STAGE 2 정산 완료 이벤트 — D의 온체인 이력 조회 대상.",
+        "screening_id는 계정에는 없고 이 이벤트로만 추적된다.",
+      ];
       type: {
         kind: "struct";
         fields: [
@@ -1292,6 +1306,10 @@ export type MovieEscrow = {
           },
           {
             name: "movieId";
+            type: "string";
+          },
+          {
+            name: "screeningId";
             type: "string";
           },
           {
