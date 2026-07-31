@@ -1,7 +1,26 @@
 {
   "type": "OBJECT",
-  "required": ["rule", "evidence", "conflicts", "overallConfidence"],
+  "required": ["parties", "rule", "evidence", "conflicts", "overallConfidence"],
   "properties": {
+    "parties": {
+      "type": "OBJECT",
+      "description": "계약서 표지·서두에 나오는 당사자 정보. 화면에 이름을 표시하는 용도로만 쓰이며 rule 계산엔 영향 없음.",
+      "required": ["movieTitle", "distributor", "theater"],
+      "properties": {
+        "movieTitle": {
+          "type": "STRING",
+          "description": "계약 대상 영화 제목 원문 그대로."
+        },
+        "distributor": {
+          "type": "STRING",
+          "description": "배급자(배급사) 상호명 원문 그대로."
+        },
+        "theater": {
+          "type": "STRING",
+          "description": "상영자(상영관) 상호명 원문 그대로."
+        }
+      }
+    },
     "rule": {
       "type": "OBJECT",
       "description": "SPEC-INDIE-002 §5 정산 규칙 스키마와 동일한 형태. 사람 승인 후 그대로 온체인 고정 대상이 됨.",
@@ -21,6 +40,7 @@
         },
         "regionSplit": {
           "type": "ARRAY",
+          "description": "계약서가 실제로 다루는 지역·국적 조합만 담는다. 계약서가 명시적으로 단일 지역/단일 상영관에 한정된다고 밝혔다면 항목 1개만 있어도 완전한 것이며, 다른 지역·국적을 '누락'으로 취급하지 않는다.",
           "items": {
             "type": "OBJECT",
             "required": ["region", "nationality", "split"],
