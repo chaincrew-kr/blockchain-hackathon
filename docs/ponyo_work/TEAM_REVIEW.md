@@ -87,6 +87,10 @@ D가 이 주석을 근거로 두 값을 같게 맞추려다 판정 문구가 어
 
 ## 4. 제안 — A가 쓸 API 계약이 스키마 밖에 있다
 
+> **2026-07-31 D 반영:** `BatchRunResponse`, `ApiErrorResponse`,
+> `ApiErrorCode`를 `packages/schema`에 추가한 PR 초안을 작성했다.
+> 공통 스키마 변경이므로 A·B·C 리뷰 후 확정한다.
+
 `DashboardSnapshot`은 `packages/schema`에 있는데, D가 추가한 아래 두 형식은
 스키마에 없다. **A가 추측해서 프론트를 짜야 하는 상태다.**
 
@@ -119,6 +123,39 @@ type ApiErrorCode =
 빠뜨렸을 때 컴파일 단계에서 잡힌다.
 
 **결정 요청:** 스키마에 올릴지, D가 별도 문서로만 공유할지.
+
+---
+
+## 5. 7/31 추가 결정 요청 — 이상 회차의 온체인 부분 보류 순서
+
+B의 `settle_batch`와 IDL이 `dev`에 합쳐졌지만, 현재 D 파이프라인과 C의
+`mark_disputed`가 요구하는 사전 상태가 다르다.
+
+```text
+현재 D: 이상 판정 → mark_disputed(회차 순매출 전액)
+현재 C: settle_batch로 Allocation 생성 후
+          → mark_disputed(특정 권리자 Allocation의 보류액)
+```
+
+`heldAmount`는 현재 회차 순매출 전액인데, `mark_disputed`는 특정
+Allocation 하나만 받는다. 부가세·부과금을 제외한 권리자별 귀속액과
+회차 총액은 같지 않으므로, D가 임의로 한 권리자 계정에 전액을 묶을 수
+없다.
+
+**팀 결정 필요:**
+
+1. 이상 회차를 `pending`에 두고 온체인 `mark_disputed`를 호출하지 않는다.
+2. `settle_batch` 후 권리자별 귀속액 전체를 각각 `mark_disputed`한다.
+3. C가 회차 단위 총액을 한 번에 격리하는 instruction을 추가한다.
+
+D 제안은 **2번**이다. 계약 규칙에 따른 귀속 결과를 먼저 계산하고,
+인출만 막으면 정상 회차와 이상 회차의 권리자별 금액을 같은 방식으로
+설명할 수 있다. 다만 여러 트랜잭션 중 일부만 실패하는 경우의 복구 정책도
+같이 정해야 한다.
+
+추가로 실제 `settle_batch` 호출에 필요한 `movieId`, 권리자 지갑 3개,
+부율 BPS, 배급수수료 BPS를 어떤 API·저장소에서 D에게 전달할지도
+A·B·D 계약으로 확정해야 한다.
 
 ---
 

@@ -3,6 +3,7 @@
  * 라우트를 검증할 수 있다. 실제 기동은 server.ts가 한다.
  */
 import express, { type Express } from "express";
+import cors from "cors";
 
 import type { ChainMode } from "./chain/index.js";
 import { errorHandler, notFound, requestContext } from "./middleware.js";
@@ -14,6 +15,26 @@ import type { AgentStore } from "./store.js";
 export interface AppOptions {
   /** 체인 연결 모드 — /health로 노출해 스텁 상태를 숨기지 않는다 (이슈 #18) */
   chainMode?: ChainMode;
+  /** 브라우저 호출을 허용할 Origin 목록. Origin 없는 서버 간 요청은 항상 허용한다. */
+  allowedOrigins?: readonly string[];
+}
+
+export const DEFAULT_ALLOWED_ORIGINS = [
+  "http://localhost:4020",
+  "http://127.0.0.1:4020",
+] as const;
+
+/** 쉼표 구분 환경변수를 공백·빈 항목 없이 정규화한다. */
+export function parseAllowedOrigins(value: string | undefined): string[] {
+  if (!value) return [...DEFAULT_ALLOWED_ORIGINS];
+  return [
+    ...new Set(
+      value
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean),
+    ),
+  ];
 }
 
 export function createApp(
@@ -22,8 +43,18 @@ export function createApp(
   options: AppOptions = {},
 ): Express {
   const app = express();
+  const allowedOrigins = options.allowedOrigins ?? DEFAULT_ALLOWED_ORIGINS;
 
   app.disable("x-powered-by");
+  app.use(
+    cors({
+      origin(origin, callback) {
+        // curl, Scheduler, Cloud Run health check처럼 Origin이 없는 요청은 허용한다.
+        callback(null, origin === undefined || allowedOrigins.includes(origin));
+      },
+      methods: ["GET", "POST", "OPTIONS"],
+    }),
+  );
   app.use(express.json());
   app.use(requestContext);
 

@@ -102,6 +102,62 @@ export const anomalousEvents: TicketEvent[] = buildEventChain(
   BASE_TS + 9 * 3_600_000, // 심야 회차
 );
 
+// ── 회귀 테스트용 이상 시나리오 ────────────────────────────────────────
+
+export const refundAnomalyMeta: ScreeningMeta = {
+  ...normalMeta,
+  screeningId: "SCR-2026-0730-REFUND",
+};
+export const refundAnomalyEvents = buildEventChain(
+  refundAnomalyMeta.screeningId,
+  [
+    ...seats("R", 4).map((seat) => ({
+      kind: "issue" as const,
+      seat,
+      amount: TICKET_PRICE,
+    })),
+    { kind: "refund", seat: "R1", amount: TICKET_PRICE },
+  ],
+);
+
+export const overIssueAnomalyMeta: ScreeningMeta = {
+  ...normalMeta,
+  screeningId: "SCR-2026-0730-OVER",
+  seatCount: 4,
+};
+export const overIssueAnomalyEvents = buildEventChain(
+  overIssueAnomalyMeta.screeningId,
+  seats("O", 5).map((seat) => ({
+    kind: "issue" as const,
+    seat,
+    amount: TICKET_PRICE,
+  })),
+);
+
+export const hashAnomalyMeta: ScreeningMeta = {
+  ...normalMeta,
+  screeningId: "SCR-2026-0730-HASH",
+};
+const validHashEvents = buildEventChain(
+  hashAnomalyMeta.screeningId,
+  seats("H", 4).map((seat) => ({
+    kind: "issue" as const,
+    seat,
+    amount: TICKET_PRICE,
+  })),
+);
+/** 두 번째 이벤트 금액을 사후 조작해 다음 prevHash와 불일치시킨다. */
+export const hashAnomalyEvents = validHashEvents.map((event, index) =>
+  index === 1 ? { ...event, amount: event.amount + 1 } : event,
+);
+
+/** 기본 데모에는 넣지 않지만 각 검증 규칙의 회귀 테스트에 쓰는 고정 시나리오. */
+export const regressionAnomalyBatch = [
+  { meta: refundAnomalyMeta, events: refundAnomalyEvents },
+  { meta: overIssueAnomalyMeta, events: overIssueAnomalyEvents },
+  { meta: hashAnomalyMeta, events: hashAnomalyEvents },
+] as const;
+
 /** 데모 배치 = 회차 2개 (정상 1 + 이상 1) */
 export const demoBatch = [
   { meta: normalMeta, events: normalEvents },
