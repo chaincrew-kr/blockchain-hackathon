@@ -90,6 +90,7 @@ D가 이 주석을 근거로 두 값을 같게 맞추려다 판정 문구가 어
 > **2026-07-31 D 반영:** `BatchRunResponse`, `ApiErrorResponse`,
 > `ApiErrorCode`를 `packages/schema`에 추가한 PR 초안을 작성했다.
 > 공통 스키마 변경이므로 A·B·C 리뷰 후 확정한다.
+> 리뷰 이슈: [#34](https://github.com/chaincrew-kr/blockchain-hackathon/issues/34)
 
 `DashboardSnapshot`은 `packages/schema`에 있는데, D가 추가한 아래 두 형식은
 스키마에 없다. **A가 추측해서 프론트를 짜야 하는 상태다.**
@@ -127,6 +128,8 @@ type ApiErrorCode =
 ---
 
 ## 5. 7/31 추가 결정 요청 — 이상 회차의 온체인 부분 보류 순서
+
+> 결정 이슈: [#33](https://github.com/chaincrew-kr/blockchain-hackathon/issues/33)
 
 B의 `settle_batch`와 IDL이 `dev`에 합쳐졌지만, 현재 D 파이프라인과 C의
 `mark_disputed`가 요구하는 사전 상태가 다르다.

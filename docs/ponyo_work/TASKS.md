@@ -245,6 +245,13 @@ GET /health → {"status":"ok","chain":"stub"}
 | `balances[]` 권리자별 잔액      | —                                                                   | B 워터폴  |
 | Explorer 링크                   | —                                                                   | B·C 실 tx |
 
+실제 IDL 연결 전에 이상 회차의 자금 전이를 확정해야 한다. 현재 D의
+`heldAmount`는 회차 순매출 전액이고 C의 `mark_disputed`는 권리자
+Allocation 하나를 대상으로 하므로, 실행 순서와 보류액 분배를
+[#33](https://github.com/chaincrew-kr/blockchain-hackathon/issues/33)에서 팀에
+요청했다. API 공통 스키마 변경은
+[#34](https://github.com/chaincrew-kr/blockchain-hackathon/issues/34) 리뷰 대기 중이다.
+
 ### 임의 결정 검토 — [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15)
 
 구현하며 기준 문서에 없거나 어긋나게 정한 값·규칙을 전수 정리해 올렸다.
