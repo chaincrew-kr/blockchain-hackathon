@@ -64,6 +64,8 @@ export interface ExtractionApiResponse {
   overallConfidence: number;
 }
 
+// ── 계약서 추출 ────────────────────────────────────────────────────────
+
 const API_BASE = "http://localhost:8787"; // TODO: 배포 시 환경변수(VITE_API_URL)로 교체
 
 /** 계약서 PDF 파일을 서버에 올려 정산 규칙을 추출한다. */
@@ -83,5 +85,55 @@ export async function extractContract(
     throw new Error(body.error ?? `서버 오류 (${res.status})`);
   }
 
+  return res.json();
+}
+
+// ── KOBIS ──────────────────────────────────────────────────────────────
+
+export interface KobisMovieInfo {
+  movieNm: string;
+  openDt: string;
+  genres: { genreNm: string }[];
+  directors: { peopleNm: string }[];
+  companys: { companyNm: string; companyPartNm: string }[];
+  audits: { watchGradeNm: string }[];
+}
+
+export interface KobisDailyPoint {
+  d: string;
+  v: number;
+}
+
+/** 실존 독립영화 상세정보 (감독·배급사·개봉일). movieCd 생략 시 서버 기본값(하나 코리아) 사용. */
+export async function fetchKobisMovieInfo(
+  movieCd?: string,
+): Promise<KobisMovieInfo> {
+  const url = new URL(`${API_BASE}/api/kobis/movie-info`);
+  if (movieCd) url.searchParams.set("movieCd", movieCd);
+
+  const res = await fetch(url.toString());
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `KOBIS 영화정보 조회 실패 (${res.status})`);
+  }
+  return res.json();
+}
+
+/** 최근 N일 관객수. 일별 박스오피스 순위권 밖인 날은 0으로 온다. */
+export async function fetchKobisDaily(
+  movieCd?: string,
+  days = 7,
+): Promise<KobisDailyPoint[]> {
+  const url = new URL(`${API_BASE}/api/kobis/daily`);
+  if (movieCd) url.searchParams.set("movieCd", movieCd);
+  url.searchParams.set("days", String(days));
+
+  const res = await fetch(url.toString());
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      body.error ?? `KOBIS 일별 데이터 조회 실패 (${res.status})`,
+    );
+  }
   return res.json();
 }

@@ -1,20 +1,22 @@
 /**
  * STAGE 6 — 투명 대시보드. 모든 숫자는 온체인 계정에서 직접 읽는 것이 원칙.
- * 목업: mocks/demo.ts 고정 데이터. 실제 연동 시 교체 지점:
- *   - snapshot → apps/agent `GET /api/snapshot` 폴링 + 에스크로 계정 구독
- *   - 차트 → KOBIS 오픈API 일별 박스오피스 (실존 독립영화 1편)
+ *
+ * 교체 진행 상황:
+ *   - KOBIS 차트 → 실제 연동 완료 (apps/web/server /api/kobis/*)
+ *   - snapshot/checks/decision → 아직 목업 (apps/agent 실제 API 나오면 교체)
  *   - tx 링크 → Solana Explorer (?cluster=devnet)
  */
+import { useEffect, useState } from "react";
 import type { CheckResult, EscrowStatus } from "@chaincrew/schema";
 
 import { BarChart } from "../../components/BarChart";
 import {
-  checks,
-  decision,
-  demoDaily,
-  kobisDaily,
-  snapshot,
-} from "../../mocks/demo";
+  fetchKobisDaily,
+  fetchKobisMovieInfo,
+  type KobisDailyPoint,
+  type KobisMovieInfo,
+} from "../../lib/api";
+import { checks, decision, demoDaily, snapshot } from "../../mocks/demo";
 
 const STATUS_ORDER: EscrowStatus[] = [
   "pending",
@@ -55,6 +57,19 @@ const checkValue = (c: CheckResult) =>
     : `${c.observed} ${c.passed ? "≤" : ">"} ${c.threshold}`;
 
 export function DashboardPage() {
+  const [kobisDaily, setKobisDaily] = useState<KobisDailyPoint[] | null>(null);
+  const [kobisInfo, setKobisInfo] = useState<KobisMovieInfo | null>(null);
+  const [kobisError, setKobisError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchKobisDaily()
+      .then(setKobisDaily)
+      .catch((e) => setKobisError(String(e.message ?? e)));
+    fetchKobisMovieInfo()
+      .then(setKobisInfo)
+      .catch((e) => setKobisError(String(e.message ?? e)));
+  }, []);
+
   const partsSum =
     snapshot.pending +
     snapshot.allocated +
@@ -258,15 +273,37 @@ export function DashboardPage() {
             실존 독립영화 일별 관객{" "}
             <span className="muted">— KOBIS 오픈API · 명</span>
           </h2>
-          <BarChart
-            data={kobisDaily}
-            unit=" 명"
-            color="rgba(255,255,255,.45)"
-            gridStep={100}
-          />
+
+          {kobisError && (
+            <p
+              className="chart-caption"
+              style={{ color: "var(--stamp, #BE3A28)" }}
+            >
+              KOBIS 조회 실패: {kobisError} — 서버(apps/web/server)의
+              KOBIS_API_KEY 설정과 localhost:8787 실행 상태를 확인하세요.
+            </p>
+          )}
+
+          {!kobisError && !kobisDaily && (
+            <p className="chart-caption">KOBIS에서 불러오는 중…</p>
+          )}
+
+          {kobisDaily && (
+            <BarChart
+              data={kobisDaily}
+              unit=" 명"
+              color="rgba(255,255,255,.45)"
+              gridStep={100}
+            />
+          )}
+
           <p className="chart-caption">
-            단위가 다르므로 축을 공유하지 않습니다 — 같은 기간의 실데이터를
-            나란히 보여 “실제 시장과 연결된 파이프라인”임을 증명하는 패널.
+            {kobisInfo
+              ? `「${kobisInfo.movieNm}」 (${kobisInfo.openDt.slice(0, 4)}-${kobisInfo.openDt.slice(4, 6)}-${kobisInfo.openDt.slice(6, 8)} 개봉, ${kobisInfo.directors?.[0]?.peopleNm ?? "?"} 감독, ${kobisInfo.companys?.find((c) => c.companyPartNm === "배급사")?.companyNm ?? "?"} 배급) — `
+              : ""}
+            일별 박스오피스 상위권 밖인 날은 0으로 표시됩니다. 단위가 다르므로
+            축을 공유하지 않습니다 — 같은 기간의 실데이터를 나란히 보여 “실제
+            시장과 연결된 파이프라인”임을 증명하는 패널.
           </p>
         </div>
       </div>

@@ -10,6 +10,10 @@ import express from "express";
 import multer from "multer";
 import cors from "cors";
 import { extractContractRules } from "./extract-service.js";
+import { fetchMovieInfo, fetchDailyAudience } from "./kobis-service.js";
+
+// KOBIS 대조 대상 — 「어떻게 해야 했을까?」(2026-07-29 개봉)
+const DEFAULT_MOVIE_CD = "20264148";
 
 const app = express();
 const upload = multer({
@@ -49,6 +53,35 @@ app.post("/api/extract", upload.single("contract"), async (req, res) => {
     res
       .status(500)
       .json({ error: "추출 중 오류가 발생했습니다.", detail: String(err) });
+  }
+});
+
+// KOBIS 영화 상세정보 (감독·배급사·개봉일 등, 순위 무관 항상 조회 가능)
+app.get("/api/kobis/movie-info", async (req, res) => {
+  const movieCd = req.query.movieCd || DEFAULT_MOVIE_CD;
+  try {
+    const info = await fetchMovieInfo(movieCd);
+    res.json(info);
+  } catch (err) {
+    console.error("[kobis/movie-info] 실패:", err);
+    res
+      .status(500)
+      .json({ error: "KOBIS 영화정보 조회 실패", detail: String(err) });
+  }
+});
+
+// KOBIS 최근 N일 관객수 (순위권 밖인 날은 0)
+app.get("/api/kobis/daily", async (req, res) => {
+  const movieCd = req.query.movieCd || DEFAULT_MOVIE_CD;
+  const days = Number(req.query.days) || 7;
+  try {
+    const data = await fetchDailyAudience(movieCd, days);
+    res.json(data);
+  } catch (err) {
+    console.error("[kobis/daily] 실패:", err);
+    res
+      .status(500)
+      .json({ error: "KOBIS 일별 데이터 조회 실패", detail: String(err) });
   }
 });
 
