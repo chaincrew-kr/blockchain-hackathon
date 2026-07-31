@@ -89,6 +89,7 @@ describe("refund_pending", () => {
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         systemProgram: PublicKey.default,
       })
+      .signers([authority])
       .rpc();
 
     const escrowAfterInit = await program.account.movieEscrow.fetch(escrowPda);

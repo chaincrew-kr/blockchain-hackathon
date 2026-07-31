@@ -100,6 +100,7 @@ describe("settle_batch", () => {
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         systemProgram: PublicKey.default,
       })
+      .signers([authority])
       .rpc();
 
     const escrowAfterInit = await program.account.movieEscrow.fetch(escrowPda);
@@ -173,7 +174,13 @@ describe("settle_batch", () => {
 
     await expect(
       program.methods
-        .settleBatch(THEATER_BPS, DISTRIBUTOR_BPS, DISTRIBUTION_FEE_BPS)
+        .settleBatch(
+          "SCR-1",
+          new anchor.BN(DEPOSIT_AMOUNT),
+          THEATER_BPS,
+          DISTRIBUTOR_BPS,
+          DISTRIBUTION_FEE_BPS,
+        )
         .accounts({
           authority: authority.publicKey,
           ...settleBatchAccounts(movieId, escrowPda),
@@ -189,7 +196,35 @@ describe("settle_batch", () => {
 
     await expect(
       program.methods
-        .settleBatch(4000, 5000, DISTRIBUTION_FEE_BPS)
+        .settleBatch(
+          "SCR-1",
+          new anchor.BN(DEPOSIT_AMOUNT),
+          4000,
+          5000,
+          DISTRIBUTION_FEE_BPS,
+        )
+        .accounts({
+          authority: authority.publicKey,
+          ...settleBatchAccounts(movieId, escrowPda),
+        })
+        .signers([authority])
+        .rpc(),
+    ).rejects.toThrow();
+  });
+
+  it("rejects an amount larger than escrow.pending", async () => {
+    const movieId = `settle-overamount-${Date.now()}`;
+    const escrowPda = await setupVerifiedEscrow(movieId);
+
+    await expect(
+      program.methods
+        .settleBatch(
+          "SCR-1",
+          new anchor.BN(DEPOSIT_AMOUNT + 1),
+          THEATER_BPS,
+          DISTRIBUTOR_BPS,
+          DISTRIBUTION_FEE_BPS,
+        )
         .accounts({
           authority: authority.publicKey,
           ...settleBatchAccounts(movieId, escrowPda),
@@ -206,7 +241,13 @@ describe("settle_batch", () => {
 
     await expect(
       program.methods
-        .settleBatch(THEATER_BPS, DISTRIBUTOR_BPS, DISTRIBUTION_FEE_BPS)
+        .settleBatch(
+          "SCR-1",
+          new anchor.BN(DEPOSIT_AMOUNT),
+          THEATER_BPS,
+          DISTRIBUTOR_BPS,
+          DISTRIBUTION_FEE_BPS,
+        )
         .accounts({
           authority: stranger.publicKey,
           ...settleBatchAccounts(movieId, escrowPda),
@@ -221,7 +262,13 @@ describe("settle_batch", () => {
     const escrowPda = await setupVerifiedEscrow(movieId);
 
     await program.methods
-      .settleBatch(THEATER_BPS, DISTRIBUTOR_BPS, DISTRIBUTION_FEE_BPS)
+      .settleBatch(
+        "SCR-1",
+        new anchor.BN(DEPOSIT_AMOUNT),
+        THEATER_BPS,
+        DISTRIBUTOR_BPS,
+        DISTRIBUTION_FEE_BPS,
+      )
       .accounts({
         authority: authority.publicKey,
         ...settleBatchAccounts(movieId, escrowPda),
@@ -268,5 +315,129 @@ describe("settle_batch", () => {
     );
     expect(producer.claimable.toNumber()).toBe(EXPECTED_PRODUCER);
     expect(producer.role).toEqual({ producer: {} });
+  });
+
+  it("accumulates claimable across multiple screenings for the same movie (issue #6)", async () => {
+    const movieId = `settle-multiscreen-${Date.now()}`;
+    const escrowPda = await setupVerifiedEscrow(movieId);
+
+    // 두 번째 회차분 입금 — 이미 한 번 deposit된 상태(setupVerifiedEscrow)에
+    // 더해서, escrow.pending에 두 회차 몫이 함께 쌓이게 한다.
+    const escrowBeforeSecondDeposit =
+      await program.account.movieEscrow.fetch(escrowPda);
+    await program.methods
+      .deposit(new anchor.BN(DEPOSIT_AMOUNT))
+      .accounts({
+        payer: provider.wallet.publicKey,
+        escrow: escrowPda,
+        payerTokenAccount,
+        vault: escrowBeforeSecondDeposit.vault,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .rpc();
+
+    // 회차 1 정산
+    await program.methods
+      .settleBatch(
+        "SCR-A",
+        new anchor.BN(DEPOSIT_AMOUNT),
+        THEATER_BPS,
+        DISTRIBUTOR_BPS,
+        DISTRIBUTION_FEE_BPS,
+      )
+      .accounts({
+        authority: authority.publicKey,
+        ...settleBatchAccounts(movieId, escrowPda),
+      })
+      .signers([authority])
+      .rpc();
+
+    // 회차 2 정산 — 같은 Allocation PDA에 누적돼야 한다 (init_if_needed).
+    await program.methods
+      .settleBatch(
+        "SCR-B",
+        new anchor.BN(DEPOSIT_AMOUNT),
+        THEATER_BPS,
+        DISTRIBUTOR_BPS,
+        DISTRIBUTION_FEE_BPS,
+      )
+      .accounts({
+        authority: authority.publicKey,
+        ...settleBatchAccounts(movieId, escrowPda),
+      })
+      .signers([authority])
+      .rpc();
+
+    const escrow = await program.account.movieEscrow.fetch(escrowPda);
+    expect(escrow.pending.toNumber()).toBe(0);
+    expect(escrow.batchCount).toBe(2);
+    expect(escrow.paidOut.toNumber()).toBe(2 * (EXPECTED_LEVY + EXPECTED_VAT));
+    expect(escrow.allocated.toNumber()).toBe(
+      2 * (EXPECTED_THEATER + EXPECTED_DISTRIBUTION_FEE + EXPECTED_PRODUCER),
+    );
+
+    const theater = await program.account.allocation.fetch(
+      allocationPda(movieId, 0),
+    );
+    expect(theater.claimable.toNumber()).toBe(2 * EXPECTED_THEATER);
+    expect(theater.beneficiary.toString()).toBe(
+      theaterWallet.publicKey.toString(),
+    );
+
+    const producer = await program.account.allocation.fetch(
+      allocationPda(movieId, 2),
+    );
+    expect(producer.claimable.toNumber()).toBe(2 * EXPECTED_PRODUCER);
+  });
+
+  it("rejects a screening's settle_batch that points beneficiary wallets at a different address than an earlier screening", async () => {
+    const movieId = `settle-walletswap-${Date.now()}`;
+    const escrowPda = await setupVerifiedEscrow(movieId);
+
+    await program.methods
+      .settleBatch(
+        "SCR-A",
+        new anchor.BN(DEPOSIT_AMOUNT),
+        THEATER_BPS,
+        DISTRIBUTOR_BPS,
+        DISTRIBUTION_FEE_BPS,
+      )
+      .accounts({
+        authority: authority.publicKey,
+        ...settleBatchAccounts(movieId, escrowPda),
+      })
+      .signers([authority])
+      .rpc();
+
+    const escrowAfterFirst = await program.account.movieEscrow.fetch(escrowPda);
+    await program.methods
+      .deposit(new anchor.BN(DEPOSIT_AMOUNT))
+      .accounts({
+        payer: provider.wallet.publicKey,
+        escrow: escrowPda,
+        payerTokenAccount,
+        vault: escrowAfterFirst.vault,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .rpc();
+
+    const impostorTheaterWallet = Keypair.generate();
+    await expect(
+      program.methods
+        .settleBatch(
+          "SCR-B",
+          new anchor.BN(DEPOSIT_AMOUNT),
+          THEATER_BPS,
+          DISTRIBUTOR_BPS,
+          DISTRIBUTION_FEE_BPS,
+        )
+        .accounts({
+          authority: authority.publicKey,
+          ...settleBatchAccounts(movieId, escrowPda),
+          theaterWallet: impostorTheaterWallet.publicKey,
+        })
+        .signers([authority])
+        .rpc(),
+    ).rejects.toThrow();
   });
 });

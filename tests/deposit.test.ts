@@ -84,6 +84,7 @@ describe("deposit", () => {
         ),
         systemProgram: PublicKey.default,
       })
+      .signers([authority])
       .rpc();
 
     const escrowAfterInit = await program.account.movieEscrow.fetch(escrowPda);

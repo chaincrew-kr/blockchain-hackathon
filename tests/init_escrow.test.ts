@@ -60,6 +60,7 @@ describe("init_escrow", () => {
         ),
         systemProgram: PublicKey.default,
       })
+      .signers([authority])
       .rpc();
 
     const escrow = await program.account.movieEscrow.fetch(escrowPda);

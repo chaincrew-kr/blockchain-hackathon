@@ -21,7 +21,134 @@ export type MovieEscrow = {
       accounts: [
         {
           name: "beneficiary";
+          writable: true;
           signer: true;
+          relations: ["allocation"];
+        },
+        {
+          name: "escrow";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [101, 115, 99, 114, 111, 119];
+              },
+              {
+                kind: "account";
+                path: "escrow.movie_id";
+                account: "movieEscrow";
+              },
+            ];
+          };
+          relations: ["allocation"];
+        },
+        {
+          name: "allocation";
+          docs: [
+            "이 escrow에 속한 권리자 장부 — 주인 일치는 handler에서 검사.",
+          ];
+          writable: true;
+        },
+        {
+          name: "beneficiaryTokenAccount";
+          docs: ["권리자의 USDC 계정 — vault에서 여기로 이체된다."];
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "account";
+                path: "beneficiary";
+              },
+              {
+                kind: "const";
+                value: [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169,
+                ];
+              },
+              {
+                kind: "account";
+                path: "escrow.usdc_mint";
+                account: "movieEscrow";
+              },
+            ];
+            program: {
+              kind: "const";
+              value: [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89,
+              ];
+            };
+          };
+        },
+        {
+          name: "vault";
+          writable: true;
+        },
+        {
+          name: "tokenProgram";
+          address: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
         },
       ];
       args: [
@@ -294,6 +421,11 @@ export type MovieEscrow = {
         },
         {
           name: "authority";
+          docs: [
+            "정산 에이전트 — 본인 동의 없이 제3자가 임의 주소를 정산 권한자로",
+            "지정하지 못하도록 escrow 생성 시점에 직접 서명하게 한다.",
+          ];
+          signer: true;
         },
         {
           name: "tokenProgram";
@@ -338,7 +470,32 @@ export type MovieEscrow = {
       accounts: [
         {
           name: "authority";
+          docs: ["정산 에이전트 — escrow.authority와 일치해야 한다."];
           signer: true;
+          relations: ["escrow"];
+        },
+        {
+          name: "escrow";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [101, 115, 99, 114, 111, 119];
+              },
+              {
+                kind: "account";
+                path: "escrow.movie_id";
+                account: "movieEscrow";
+              },
+            ];
+          };
+          relations: ["allocation"];
+        },
+        {
+          name: "allocation";
+          docs: ["보류 대상 권리자 장부."];
+          writable: true;
         },
       ];
       args: [
@@ -491,7 +648,32 @@ export type MovieEscrow = {
       accounts: [
         {
           name: "authority";
+          docs: ["정산 에이전트 — escrow.authority와 일치해야 한다."];
           signer: true;
+          relations: ["escrow"];
+        },
+        {
+          name: "escrow";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [101, 115, 99, 114, 111, 119];
+              },
+              {
+                kind: "account";
+                path: "escrow.movie_id";
+                account: "movieEscrow";
+              },
+            ];
+          };
+          relations: ["allocation"];
+        },
+        {
+          name: "allocation";
+          docs: ["분쟁 대상 권리자 장부."];
+          writable: true;
         },
       ];
       args: [
@@ -504,16 +686,18 @@ export type MovieEscrow = {
     {
       name: "settleBatch";
       docs: [
-        "STAGE 2: 공제 워터폴 실행 후 권리자별 Allocation 확정 (축소 워터폴 —",
-        "부과금·VAT·부율 분할·배급수수료. MG·투자 상환·이익 배분은 미구현).",
+        "STAGE 2: 회차(screening) 단위 공제 워터폴 실행 후 권리자별 Allocation에",
+        "누적 확정 (축소 워터폴 — 부과금·VAT·부율 분할·배급수수료. MG·투자",
+        "상환·이익 배분은 미구현). `amount`는 escrow.pending 전체가 아니라",
+        "이번 회차 순매출만 가리킨다 (이슈 #6).",
       ];
       discriminator: [22, 2, 21, 223, 225, 122, 163, 214];
       accounts: [
         {
           name: "authority";
           docs: [
-            "정산 에이전트 — escrow.authority와 일치해야 하고, Allocation PDA",
-            "3개(Theater/Distributor/Producer)의 rent를 지불한다.",
+            "정산 에이전트 — escrow.authority와 일치해야 하고, Allocation PDA를",
+            "(처음 나오는 회차라면) 새로 만드는 rent를 지불한다.",
           ];
           writable: true;
           signer: true;
@@ -538,6 +722,7 @@ export type MovieEscrow = {
         },
         {
           name: "theaterAllocation";
+          docs: ["같은 영화의 여러 회차가 이 계정에 순서대로 누적된다."];
           writable: true;
         },
         {
@@ -563,6 +748,14 @@ export type MovieEscrow = {
         },
       ];
       args: [
+        {
+          name: "screeningId";
+          type: "string";
+        },
+        {
+          name: "amount";
+          type: "u64";
+        },
         {
           name: "theaterBps";
           type: "u16";
@@ -623,12 +816,24 @@ export type MovieEscrow = {
   ];
   events: [
     {
+      name: "claimEvent";
+      discriminator: [93, 15, 70, 170, 48, 140, 212, 219];
+    },
+    {
       name: "depositEvent";
       discriminator: [120, 248, 61, 83, 31, 142, 107, 144];
     },
     {
+      name: "markDisputedEvent";
+      discriminator: [222, 149, 47, 67, 243, 29, 107, 85];
+    },
+    {
       name: "refundEvent";
       discriminator: [176, 159, 218, 59, 94, 213, 129, 218];
+    },
+    {
+      name: "resolveDisputeEvent";
+      discriminator: [111, 205, 103, 205, 148, 139, 194, 11];
     },
     {
       name: "settledEvent";
@@ -669,6 +874,11 @@ export type MovieEscrow = {
       code: 6005;
       name: "invalidWaterfallParams";
       msg: "Waterfall split parameters are invalid (rates must sum to 100%)";
+    },
+    {
+      code: 6006;
+      name: "unauthorized";
+      msg: "Signer is not the beneficiary of this allocation";
     },
   ];
   types: [
@@ -724,6 +934,13 @@ export type MovieEscrow = {
             name: "bump";
             type: "u8";
           },
+          {
+            name: "disputed";
+            docs: [
+              "보류 격리분 — mark_disputed로 claimable에서 옮겨진 금액 (C)",
+            ];
+            type: "u64";
+          },
         ];
       };
     },
@@ -743,6 +960,47 @@ export type MovieEscrow = {
           },
           {
             name: "investor";
+          },
+        ];
+      };
+    },
+    {
+      name: "claimEvent";
+      docs: ["STAGE 5 인출 이벤트 — D의 온체인 이력 조회 대상."];
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "escrow";
+            type: "pubkey";
+          },
+          {
+            name: "movieId";
+            type: "string";
+          },
+          {
+            name: "beneficiary";
+            type: "pubkey";
+          },
+          {
+            name: "amount";
+            type: "u64";
+          },
+          {
+            name: "claimed";
+            type: "u64";
+          },
+          {
+            name: "allocated";
+            type: "u64";
+          },
+          {
+            name: "paidOut";
+            type: "u64";
+          },
+          {
+            name: "timestamp";
+            type: "i64";
           },
         ];
       };
@@ -813,12 +1071,49 @@ export type MovieEscrow = {
       };
     },
     {
+      name: "markDisputedEvent";
+      docs: ["STAGE 4 보류 판정 이벤트 — D의 온체인 이력 조회 대상."];
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "escrow";
+            type: "pubkey";
+          },
+          {
+            name: "movieId";
+            type: "string";
+          },
+          {
+            name: "beneficiary";
+            type: "pubkey";
+          },
+          {
+            name: "amount";
+            type: "u64";
+          },
+          {
+            name: "allocationDisputed";
+            type: "u64";
+          },
+          {
+            name: "escrowDisputed";
+            type: "u64";
+          },
+          {
+            name: "timestamp";
+            type: "i64";
+          },
+        ];
+      };
+    },
+    {
       name: "movieEscrow";
       docs: [
         '영화별 에스크로 (PDA — seeds = [b"escrow", movie_id.as_bytes()], 개인키 부존재).',
         "",
         "불변식 ①③ (B 테스트 담당):",
-        "gross_in = pending + allocated + disputed + paid_out + refunded",
+        "gross_in = pending + allocated + disputed + paid_out + refunded => +refunded? -refunded?",
         "Pending 자금의 유일한 출구 = refund_pending",
       ];
       type: {
@@ -956,8 +1251,8 @@ export type MovieEscrow = {
       };
     },
     {
-      name: "settledEvent";
-      docs: ["STAGE 2 정산 완료 이벤트 — D의 온체인 이력 조회 대상."];
+      name: "resolveDisputeEvent";
+      docs: ["STAGE 5 분쟁 해결 이벤트 — D의 온체인 이력 조회 대상."];
       type: {
         kind: "struct";
         fields: [
@@ -967,6 +1262,54 @@ export type MovieEscrow = {
           },
           {
             name: "movieId";
+            type: "string";
+          },
+          {
+            name: "beneficiary";
+            type: "pubkey";
+          },
+          {
+            name: "approve";
+            type: "bool";
+          },
+          {
+            name: "amount";
+            type: "u64";
+          },
+          {
+            name: "claimable";
+            type: "u64";
+          },
+          {
+            name: "escrowDisputed";
+            type: "u64";
+          },
+          {
+            name: "timestamp";
+            type: "i64";
+          },
+        ];
+      };
+    },
+    {
+      name: "settledEvent";
+      docs: [
+        "STAGE 2 정산 완료 이벤트 — D의 온체인 이력 조회 대상.",
+        "screening_id는 계정에는 없고 이 이벤트로만 추적된다.",
+      ];
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "escrow";
+            type: "pubkey";
+          },
+          {
+            name: "movieId";
+            type: "string";
+          },
+          {
+            name: "screeningId";
             type: "string";
           },
           {
