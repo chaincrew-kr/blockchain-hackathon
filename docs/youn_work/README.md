@@ -4,14 +4,15 @@
 > 범위: `init_escrow` · `deposit` · `refund_pending` · `settle_batch` (STAGE 0b·1·2)
 > 브랜치: `feat/escrow-fund-flow`
 
-## 현재 상태 — 2026-07-30
+## 현재 상태 — 2026-07-31
 
 - ✅ 완료: `init_escrow`, `deposit`, `refund_pending` 구현 + 테스트 통과 + `dev` merge 완료
 - ✅ 완료: `verify_escrow` 구현 — STAGE 3→2 게이트(Pending → Verified), `dev` merge 완료 (PR #27)
 - ✅ 완료: CI `npm ci` lockfile 불완전 문제 수정 (PR #26)
 - ✅ 완료: D와 `Allocation` 출력 구조 합의 — 필드 추가 불필요, 역할별(최대 4개) PDA를 `[b"allocation", movie_id, role_byte]` 시드로 조회 (커밋 e11555b)
-- ✅ 완료: `settle_batch` 구현(축소 워터폴) + 테스트 통과 + localnet 배포 확인
-- ⬜ 미완료: `authority` 서명 검증 (C 담당 instruction들과 공유되는 문제)
+- ✅ 완료: `settle_batch` 구현(축소 워터폴) + 테스트 통과 + localnet 배포 확인 (PR #29)
+- ✅ 완료(C, PR #30): `claim`·`mark_disputed`·`resolve_dispute` 구현 + `Allocation.disputed` 필드 추가 — 인출 제한 불변식②가 `claimable − claimed − disputed`로 갱신됨
+- ✅ 완료: `authority` 서명 검증 — `init_escrow`의 `authority`를 `UncheckedAccount` → `Signer`로 변경. C 담당 instruction(verify_escrow 이후 전부)은 이미 `has_one = authority` + `Signer` 패턴으로 검증하고 있었어서, 남은 구멍은 `init_escrow` 하나였음
 
 ## 결정 사항
 
@@ -28,7 +29,7 @@
 ### `init_escrow` (STAGE 0b)
 
 - `MovieEscrow` PDA + `vault`(ATA) 생성, `movie_id`/`contract_hash`/`rule_hash`/`rule_version` 기록
-- `authority`는 주소만 저장 (서명 검증은 TODO)
+- `authority`는 `Signer` — 정산 에이전트 본인이 escrow 생성에 co-sign해야 함(제3자가 동의 없이 임의 주소를 정산 권한자로 지정 못 하게). **주의(A 프론트 영향)**: 에스크로 생성 트랜잭션에 `payer` 외에 `authority` 키페어 서명이 추가로 필요해짐
 - 테스트: PDA·vault 생성, 초기값 전부 0/Pending 확인
 
 ### `deposit` (STAGE 1)
@@ -57,6 +58,11 @@
 - 규칙 파라미터(`*_bps`)는 인자로 받아 authority 서명만으로 신뢰 — `rule_hash` 대조 검증은 SettlementRule 인코딩 방식이 아직 B·D 간 미확정(`docs/SCHEMA_CONTRACT.md` §11)이라 TODO로 남김
 - 테스트: Pending 상태에서 호출 거부, bps 합 100% 아닐 때 거부, 타인 호출 거부, 정상 실행 시 손 계산값과 온체인 결과 일치 + 불변식① 확인
 
+### `authority` 서명 검증
+
+- `init_escrow.rs`의 `authority: UncheckedAccount` → `authority: Signer`로 변경. C의 `verify_escrow`/`settle_batch`/`mark_disputed`/`resolve_dispute`는 전부 이미 `has_one = authority` + `Signer<'info>` 패턴이라 문제없었고, 유일하게 빠져 있던 지점이 `init_escrow`였음
+- 영향받는 테스트 5개 파일(`init_escrow`/`deposit`/`refund_pending`/`verify_escrow`/`settle_batch`) 전부 `initEscrow(...).signers([authority])` 추가해서 갱신, 14개 전부 통과 확인
+
 ## PR 이력
 
 - #21 `feat/escrow-fund-flow → dev` — 툴체인 고정 + state.rs 스키마 확정
@@ -64,11 +70,14 @@
 - #26 `feat/escrow-fund-flow → dev` — CI `npm ci` lockfile 불완전 문제 수정
 - #27 `feat/escrow-fund-flow → dev` — verify_escrow 구현 (STAGE 3→2 게이트)
 - #28 `feat/escrow-fund-flow → dev` — Allocation 구조체 필드 확장 관련 주석 추가 (D 확인 반영)
-- (다음 PR) `feat/escrow-fund-flow → dev` — settle_batch 구현 (축소 워터폴)
+- #29 `feat/escrow-fund-flow → dev` — settle_batch 구현 (축소 워터폴)
+- #30 `feature/claim → dev` — C: claim/mark_disputed/resolve_dispute 구현 + Allocation.disputed
+- (다음 PR) `feat/escrow-fund-flow → dev` — authority 서명 검증(init_escrow)
 
 ## 다음 할 일
 
-1. `authority` 서명 검증 — C와 공동 설계 필요
-2. `settle_batch` 풀 워터폴(MG 상환·투자 상환·이익 배분) — `MovieEscrow`에 `mg_remaining`/`investment_remaining` 필드 추가 필요, 지금은 `settle_batch.rs` 핸들러 하단에 주석으로만 위치 표시해둠
-3. `rule_hash` 온체인 검증 — SettlementRule → 해시 인코딩 방식 B·D 합의 필요 (`docs/SCHEMA_CONTRACT.md` §11), 합의되면 `settle_batch`의 `*_bps` 인자를 해시 대조로 검증하도록 보강
-4. `docs/SCHEMA_CONTRACT.md` §11 "권리자 잔액"·`ruleHash` 행 — 위 결정들 반영해 갱신 필요
+1. `settle_batch` 풀 워터폴(MG 상환·투자 상환·이익 배분) — `MovieEscrow`에 `mg_remaining`/`investment_remaining` 필드 추가 필요, 지금은 `settle_batch.rs` 핸들러 하단에 주석으로만 위치 표시해둠
+2. `rule_hash` 온체인 검증 — SettlementRule → 해시 인코딩 방식 B·D 합의 필요 (`docs/SCHEMA_CONTRACT.md` §11), 합의되면 `settle_batch`의 `*_bps` 인자를 해시 대조로 검증하도록 보강
+3. `docs/SCHEMA_CONTRACT.md` §11 "권리자 잔액"·`ruleHash` 행 — 위 결정들 반영해 갱신 필요
+4. **A(프론트) 공유 필요**: `init_escrow`가 이제 `authority` 서명을 요구하므로, 에스크로 생성 플로우에서 정산 에이전트 키페어가 그 시점에 서명 가능해야 함 — IDL은 이미 최신 반영해서 `packages/schema/idl`에 올려둠
+5. `docs/ponyo_work/DEADLINE.md`(D, 7/31 D-3 항목)의 **Devnet 배포**는 아직 localnet만 해놓은 상태 — `Anchor.toml` 주석("Devnet 이전은 8/1 이후")과 상충하니 팀 확인 필요

@@ -33,8 +33,9 @@ pub struct InitEscrow<'info> {
     )]
     pub vault: Account<'info, TokenAccount>,
 
-    /// CHECK: 정산 에이전트 지갑 주소를 저장만 함 — 서명 검증은 아직 안 함 (TODO(B/C))
-    pub authority: UncheckedAccount<'info>,
+    /// 정산 에이전트 — 본인 동의 없이 제3자가 임의 주소를 정산 권한자로
+    /// 지정하지 못하도록 escrow 생성 시점에 직접 서명하게 한다.
+    pub authority: Signer<'info>,
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,

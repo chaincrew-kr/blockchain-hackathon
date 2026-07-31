@@ -62,6 +62,7 @@ describe("verify_escrow", () => {
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         systemProgram: PublicKey.default,
       })
+      .signers([authority])
       .rpc();
   });
 
