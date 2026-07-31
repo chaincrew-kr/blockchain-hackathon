@@ -299,7 +299,7 @@ export function DashboardPage() {
 
           <p className="chart-caption">
             {kobisInfo
-              ? `「${kobisInfo.movieNm}」 (${kobisInfo.openDt.slice(0, 4)}-${kobisInfo.openDt.slice(4, 6)}-${kobisInfo.openDt.slice(6, 8)} 개봉, ${kobisInfo.directors?.[0]?.peopleNm ?? "?"} 감독, ${kobisInfo.companys?.find((c) => c.companyPartNm === "배급사")?.companyNm ?? "?"} 배급) — `
+              ? `「${kobisInfo.movieName}」 (${kobisInfo.openDate.slice(0, 4)}-${kobisInfo.openDate.slice(4, 6)}-${kobisInfo.openDate.slice(6, 8)} 개봉, ${kobisInfo.directors[0] ?? "?"} 감독, ${kobisInfo.companies.find((c) => c.role === "배급사")?.name ?? "?"} 배급) — `
               : ""}
             일별 박스오피스 상위권 밖인 날은 0으로 표시됩니다. 단위가 다르므로
             축을 공유하지 않습니다 — 같은 기간의 실데이터를 나란히 보여 “실제

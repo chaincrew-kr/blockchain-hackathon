@@ -45,7 +45,10 @@ export class GeminiNarrativeGenerator implements NarrativeGenerator {
     if (!config.apiKey.trim()) {
       throw new Error("Gemini API key is required.");
     }
-    this.model = config.model ?? "gemini-2.5-flash";
+    // gemini-2.5-flash는 신규 사용자에게 더 이상 제공되지 않음(404) — 확인된
+    // 대체 모델로 교체. 참고: apps/web/server/extract-service.js도 동일 이슈로
+    // 같은 모델명 사용 중.
+    this.model = config.model ?? "gemini-3.5-flash";
     this.baseUrl =
       config.baseUrl ?? "https://generativelanguage.googleapis.com/v1beta";
     this.fetchImplementation = config.fetchImplementation ?? fetch;
