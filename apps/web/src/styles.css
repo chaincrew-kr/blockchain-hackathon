@@ -815,6 +815,13 @@ tr.conflict td {
   height: 170px;
   margin-top: 18px;
 }
+.plot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 30px;
+}
 .gridline {
   position: absolute;
   left: 0;
