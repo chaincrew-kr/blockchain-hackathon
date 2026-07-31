@@ -38,23 +38,38 @@ export function toBps(ratio: number): number {
   return Math.round(ratio * 10_000);
 }
 
-export interface RuleHashInput {
+/**
+ * init_escrow에 등록할 rule_hash 계산 (SCHEMA_CONTRACT §11, A·B·D 합의).
+ *
+ * SettlementRule 전체가 아니라 settle_batch가 실제로 받는 온체인 숫자
+ * (rule_version, *_bps 4개 — 이슈 #7 풀 워터폴로 investorProfitBps 추가)만
+ * 해시 대상으로 삼는다 — 조항 원문·충돌·승인 여부 등은 온체인 인자로
+ * 넘어가지 않으므로 검증 자체가 불가능하다. 인코딩은
+ * apps/agent/src/risk-check/hash.ts의 TicketEvent 해시체인과 동일한 "필드를
+ * '|'로 join 후 sha256" 방식 — programs/movie_escrow의 settle_batch.rs와
+ * 바이트 단위로 일치해야 한다.
+ *
+ * theaterBps/distributorBps/distributionFeeBps/investorProfitBps는
+ * SettlementRule의 revenueShare/distributionFeeRate(0~1 소수) 등을
+ * settle_batch에 넘길 때와 동일한 방식으로 basis point(정수, ×10000)로
+ * 변환한 값이어야 한다. mgAmount/investmentAmount(init_escrow의 MG·투자
+ * 총액)는 이 해시 대상이 아니다 — 매 settle_batch 호출마다 다시 넘어오는
+ * 값이 아니라 계정에 한 번만 저장되는 값이라 contract_hash와 같은 신뢰
+ * 경계를 쓴다.
+ */
+export async function computeRuleHash(params: {
   ruleVersion: number;
   theaterBps: number;
   distributorBps: number;
   distributionFeeBps: number;
-}
-
-/**
- * rule_hash 계산 — D·B 확정 인코딩, 온체인과 반드시 동일해야 함:
- *   sha256("{ruleVersion}|{theaterBps}|{distributorBps}|{distributionFeeBps}")
- * bps는 전부 정수 그대로 문자열로 넣는다 (0 패딩 없음 — B·D 확인 완료).
- *
- * ⚠️ 이 함수를 고칠 땐 반드시 B·D한테 먼저 확인하세요 — 온체인 쪽 인코딩과
- * 한 글자라도 다르면 escrow.rule_hash와 안 맞아서 검증이 통과 못 함.
- */
-export async function computeRuleHash(input: RuleHashInput): Promise<string> {
-  const message = `${input.ruleVersion}|${input.theaterBps}|${input.distributorBps}|${input.distributionFeeBps}`;
-  const bytes = new TextEncoder().encode(message);
-  return sha256Hex(bytes.buffer as ArrayBuffer);
+  investorProfitBps: number;
+}): Promise<string> {
+  const preimage = [
+    params.ruleVersion,
+    params.theaterBps,
+    params.distributorBps,
+    params.distributionFeeBps,
+    params.investorProfitBps,
+  ].join("|");
+  return sha256Hex(new TextEncoder().encode(preimage).buffer);
 }

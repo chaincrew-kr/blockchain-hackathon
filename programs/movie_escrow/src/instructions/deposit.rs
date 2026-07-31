@@ -1,4 +1,12 @@
 //! [B] STAGE 1: 관객 결제 입금 — 수취 주소가 곧 에스크로 (경유 계좌 0개).
+//!
+//! `screening_id`/`seat`/ms 단위 `timestamp`는 D의 P5 해시 연속성 검증
+//! (`hashTicketEvent`, apps/agent/src/risk-check/hash.ts)이 기대하는 원천
+//! 필드다 (이슈 #8). 실제 해시(prevHash 포함)는 온체인에서 계산하지 않는다
+//! — 프로그램은 자신이 속한 트랜잭션의 서명을 알 방법이 없어서(해시 산식이
+//! txSignature를 포함) 애초에 온체인 계산이 불가능하고, D가 이벤트 로그를
+//! 순서대로 읽어 오프체인에서 체인을 구성한다. 이 event는 그 원천 재료만
+//! 정확한 필드로 내보내는 역할이다.
 
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
@@ -33,32 +41,48 @@ pub struct Deposit<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-/// STAGE 1 발권 이벤트 — D의 STAGE 3 위험조정검증이 온체인에서 직접 읽는 원천 데이터.
+/// STAGE 1 발권 이벤트 — D의 STAGE 3 위험조정검증(P5 해시 연속성 포함)이
+/// 오프체인에서 읽는 원천 데이터. `TicketEvent`(packages/schema)와 필드
+/// 대응: kind="issue"(이벤트 종류로 암시), screening_id→screeningId,
+/// seat→seat, amount→amount, timestamp(ms)→timestamp.
 #[event]
 pub struct DepositEvent {
     pub escrow: Pubkey,
     pub movie_id: String,
     pub payer: Pubkey,
+    pub screening_id: String,
+    pub seat: String,
     pub amount: u64,
     pub gross_in: u64,
     pub pending: u64,
+    /// unix ms — D는 ms를 전제로 한다 (packages/schema). Solana
+    /// Clock::unix_timestamp는 초 단위라 여기서 ×1000 해서 맞춘다.
     pub timestamp: i64,
 }
 
-pub fn handler(ctx: Context<Deposit>, amount: u64) -> Result<()> {
-    require!(amount > 0, EscrowError::InvalidState);
-
-    token::transfer(
-        CpiContext::new(
-            ctx.accounts.token_program.to_account_info(),
-            Transfer {
-                from: ctx.accounts.payer_token_account.to_account_info(),
-                to: ctx.accounts.vault.to_account_info(),
-                authority: ctx.accounts.payer.to_account_info(),
-            },
-        ),
-        amount,
-    )?;
+pub fn handler(
+    ctx: Context<Deposit>,
+    screening_id: String,
+    seat: String,
+    amount: u64,
+) -> Result<()> {
+    // 이슈 #8 잔여 항목 — 팀 결정(2026-08-01): 0원 무료 발권을 체인에 허용.
+    // D의 무료 발권 비율(P3) 검증이 온체인 데이터로 잡히려면 무료 티켓도
+    // TicketEvent(amount=0)로 로그에 남아야 한다. amount=0이면 SPL transfer
+    // 자체를 생략 — 실어 봐야 무의미한 0-lamport 이체라 CPI를 아낀다.
+    if amount > 0 {
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    from: ctx.accounts.payer_token_account.to_account_info(),
+                    to: ctx.accounts.vault.to_account_info(),
+                    authority: ctx.accounts.payer.to_account_info(),
+                },
+            ),
+            amount,
+        )?;
+    }
 
     let escrow = &mut ctx.accounts.escrow;
     escrow.gross_in = escrow
@@ -74,10 +98,12 @@ pub fn handler(ctx: Context<Deposit>, amount: u64) -> Result<()> {
         escrow: escrow.key(),
         movie_id: escrow.movie_id.clone(),
         payer: ctx.accounts.payer.key(),
+        screening_id,
+        seat,
         amount,
         gross_in: escrow.gross_in,
         pending: escrow.pending,
-        timestamp: Clock::get()?.unix_timestamp,
+        timestamp: Clock::get()?.unix_timestamp * 1000,
     });
 
     Ok(())

@@ -49,9 +49,12 @@ describe("verify_escrow", () => {
     await program.methods
       .initEscrow(
         movieId,
+        Keypair.generate().publicKey,
         Array.from(new Uint8Array(32).fill(1)),
         Array.from(new Uint8Array(32).fill(2)),
         1,
+        new anchor.BN(0),
+        new anchor.BN(0),
       )
       .accounts({
         payer: provider.wallet.publicKey,
