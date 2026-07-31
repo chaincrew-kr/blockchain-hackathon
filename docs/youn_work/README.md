@@ -19,13 +19,13 @@
 
 ## 결정 사항
 
-| 항목              | 결정                                                                                                                                            |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Anchor 툴체인     | `Anchor.toml`에 `solana_version = "4.1.1"` 고정 — 기본 추천 버전이 최신 crates.io 의존성(edition2024)을 못 빌드해서                             |
-| `state.rs` 필드명 | 기존 5항 체계(`pending/allocated/disputed/paid_out/refunded`) 유지, `EscrowState` enum 신규 추가 — `packages/schema`의 `EscrowStatus`와 값 일치 |
-| `movie_id`        | PDA 시드 + 계정 필드 둘 다 저장 (PDA는 역산 불가라 조회용으로 별도 필요)                                                                        |
-| `contract_hash`   | `rule_hash`와 별도 필드 — 계약서 원문과 추출 규칙, 두 지점을 각각 증명                                                                          |
-| SBF 빌드          | `cargo build-sbf --arch v3` 필수 — 로컬 validator가 `SIMD-0500`으로 SBPF v0~v2 배포를 막아서                                                    |
+| 항목                   | 결정                                                                                                                                                                                                                              |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Anchor 툴체인          | `Anchor.toml`에 `solana_version = "4.1.1"` 고정 — 기본 추천 버전이 최신 crates.io 의존성(edition2024)을 못 빌드해서                                                                                                               |
+| `state.rs` 필드명      | 기존 5항 체계(`pending/allocated/disputed/paid_out/refunded`) 유지, `EscrowState` enum 신규 추가 — `packages/schema`의 `EscrowStatus`와 값 일치                                                                                   |
+| `movie_id`             | PDA 시드 + 계정 필드 둘 다 저장 (PDA는 역산 불가라 조회용으로 별도 필요)                                                                                                                                                          |
+| `contract_hash`        | `rule_hash`와 별도 필드 — 계약서 원문과 추출 규칙, 두 지점을 각각 증명                                                                                                                                                            |
+| SBF 빌드               | `cargo build-sbf --arch v3` 필수 — 로컬 validator가 `SIMD-0500`으로 SBPF v0~v2 배포를 막아서                                                                                                                                      |
 | 이슈 #7 (EscrowStatus) | 이미 충족 — `state.rs`의 `EscrowState`(Pending/Verified/Allocated/Paid/Disputed)가 `packages/schema`의 `EscrowStatus`와 정확히 대응. Anchor TS 클라이언트가 자동으로 소문자 키(`{ pending: {} }`)로 내려줘서 스키마 표기와도 맞음 |
 
 ## 구현 완료
