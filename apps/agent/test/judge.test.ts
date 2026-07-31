@@ -72,7 +72,7 @@ describe("basisClause — 검사별 단위", () => {
     expect(clause).not.toContain("%");
   });
 
-  it("환불률: 계약 상한 조항이 없으면 보류 임계만 말한다", async () => {
+  it("환불률: 계약 상한과 보류 임계를 함께 인용한다", async () => {
     const clause = await clauseFor({
       check: "refund-rate",
       passed: false,
@@ -80,9 +80,10 @@ describe("basisClause — 검사별 단위", () => {
       threshold: 0.07,
     });
 
+    expect(clause).toContain("계약 상한 10%");
     expect(clause).toContain("보류 임계 7%");
     expect(clause).toContain("12%");
-    expect(clause).not.toContain("계약 상한");
+    expect(clause).toContain(DEMO_CONTRACT_TERMS.refund.article);
   });
 
   it("해시 연속성: 측정값 문자열을 그대로 싣는다", async () => {

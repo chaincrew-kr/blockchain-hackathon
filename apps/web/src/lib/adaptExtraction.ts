@@ -80,6 +80,7 @@ export function adaptExtraction(
   const region = rule.regionSplit[0]; // 데모는 단일 지역 계약만 다룸
   const feeStep = rule.waterfall.find((w) => w.type === "FEE");
   const mgStep = rule.waterfall.find((w) => w.type === "MG_RECOUP");
+  const profitStep = rule.waterfall.find((w) => w.type === "PROFIT_SPLIT");
 
   const clauses: (ExtractedClause & { conflict?: boolean })[] = [
     toClause(
@@ -100,6 +101,15 @@ export function adaptExtraction(
         ? `${mgStep.mgAmount.toLocaleString()} ${mgStep.mgCurrency}`
         : "없음",
       findEvidence(evidence, "waterfall[1]"),
+    ),
+    toClause(
+      "손익분기 후 잔여이익 배분",
+      profitStep
+        ? `투자자 ${profitStep.profitSplit.INVESTORS * 100}% : 제작사 ${
+            profitStep.profitSplit.PRODUCER * 100
+          }%`
+        : "정보 없음",
+      findEvidence(evidence, "waterfall"),
     ),
     toClause(
       "무료 발권 상한",
@@ -130,6 +140,10 @@ export function adaptExtraction(
     },
     distributionFeeRate: feeStep?.rate ?? 0,
     minimumGuarantee: mgStep && mgStep.mgAmount > 0 ? mgStep.mgAmount : null,
+    profitShare: {
+      investor: profitStep?.profitSplit.INVESTORS ?? 0,
+      producer: profitStep?.profitSplit.PRODUCER ?? 0,
+    },
     settlementDays: rule.settlementTerms.paymentDeadlineDays,
     freeTicketCapRate: rule.ticketPolicy.compTicketCap,
     disputeThresholds: {

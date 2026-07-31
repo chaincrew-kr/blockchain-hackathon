@@ -16,6 +16,28 @@ export function movieIdFromContractHash(contractHash: string): string {
   return `mv-${contractHash.slice(0, 16)}`;
 }
 
+/** SHA-256 hex 문자열(64자) → 온체인 IDL이 요구하는 [u8; 32] 바이트 배열.
+ *  init_escrow 호출 시 contract_hash/rule_hash 인자로 그대로 넘기면 됨. */
+export function hexToBytes32(hex: string): Uint8Array {
+  if (hex.length !== 64) {
+    throw new Error(
+      `32바이트 해시가 아닙니다 (hex 길이 ${hex.length}, 64여야 함): ${hex}`,
+    );
+  }
+  const bytes = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) {
+    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  }
+  return bytes;
+}
+
+/** 0~1 사이 소수 비율을 basis point(만분율) 정수로 변환. 예: 0.5 -> 5000.
+ *  settle_batch 호출 인자(theater_bps 등)를 만들 때도 반드시 이 함수를 같이 써서,
+ *  rule_hash 계산에 쓰인 bps와 실제 온체인에 넘기는 bps가 항상 같은 값이 되게 한다. */
+export function toBps(ratio: number): number {
+  return Math.round(ratio * 10_000);
+}
+
 /**
  * init_escrow에 등록할 rule_hash 계산 (SCHEMA_CONTRACT §11, A·B·D 합의).
  *

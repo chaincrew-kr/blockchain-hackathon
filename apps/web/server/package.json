@@ -4,14 +4,13 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "node --watch index.js",
-    "start": "node index.js"
+    "dev": "tsx watch index.js",
+    "start": "tsx index.js"
   },
   "dependencies": {
-    "@google/genai": "^2.14.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "multer": "^2.2.0"
+    "@chaincrew/ai-data": "*"
+  },
+  "devDependencies": {
+    "tsx": "*"
   }
 }
