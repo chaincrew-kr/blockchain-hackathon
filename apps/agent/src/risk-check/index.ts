@@ -25,7 +25,7 @@ import { FixtureHistoryProvider, type HistoryProvider } from "./history.js";
  *   계약 상한 초과 → 계약 위반
  *   이 값 초과     → 자금 격리
  * 계약 위반이라고 곧바로 돈을 묶지 않으려는 완충이므로 일치시키면 안 된다.
- * 계약 조항 값은 judge/contract.ts가 근거 문구용으로 따로 들고 있다.
+ * 계약 조항 값은 @chaincrew/ai-data가 근거 문구용으로 관리한다.
  */
 export const DEFAULT_THRESHOLDS = {
   maxRefundRate: 0.1,

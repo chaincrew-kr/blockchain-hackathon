@@ -12,10 +12,10 @@ import type {
   TimelineEntry,
   VerificationResult,
 } from "@chaincrew/schema";
+import type { NarrativeGenerator } from "@chaincrew/ai-data";
 
 import { ChainCallError } from "./errors.js";
 import { judgeSettlement } from "./judge/index.js";
-import type { NarrativeGenerator } from "./judge/narrative.js";
 import {
   adjustThresholds,
   checkRefundEvidence,

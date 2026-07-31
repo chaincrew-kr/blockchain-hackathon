@@ -8,7 +8,7 @@ use anchor_lang::prelude::*;
 /// 영화별 에스크로 (PDA — seeds = [b"escrow", movie_id.as_bytes()], 개인키 부존재).
 ///
 /// 불변식 ①③ (B 테스트 담당):
-///   gross_in = pending + allocated + disputed + paid_out + refunded
+///   gross_in = pending + allocated + disputed + paid_out + refunded => +refunded? -refunded?
 ///   Pending 자금의 유일한 출구 = refund_pending
 #[account]
 #[derive(InitSpace)]
@@ -56,6 +56,12 @@ pub enum EscrowState {
 /// 권리자별 몫 (STAGE 2 산출, escrow + beneficiary별 PDA).
 ///
 /// 인출 제한 불변식 ② (C 테스트 담당): claim 금액 ≤ claimable − claimed
+///
+/// D 확인: 지금은 필드 추가 불필요. D의 ChainGateway가 escrow당 최대 4개
+/// (Theater/Distributor/Producer/Investor) PDA를 미리 계산해서 조회할 예정 —
+/// seeds = [b"allocation", movie_id.as_bytes(), role as u8]. 역할이 없으면
+/// 계정 자체가 없는 것(에러 아님)으로 처리. 나중에 실제로 필요해지면 그때
+/// 필드 추가.
 #[account]
 #[derive(InitSpace)]
 pub struct Allocation {
@@ -70,6 +76,8 @@ pub struct Allocation {
     /// 어떤 규칙 vN으로 계산됐는지 바인딩 (STAGE 2)
     pub rule_version: u16,
     pub bump: u8,
+    /// 보류 격리분 — mark_disputed로 claimable에서 옮겨진 금액 (C)
+    pub disputed: u64,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]

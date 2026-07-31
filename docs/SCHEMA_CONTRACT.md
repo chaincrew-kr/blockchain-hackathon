@@ -80,19 +80,22 @@ pending ── 검증·귀속 ──> allocated ── claim 완료 ──> paid
 
 ## 4. TypeScript ↔ Anchor 대응
 
-| 공통 스키마/API | Anchor                | 변환 책임      | 상태               |
-| --------------- | --------------------- | -------------- | ------------------ |
-| `grossIn`       | `gross_in: u64`       | D ChainGateway | 골격 존재          |
-| `pending`       | `pending: u64`        | D ChainGateway | 골격 존재          |
-| `allocated`     | `allocated: u64`      | D ChainGateway | 골격 존재          |
-| `disputed`      | `disputed: u64`       | D ChainGateway | 골격 존재          |
-| `paidOut`       | `paid_out: u64`       | D ChainGateway | 골격 존재          |
-| `refunded`      | `refunded: u64`       | D ChainGateway | 골격 존재          |
-| `ruleHash`      | `rule_hash: [u8; 32]` | A·B·D 합의     | 인코딩 미확정      |
-| `version`       | `rule_version: u16`   | A·B·D 합의     | 명칭 대응          |
-| `role`          | `BeneficiaryRole`     | B·D 어댑터     | enum 대응 필요     |
-| `address`       | `Pubkey`              | D ChainGateway | base58 문자열 변환 |
-| `txSignature`   | 트랜잭션 서명         | D ChainGateway | Stub 사용 중       |
+| 공통 스키마/API | Anchor                    | 변환 책임      | 상태                                                              |
+| --------------- | ------------------------- | -------------- | ----------------------------------------------------------------- |
+| `grossIn`       | `gross_in: u64`           | D ChainGateway | 골격 존재                                                         |
+| `pending`       | `pending: u64`            | D ChainGateway | 골격 존재                                                         |
+| `allocated`     | `allocated: u64`          | D ChainGateway | 골격 존재                                                         |
+| `disputed`      | `disputed: u64`           | D ChainGateway | 골격 존재                                                         |
+| `paidOut`       | `paid_out: u64`           | D ChainGateway | 골격 존재                                                         |
+| `refunded`      | `refunded: u64`           | D ChainGateway | 골격 존재                                                         |
+| `movieId`       | `movie_id: String`        | D ChainGateway | PDA 시드 겸용, 조회용 별도 저장 (B, 2026-07-30 추가)              |
+| `contractHash`  | `contract_hash: [u8; 32]` | A·B·D 합의     | ruleHash와 별개 축 — 원문↔추출규칙 각각 증명 (B, 2026-07-30 추가) |
+| `status`        | `state: EscrowState`      | D ChainGateway | 값 대응 확인됨 (Pending/Verified/Allocated/Paid/Disputed)         |
+| `ruleHash`      | `rule_hash: [u8; 32]`     | A·B·D 합의     | 인코딩 미확정                                                     |
+| `version`       | `rule_version: u16`       | A·B·D 합의     | 명칭 대응                                                         |
+| `role`          | `BeneficiaryRole`         | B·D 어댑터     | enum 대응 필요                                                    |
+| `address`       | `Pubkey`                  | D ChainGateway | base58 문자열 변환                                                |
+| `txSignature`   | 트랜잭션 서명             | D ChainGateway | Stub 사용 중                                                      |
 
 Rust의 `snake_case`를 API의 `camelCase`로 바꾸고 `u64`, `Pubkey`, 바이트 배열을
 JSON 형식으로 변환하는 책임은 D의 ChainGateway 어댑터에 둔다.
@@ -239,6 +242,7 @@ packages/schema/src/index.ts를 기준으로 웹 목업, Agent API, Anchor state
 
 ## 12. 변경 기록
 
-| 날짜       | 변경                               | 상태         |
-| ---------- | ---------------------------------- | ------------ |
-| 2026-07-30 | 현재 코드 기반 계약 관리 초안 작성 | 팀 리뷰 대기 |
+| 날짜       | 변경                                                                                                                                           | 상태         |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 2026-07-30 | 현재 코드 기반 계약 관리 초안 작성                                                                                                             | 팀 리뷰 대기 |
+| 2026-07-30 | B — `init_escrow`/`deposit`/`refund_pending` 구현 반영: `movieId`/`contractHash`를 `SettlementRule`·`DashboardSnapshot`에 추가, §4 대응표 갱신 | 팀 리뷰 대기 |

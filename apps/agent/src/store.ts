@@ -77,6 +77,9 @@ export class AgentStore {
     if (!this.batchResult) {
       // 배치 트리거 전 — 전액 Pending (격리 불변식 ③)
       return {
+        // TODO(D): ChainGateway 연결 후 실제 escrow 계정값으로 대체 (B, 2026-07-30)
+        movieId: "",
+        contractHash: "",
         status: "pending",
         grossIn,
         pending: grossIn - refunded,
@@ -100,6 +103,9 @@ export class AgentStore {
     );
 
     return {
+      // TODO(D): ChainGateway 연결 후 실제 escrow 계정값으로 대체 (B, 2026-07-30)
+      movieId: "",
+      contractHash: "",
       status: disputed > 0 ? "disputed" : "allocated",
       grossIn,
       pending: grossIn - refunded - allocated - disputed,

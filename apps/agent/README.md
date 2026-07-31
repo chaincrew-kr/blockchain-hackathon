@@ -19,6 +19,9 @@ npm run dev:agent   # 루트에서 실행 → http://localhost:4030/health
 
 - 입출력 타입은 전부 [`@chaincrew/schema`](../../packages/schema/src/index.ts)에서
   가져온다 — 임의로 로컬 타입을 만들지 말 것.
+- Gemini 프롬프트·계약 조항·KOBIS 클라이언트는 A 소유
+  [`@chaincrew/ai-data`](../../packages/ai-data/README.md)에서 가져온다. D 폴더에
+  AI·데이터 구현을 추가하지 않는다.
 - Phase 2(x402) 코드는 `risk-check`의 두 훅 **안에만** 들어간다. Phase 1에서는
   둘 다 `{ needed: false }` no-op을 유지한다 (협업 규칙 5).
 - 판정이 "진행"이면 B의 `settle_batch`, "보류"면 C의 `mark_disputed`를 호출하는

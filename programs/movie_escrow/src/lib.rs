@@ -1,6 +1,6 @@
 //! [담당: B·C] S6 영화 정산 에스크로 — 단일 Anchor 프로그램.
 //!
-//! B(자금흐름): init_escrow · deposit · refund_pending · settle_batch
+//! B(자금흐름): init_escrow · deposit · refund_pending · verify_escrow · settle_batch
 //! C(판정집행): claim · mark_disputed · resolve_dispute
 //!
 //! ⚠️ 계정 구조(state.rs)는 B·C가 7/29 중 함께 확정한 뒤 각자 instruction을
@@ -10,12 +10,13 @@
 use anchor_lang::prelude::*;
 
 pub mod error;
+pub mod guards;
 pub mod instructions;
 pub mod state;
 
 use instructions::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("C65w81oX73ngPa6PjdLR49rsXag9kM1mRD1rPT21NTik");
 
 #[program]
 pub mod movie_escrow {
@@ -26,10 +27,12 @@ pub mod movie_escrow {
     /// STAGE 0b: 승인된 정산 규칙 해시를 등록하며 에스크로 초기화.
     pub fn init_escrow(
         ctx: Context<InitEscrow>,
+        movie_id: String,
+        contract_hash: [u8; 32],
         rule_hash: [u8; 32],
         rule_version: u16,
     ) -> Result<()> {
-        instructions::init_escrow::handler(ctx, rule_hash, rule_version)
+        instructions::init_escrow::handler(ctx, movie_id, contract_hash, rule_hash, rule_version)
     }
 
     /// STAGE 1: 관객 결제 → 에스크로 PDA 입금 (상태 Pending).
@@ -42,9 +45,20 @@ pub mod movie_escrow {
         instructions::refund_pending::handler(ctx, amount)
     }
 
-    /// STAGE 2: 공제 워터폴 실행 후 권리자별 Allocation 확정.
-    pub fn settle_batch(ctx: Context<SettleBatch>) -> Result<()> {
-        instructions::settle_batch::handler(ctx)
+    /// STAGE 3→2 게이트: D의 위험조정검증 통과를 온체인에 기록 (Pending → Verified).
+    pub fn verify_escrow(ctx: Context<VerifyEscrow>) -> Result<()> {
+        instructions::verify_escrow::handler(ctx)
+    }
+
+    /// STAGE 2: 공제 워터폴 실행 후 권리자별 Allocation 확정 (축소 워터폴 —
+    /// 부과금·VAT·부율 분할·배급수수료. MG·투자 상환·이익 배분은 미구현).
+    pub fn settle_batch(
+        ctx: Context<SettleBatch>,
+        theater_bps: u16,
+        distributor_bps: u16,
+        distribution_fee_bps: u16,
+    ) -> Result<()> {
+        instructions::settle_batch::handler(ctx, theater_bps, distributor_bps, distribution_fee_bps)
     }
 
     // ── C 판정집행 ──────────────────────────────────────────────────────
