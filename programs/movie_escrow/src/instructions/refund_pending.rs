@@ -36,19 +36,28 @@ pub struct RefundPending<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-/// STAGE 1 환불 이벤트 — DepositEvent와 대칭, D의 STAGE 3가 읽는 원천 데이터.
+/// STAGE 1 환불 이벤트 — DepositEvent와 대칭, D의 P5 해시 연속성 검증이
+/// 오프체인에서 읽는 원천 데이터 (kind="refund", 이슈 #8).
 #[event]
 pub struct RefundEvent {
     pub escrow: Pubkey,
     pub movie_id: String,
     pub payer: Pubkey,
+    pub screening_id: String,
+    pub seat: String,
     pub amount: u64,
     pub pending: u64,
     pub refunded: u64,
+    /// unix ms — DepositEvent와 동일하게 ×1000.
     pub timestamp: i64,
 }
 
-pub fn handler(ctx: Context<RefundPending>, amount: u64) -> Result<()> {
+pub fn handler(
+    ctx: Context<RefundPending>,
+    screening_id: String,
+    seat: String,
+    amount: u64,
+) -> Result<()> {
     require!(amount > 0, EscrowError::InvalidState);
 
     let movie_id = ctx.accounts.escrow.movie_id.clone();
@@ -84,10 +93,12 @@ pub fn handler(ctx: Context<RefundPending>, amount: u64) -> Result<()> {
         escrow: escrow.key(),
         movie_id: escrow.movie_id.clone(),
         payer: ctx.accounts.payer.key(),
+        screening_id,
+        seat,
         amount,
         pending: escrow.pending,
         refunded: escrow.refunded,
-        timestamp: Clock::get()?.unix_timestamp,
+        timestamp: Clock::get()?.unix_timestamp * 1000,
     });
 
     Ok(())

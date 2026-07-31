@@ -96,7 +96,7 @@ describe("refund_pending", () => {
     vaultPda = escrowAfterInit.vault;
 
     await program.methods
-      .deposit(new anchor.BN(DEPOSIT_AMOUNT))
+      .deposit("SCR-1", "A15", new anchor.BN(DEPOSIT_AMOUNT))
       .accounts({
         payer: provider.wallet.publicKey,
         escrow: escrowPda,
@@ -111,7 +111,7 @@ describe("refund_pending", () => {
     const refundAmount = 4_000_000;
 
     await program.methods
-      .refundPending(new anchor.BN(refundAmount))
+      .refundPending("SCR-1", "A15", new anchor.BN(refundAmount))
       .accounts({
         payer: provider.wallet.publicKey,
         escrow: escrowPda,
@@ -137,7 +137,7 @@ describe("refund_pending", () => {
 
     await expect(
       program.methods
-        .refundPending(new anchor.BN(tooMuch))
+        .refundPending("SCR-1", "A15", new anchor.BN(tooMuch))
         .accounts({
           payer: provider.wallet.publicKey,
           escrow: escrowPda,
@@ -160,7 +160,7 @@ describe("refund_pending", () => {
 
     await expect(
       program.methods
-        .refundPending(new anchor.BN(1_000_000))
+        .refundPending("SCR-1", "A15", new anchor.BN(1_000_000))
         .accounts({
           payer: provider.wallet.publicKey,
           escrow: escrowPda,
