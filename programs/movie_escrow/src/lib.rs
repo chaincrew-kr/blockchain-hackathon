@@ -35,14 +35,25 @@ pub mod movie_escrow {
         instructions::init_escrow::handler(ctx, movie_id, contract_hash, rule_hash, rule_version)
     }
 
-    /// STAGE 1: 관객 결제 → 에스크로 PDA 입금 (상태 Pending).
-    pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
-        instructions::deposit::handler(ctx, amount)
+    /// STAGE 1: 관객 결제 → 에스크로 PDA 입금 (상태 Pending). `screening_id`/
+    /// `seat`는 D의 P5 해시 연속성 검증 원천 데이터 (이슈 #8).
+    pub fn deposit(
+        ctx: Context<Deposit>,
+        screening_id: String,
+        seat: String,
+        amount: u64,
+    ) -> Result<()> {
+        instructions::deposit::handler(ctx, screening_id, seat, amount)
     }
 
     /// STAGE 1: Pending 자금의 유일한 출구 — 관객 환불 (격리 불변식 ③).
-    pub fn refund_pending(ctx: Context<RefundPending>, amount: u64) -> Result<()> {
-        instructions::refund_pending::handler(ctx, amount)
+    pub fn refund_pending(
+        ctx: Context<RefundPending>,
+        screening_id: String,
+        seat: String,
+        amount: u64,
+    ) -> Result<()> {
+        instructions::refund_pending::handler(ctx, screening_id, seat, amount)
     }
 
     /// STAGE 3→2 게이트: D의 위험조정검증 통과를 온체인에 기록 (Pending → Verified).

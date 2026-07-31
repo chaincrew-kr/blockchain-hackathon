@@ -106,7 +106,7 @@ describe("settle_batch", () => {
     const escrowAfterInit = await program.account.movieEscrow.fetch(escrowPda);
 
     await program.methods
-      .deposit(new anchor.BN(DEPOSIT_AMOUNT))
+      .deposit("SCR-1", "A16", new anchor.BN(DEPOSIT_AMOUNT))
       .accounts({
         payer: provider.wallet.publicKey,
         escrow: escrowPda,
@@ -326,7 +326,7 @@ describe("settle_batch", () => {
     const escrowBeforeSecondDeposit =
       await program.account.movieEscrow.fetch(escrowPda);
     await program.methods
-      .deposit(new anchor.BN(DEPOSIT_AMOUNT))
+      .deposit("SCR-1", "A16", new anchor.BN(DEPOSIT_AMOUNT))
       .accounts({
         payer: provider.wallet.publicKey,
         escrow: escrowPda,
@@ -411,7 +411,7 @@ describe("settle_batch", () => {
 
     const escrowAfterFirst = await program.account.movieEscrow.fetch(escrowPda);
     await program.methods
-      .deposit(new anchor.BN(DEPOSIT_AMOUNT))
+      .deposit("SCR-1", "A16", new anchor.BN(DEPOSIT_AMOUNT))
       .accounts({
         payer: provider.wallet.publicKey,
         escrow: escrowPda,
