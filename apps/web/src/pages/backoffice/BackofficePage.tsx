@@ -77,6 +77,7 @@ export function BackofficePage() {
       theaterBps: toBps(rule.revenueShare.theater),
       distributorBps: toBps(rule.revenueShare.distributor),
       distributionFeeBps: toBps(rule.distributionFeeRate),
+      investorProfitBps: toBps(rule.profitShare.investor),
     }).then((hash) => {
       if (!cancelled) {
         setRule((prev) => (prev ? { ...prev, ruleHash: hash } : prev));

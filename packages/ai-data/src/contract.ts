@@ -34,7 +34,7 @@ export const DEMO_CONTRACT_TERMS: ContractTerms = {
   // 회차별 정보가 있으나 "발권 ≤ 좌석수"는 계약 조항이 아니라 물리적 제약.
   // cap을 null로 유지하고 article은 참고용으로만 표시.
   seating: {
-    article: "제4조(계약 기본사항 — 좌석수는 물리적 제약, 계약 조항 아님)",
+    article: "제4조(계약 기본사항 — 상영관 좌석수 40석)",
     cap: null,
   },
   // 제6조②: "상영자는... 입장수입과 입장객 수를 나타내는 정확한 기록을 유지하여야 한다"
