@@ -8,7 +8,7 @@ use anchor_lang::prelude::*;
 /// 영화별 에스크로 (PDA — seeds = [b"escrow", movie_id.as_bytes()], 개인키 부존재).
 ///
 /// 불변식 ①③ (B 테스트 담당):
-///   gross_in = pending + allocated + disputed + paid_out + refunded
+///   gross_in = pending + allocated + disputed + paid_out + refunded => +refunded? -refunded?
 ///   Pending 자금의 유일한 출구 = refund_pending
 #[account]
 #[derive(InitSpace)]
@@ -76,6 +76,8 @@ pub struct Allocation {
     /// 어떤 규칙 vN으로 계산됐는지 바인딩 (STAGE 2)
     pub rule_version: u16,
     pub bump: u8,
+    /// 보류 격리분 — mark_disputed로 claimable에서 옮겨진 금액 (C)
+    pub disputed: u64,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
