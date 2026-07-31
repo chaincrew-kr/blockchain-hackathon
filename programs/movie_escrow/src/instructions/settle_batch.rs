@@ -159,6 +159,23 @@ pub fn handler(
         EscrowError::InvalidWaterfallParams
     );
 
+    // rule_hash 검증 (SCHEMA_CONTRACT §11, A·B·D 합의): SettlementRule 전체가
+    // 아니라 온체인이 실제로 쓰는 숫자(rule_version, *_bps 3개)만 검증 대상으로
+    // 좁힌다 — 조항 원문·충돌·승인 여부 등은 이 instruction의 인자로 넘어오지
+    // 않으므로 애초에 재현할 수 없다. 인코딩은 TicketEvent 해시체인
+    // (apps/agent/src/risk-check/hash.ts)과 동일하게 필드를 "|"로 join한
+    // 문자열을 sha256 — JSON 직렬화의 키 순서·숫자 표현 불일치 위험을 피한다.
+    let rule_preimage = format!(
+        "{}|{}|{}|{}",
+        ctx.accounts.escrow.rule_version, theater_bps, distributor_bps, distribution_fee_bps
+    );
+    let computed_rule_hash =
+        anchor_lang::solana_program::hash::hash(rule_preimage.as_bytes()).to_bytes();
+    require!(
+        computed_rule_hash == ctx.accounts.escrow.rule_hash,
+        EscrowError::RuleHashMismatch
+    );
+
     let gross = amount;
     require!(
         gross > 0 && gross <= ctx.accounts.escrow.pending,

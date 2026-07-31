@@ -8,6 +8,7 @@ import {
   mintTo,
 } from "@solana/spl-token";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 
@@ -33,9 +34,17 @@ describe("settle_batch", () => {
   const program = new Program(idl, provider);
 
   const DEPOSIT_AMOUNT = 10_000_000; // 10 USDC (6 decimals)
+  const RULE_VERSION = 1;
   const THEATER_BPS = 5000;
   const DISTRIBUTOR_BPS = 5000;
   const DISTRIBUTION_FEE_BPS = 1000;
+
+  // settle_batch.rs의 rule_hash 검증과 동일한 인코딩(필드를 "|"로 join 후
+  // sha256) — 여기서 어긋나면 모든 settle_batch 호출이 RuleHashMismatch로
+  // 실패한다.
+  const RULE_HASH = createHash("sha256")
+    .update([RULE_VERSION, THEATER_BPS, DISTRIBUTOR_BPS, DISTRIBUTION_FEE_BPS].join("|"))
+    .digest();
 
   // 손 계산 기대값 (gross=10_000_000 기준):
   //   levy = round(10_000_000 × 3 / 103)            = 291_262
@@ -88,8 +97,8 @@ describe("settle_batch", () => {
       .initEscrow(
         movieId,
         Array.from(new Uint8Array(32).fill(1)),
-        Array.from(new Uint8Array(32).fill(2)),
-        1,
+        Array.from(RULE_HASH),
+        RULE_VERSION,
       )
       .accounts({
         payer: provider.wallet.publicKey,
