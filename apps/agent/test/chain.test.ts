@@ -1,14 +1,14 @@
 /**
  * 체인 게이트웨이 테스트 — 연결 계층과 폴백 동작.
  *
- * IDL이 아직 없으므로 실제 instruction 호출은 검증할 수 없다. 대신 **IDL이
- * 없을 때 어떻게 실패하는지**를 고정한다 — 조용히 성공한 척하는 게 가장 위험하다.
+ * 실제 IDL을 로드해 PDA와 instruction 호출 계약을 검증한다.
  */
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-import { web3 } from "@coral-xyz/anchor";
+import { BN, web3 } from "@coral-xyz/anchor";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createApp } from "../src/app.js";
@@ -21,6 +21,9 @@ import { AgentStore } from "../src/store.js";
 
 /** Anchor.toml의 movie_escrow placeholder */
 const PROGRAM_ID = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS";
+const IDL_PATH = fileURLToPath(
+  new URL("../../../packages/schema/idl/movie_escrow.json", import.meta.url),
+);
 
 let dir: string;
 let keypairPath: string;
@@ -71,6 +74,24 @@ describe("createChainGateway — 환경변수에 따른 선택", () => {
     get AGENT_KEYPAIR_PATH() {
       return keypairPath;
     },
+    SOLANA_IDL_PATH: IDL_PATH,
+    ESCROW_MOVIE_ID: "movie-test-1",
+    get THEATER_WALLET() {
+      return expectedPubkey;
+    },
+    get DISTRIBUTOR_WALLET() {
+      return expectedPubkey;
+    },
+    get PRODUCER_WALLET() {
+      return expectedPubkey;
+    },
+    get INVESTOR_WALLET() {
+      return expectedPubkey;
+    },
+    THEATER_BPS: "5000",
+    DISTRIBUTOR_BPS: "5000",
+    DISTRIBUTION_FEE_BPS: "1000",
+    INVESTOR_PROFIT_BPS: "6000",
   } as NodeJS.ProcessEnv;
 
   it("환경변수가 다 있으면 anchor 모드", () => {
@@ -102,12 +123,22 @@ describe("createChainGateway — 환경변수에 따른 선택", () => {
   });
 });
 
-describe("AnchorChainGateway — IDL 없을 때의 실패 방식", () => {
+describe("AnchorChainGateway — IDL과 PDA 계약", () => {
   function gateway() {
     return new AnchorChainGateway({
       rpcUrl: "http://127.0.0.1:8899",
       programId: PROGRAM_ID,
       keypairPath,
+      idlPath: IDL_PATH,
+      movieId: "movie-test-1",
+      theaterWallet: expectedPubkey,
+      distributorWallet: expectedPubkey,
+      producerWallet: expectedPubkey,
+      investorWallet: expectedPubkey,
+      theaterBps: 5000,
+      distributorBps: 5000,
+      distributionFeeBps: 1000,
+      investorProfitBps: 6000,
     });
   }
 
@@ -115,16 +146,81 @@ describe("AnchorChainGateway — IDL 없을 때의 실패 방식", () => {
     expect(gateway().authority).toBe(expectedPubkey);
   });
 
-  it("settle_batch는 502 ChainCallError로 실패한다", async () => {
-    await expect(gateway().settleBatch("SCR-1", 1000)).rejects.toMatchObject({
-      status: 502,
-      code: "chain_call_failed",
-      instruction: "settle_batch",
-    });
+  it("영화별 escrow와 역할별 Allocation PDA를 각각 계산한다", () => {
+    const addresses = gateway().addresses;
+    expect(new Set(Object.values(addresses.allocations)).size).toBe(4);
+    expect(addresses.escrow).not.toBe(addresses.allocations.theater);
   });
 
-  it("실패 사유에 IDL 대기 상태가 드러난다 — 조용히 실패하지 않는다", async () => {
-    await expect(gateway().markDisputed("SCR-2", 500)).rejects.toThrow(/IDL/);
+  it("이상 회차는 verify → settle → 권리자별 markDisputed 순서로 실행한다", async () => {
+    const target = gateway();
+    const addresses = target.addresses;
+    const roleAmounts = new Map(
+      Object.entries(addresses.allocations).map(([role, address], index) => [
+        address,
+        { role, amount: (index + 1) * 10 },
+      ]),
+    );
+    const calls: Array<{ name: string; args: unknown[] }> = [];
+    let settled = false;
+
+    function builder(name: string, args: unknown[]) {
+      return {
+        accountsStrict() {
+          return {
+            async rpc() {
+              calls.push({ name, args });
+              if (name === "settleBatch") settled = true;
+              const role =
+                name === "markDisputed"
+                  ? roleAmounts.size -
+                    calls.filter((call) => call.name === "markDisputed").length
+                  : 0;
+              return `${name}-tx-${role}`;
+            },
+          };
+        },
+      };
+    }
+
+    const fakeProgram = {
+      account: {
+        movieEscrow: {
+          async fetchNullable() {
+            return { state: { pending: {} } };
+          },
+        },
+        allocation: {
+          async fetchNullable(address: web3.PublicKey) {
+            const item = roleAmounts.get(address.toBase58());
+            return settled && item ? { claimable: new BN(item.amount) } : null;
+          },
+        },
+      },
+      methods: {
+        verifyEscrow: (...args: unknown[]) => builder("verifyEscrow", args),
+        settleBatch: (...args: unknown[]) => builder("settleBatch", args),
+        markDisputed: (...args: unknown[]) => builder("markDisputed", args),
+      },
+    };
+    Object.defineProperty(target, "program", { value: fakeProgram });
+
+    const result = await target.markDisputed("SCR-HOLD", 100);
+
+    expect(calls.map((call) => call.name)).toEqual([
+      "verifyEscrow",
+      "settleBatch",
+      "markDisputed",
+      "markDisputed",
+      "markDisputed",
+      "markDisputed",
+    ]);
+    expect(
+      calls
+        .filter((call) => call.name === "markDisputed")
+        .map((call) => (call.args[0] as BN).toNumber()),
+    ).toEqual([10, 20, 30, 40]);
+    expect(result.txSignatures).toHaveLength(6);
   });
 });
 

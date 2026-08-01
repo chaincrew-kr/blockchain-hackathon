@@ -53,12 +53,8 @@ export interface SettlementRule {
   /**
    * 계약서상 무료 발권 상한 비율 (SPEC §5 `compTicketCap`, 예: 0.05).
    *
-   * ⚠️ 아래 `disputeThresholds.freeTicketRate`와 **다른 층위다.**
-   *   이 값 초과      → 계약 위반
-   *   보류 임계 초과  → 자금 격리
-   * 계약 위반이라고 즉시 자금을 묶지 않으려고 완충을 둔 구조이므로,
-   * 두 숫자는 같을 필요가 없다. STAGE 3 검증은 disputeThresholds를 쓰고,
-   * 판정 근거 문구는 이 값을 계약 조항으로 인용한다.
+   * 데모에서는 아래 `disputeThresholds.freeTicketRate`도 같은 0.05를 쓴다.
+   * 계약 위반인데 정산을 진행하는 5~15%의 모호한 구간을 만들지 않는다(#9).
    */
   freeTicketCapRate: number;
   /**
@@ -68,7 +64,7 @@ export interface SettlementRule {
   disputeThresholds: {
     /** 환불률 상한 (SPEC 기본 0.10) */
     refundRate: number;
-    /** 무료 발권 비율 상한 (SPEC 기본 0.15) */
+    /** 무료 발권 비율 상한. 계약서에 명시된 값을 쓴다(데모 0.05). */
     freeTicketRate: number;
   };
   clauses: ExtractedClause[];
@@ -127,7 +123,7 @@ export interface OnchainHistorySummary {
 export interface AdjustedThresholds {
   /** P3: 환불률 상한 (기본 0.10) */
   maxRefundRate: number;
-  /** P3: 무료 발권 비율 상한 (기본 0.15) */
+  /** P3: 무료 발권 비율 상한 (표준상영계약 데모 0.05) */
   maxFreeRate: number;
   /** P4: 발권수 상한 = 좌석수 */
   maxTicketsPerScreening: number;
@@ -220,7 +216,11 @@ export interface DashboardSnapshot {
 
 /** POST /api/batch/trigger 응답. */
 export interface BatchRunResponse {
+  /** Anchor MovieEscrow PDA의 movie_id. */
+  movieId: string;
   theater: string;
+  /** stub이면 timeline의 트랜잭션은 가짜다. */
+  chainMode: "stub" | "anchor";
   /** true면 이번 요청이 실행한 것이 아니라 기존 멱등 결과를 재생한 것이다. */
   replayed: boolean;
   decisions: JudgeDecision[];
