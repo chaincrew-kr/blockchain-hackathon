@@ -50,17 +50,14 @@ D가 이 주석을 근거로 두 값을 같게 맞추려다 판정 문구가 어
 
 ## 2. 답이 필요한 결정 — 코드 리뷰가 아니라 판단 요청
 
-| 대상    | 항목                               | 이슈                                                                      | 왜 급한가                               |
-| ------- | ---------------------------------- | ------------------------------------------------------------------------- | --------------------------------------- |
-| **B**   | 발권 이벤트 해시 산식              | [#8](https://github.com/chaincrew-kr/blockchain-hackathon/issues/8)       | 안 맞으면 **정상 회차도 전부 보류**된다 |
-| **B**   | `MovieEscrow`에 상영관 식별 필드   | [#5](https://github.com/chaincrew-kr/blockchain-hackathon/issues/5)       | 온체인 이력 조회 구현 불가              |
-| **B·C** | 회차 단위·`settle_batch` 시그니처  | [#6](https://github.com/chaincrew-kr/blockchain-hackathon/issues/6)       | 실제 체인 호출 연결 불가                |
-| **B·C** | `EscrowStatus` 확정                | [#7](https://github.com/chaincrew-kr/blockchain-hackathon/issues/7)       | 지금은 D가 금액에서 자체 추론 중        |
-| **A**   | 계약 조항 번호                     | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) B-6 | 제5조 외에는 D가 임의로 붙였다          |
-| **팀**  | 환불률을 **건수** vs **금액** 기준 | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) B-1 | **판정 결과 자체가 바뀐다**             |
-| **팀**  | 신규 상영관 강화 −30% 확정         | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) C-3 | 문서에 "합의 필요"인데 D가 확정해서 씀  |
-| **팀**  | D5 규모 950/50 vs 픽스처 180/90    | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) C-2 | 보류 비중이 5% vs 33%로 다르다          |
-| **팀**  | GCP 결제 계정 신청자               | [#13](https://github.com/chaincrew-kr/blockchain-hackathon/issues/13)     | Cloud Run 배포가 전면 차단됨            |
+| 대상   | 항목                               | 이슈                                                                      | 왜 급한가                               |
+| ------ | ---------------------------------- | ------------------------------------------------------------------------- | --------------------------------------- |
+| **B**  | 발권 이벤트 해시 산식              | [#8](https://github.com/chaincrew-kr/blockchain-hackathon/issues/8)       | 안 맞으면 **정상 회차도 전부 보류**된다 |
+| **A**  | 계약 조항 번호                     | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) B-6 | 제5조 외에는 D가 임의로 붙였다          |
+| **팀** | 환불률을 **건수** vs **금액** 기준 | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) B-1 | **판정 결과 자체가 바뀐다**             |
+| **팀** | 신규 상영관 강화 −30% 확정         | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) C-3 | 문서에 "합의 필요"인데 D가 확정해서 씀  |
+| **팀** | D5 규모 950/50 vs 픽스처 180/90    | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) C-2 | 보류 비중이 5% vs 33%로 다르다          |
+| **팀** | GCP 결제 계정 신청자               | [#13](https://github.com/chaincrew-kr/blockchain-hackathon/issues/13)     | Cloud Run 배포가 전면 차단됨            |
 
 가장 무거운 건 **환불률 기준(B-1)** 이다. 문서에 "환불률 > 10%"라고만 있고
 분모·분자가 없어서 D가 건수 기준으로 구현했는데, 금액 기준이면 같은 데이터로도
@@ -127,38 +124,19 @@ type ApiErrorCode =
 
 ---
 
-## 5. 7/31 추가 결정 요청 — 이상 회차의 온체인 부분 보류 순서
+## 5. 해결된 통합 이슈 — 리뷰 대기에서 제외
 
-> 결정 이슈: [#33](https://github.com/chaincrew-kr/blockchain-hackathon/issues/33)
+- [#5](https://github.com/chaincrew-kr/blockchain-hackathon/issues/5):
+  `MovieEscrow.theater`·`dispute_count` 반영, D 이력 집계 구현
+- [#6](https://github.com/chaincrew-kr/blockchain-hackathon/issues/6):
+  `settle_batch(screening_id, amount, ...)` 회차 단위 시그니처 반영
+- [#7](https://github.com/chaincrew-kr/blockchain-hackathon/issues/7):
+  `EscrowState` 온체인 enum 반영
+- [#33](https://github.com/chaincrew-kr/blockchain-hackathon/issues/33):
+  2안으로 합의·구현 — `settle_batch` 후 권리자별 `mark_disputed`
 
-B의 `settle_batch`와 IDL이 `dev`에 합쳐졌지만, 현재 D 파이프라인과 C의
-`mark_disputed`가 요구하는 사전 상태가 다르다.
-
-```text
-현재 D: 이상 판정 → mark_disputed(회차 순매출 전액)
-현재 C: settle_batch로 Allocation 생성 후
-          → mark_disputed(특정 권리자 Allocation의 보류액)
-```
-
-`heldAmount`는 현재 회차 순매출 전액인데, `mark_disputed`는 특정
-Allocation 하나만 받는다. 부가세·부과금을 제외한 권리자별 귀속액과
-회차 총액은 같지 않으므로, D가 임의로 한 권리자 계정에 전액을 묶을 수
-없다.
-
-**팀 결정 필요:**
-
-1. 이상 회차를 `pending`에 두고 온체인 `mark_disputed`를 호출하지 않는다.
-2. `settle_batch` 후 권리자별 귀속액 전체를 각각 `mark_disputed`한다.
-3. C가 회차 단위 총액을 한 번에 격리하는 instruction을 추가한다.
-
-D 제안은 **2번**이다. 계약 규칙에 따른 귀속 결과를 먼저 계산하고,
-인출만 막으면 정상 회차와 이상 회차의 권리자별 금액을 같은 방식으로
-설명할 수 있다. 다만 여러 트랜잭션 중 일부만 실패하는 경우의 복구 정책도
-같이 정해야 한다.
-
-추가로 실제 `settle_batch` 호출에 필요한 `movieId`, 권리자 지갑 3개,
-부율 BPS, 배급수수료 BPS를 어떤 API·저장소에서 D에게 전달할지도
-A·B·D 계약으로 확정해야 한다.
+위 항목은 더 이상 팀 답변 대기가 아니다. 다만 #33의 여러
+트랜잭션 중 일부만 실패했을 때 복구하는 정책은 D 후속 작업으로 남는다.
 
 ---
 
