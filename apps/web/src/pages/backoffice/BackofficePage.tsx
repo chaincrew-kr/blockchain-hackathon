@@ -225,6 +225,34 @@ export function BackofficePage() {
                 : "충돌 없음. 양측 승인을 진행할 수 있습니다."}
             </p>
 
+            <div style={{ marginTop: 18 }}>
+              <div className="label">보류 임계값 — 계약 상한과는 다른 층위</div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  marginTop: 8,
+                }}
+              >
+                <span className="chip state-hold">
+                  환불률 상한{" "}
+                  {(rule.disputeThresholds.refundRate * 100).toFixed(1)}%
+                </span>
+                <span className="chip state-hold">
+                  무료 발권 비율 상한{" "}
+                  {(rule.disputeThresholds.freeTicketRate * 100).toFixed(1)}%
+                </span>
+              </div>
+              <p className="chart-caption" style={{ marginTop: 8 }}>
+                위 "무료 발권 상한" 조항(계약 위반 기준{" "}
+                {(rule.freeTicketCapRate * 100).toFixed(1)}%)과는 다른 값입니다
+                — 이 임계값을 넘으면 정산 에이전트가 해당 회차 금액을 자동으로
+                보류합니다. 계약 위반이라고 곧바로 자금을 묶지 않기 위한
+                완충입니다.
+              </p>
+            </div>
+
             {conflictCount > 0 && (
               <ul style={{ marginTop: 12, paddingLeft: 18 }}>
                 {rule.conflicts.map((c, i) => (
