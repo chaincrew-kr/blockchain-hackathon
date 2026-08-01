@@ -75,6 +75,13 @@ pub fn handler(ctx: Context<MarkDisputed>, amount: u64) -> Result<()> {
         .checked_add(amount)
         .ok_or(EscrowError::MathOverflow)?;
     escrow.state = EscrowState::Disputed;
+    // 이슈 #5 — 상영관 이력 조회용 카운터. D는 getProgramAccounts(theater
+    // memcmp)로 이 필드를 계정에서 바로 합산해 이력을 집계한다(이벤트 로그
+    // 재구성 불필요).
+    escrow.dispute_count = escrow
+        .dispute_count
+        .checked_add(1)
+        .ok_or(EscrowError::MathOverflow)?;
 
     emit!(MarkDisputedEvent {
         escrow: escrow.key(),

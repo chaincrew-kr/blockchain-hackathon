@@ -8,12 +8,12 @@
  * 다음 교체 지점(아직 안 됨):
  *   - "규칙 v1 승인" / "온체인 등록" 버튼 → B의 init_escrow(rule_hash, ver) 연결
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { SettlementRule } from "@chaincrew/schema";
 
 import { extractContract } from "../../lib/api";
 import { adaptExtraction, type PartyNames } from "../../lib/adaptExtraction";
-import { sha256Hex } from "../../lib/hash";
+import { computeRuleHash, sha256Hex, toBps } from "../../lib/hash";
 
 const STEPS = [
   { n: "01", t: "계약서 업로드", s: "now" },
@@ -65,6 +65,28 @@ export function BackofficePage() {
   const bothApproved = rule
     ? rule.approvals.distributor && rule.approvals.theater
     : false;
+
+  // 양측 승인이 다 되면, 온체인과 같은 방식(D·B 확정 인코딩)으로 ruleHash를 계산해둔다.
+  // 실제 init_escrow 호출은 D의 에이전트 엔드포인트가 나오면 그때 연결한다 — 아직은
+  // "승인 후 화면에 정확한 해시가 보인다"까지만.
+  useEffect(() => {
+    if (!rule || !bothApproved || rule.ruleHash) return;
+    let cancelled = false;
+    computeRuleHash({
+      ruleVersion: rule.version,
+      theaterBps: toBps(rule.revenueShare.theater),
+      distributorBps: toBps(rule.revenueShare.distributor),
+      distributionFeeBps: toBps(rule.distributionFeeRate),
+      investorProfitBps: toBps(rule.profitShare.investor),
+    }).then((hash) => {
+      if (!cancelled) {
+        setRule((prev) => (prev ? { ...prev, ruleHash: hash } : prev));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [rule, bothApproved]);
 
   // 스텝 상태: 파일 선택 → 추출 → 충돌해결/승인 → 규칙 확정 순서로 진행
   const steps = STEPS.map((step, i) => {
@@ -291,7 +313,7 @@ export function BackofficePage() {
               <div className="hash-box">
                 {rule.ruleHash ??
                   (bothApproved
-                    ? "양측 승인 완료 — B의 init_escrow 연결 후 해시 계산"
+                    ? "계산 중…"
                     : "b7a1 90c4 e2ff 08d3 5b6e 4a17 c9d0 22ab … (미확정)")}
               </div>
               <p className="chart-caption">

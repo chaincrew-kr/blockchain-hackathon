@@ -43,6 +43,11 @@ export interface SettlementRule {
   distributionFeeRate: number;
   /** MG(미니멈 개런티) — 소액 권장, 없으면 null */
   minimumGuarantee: number | null;
+  /** 손익분기 후 잔여이익 배분율 */
+  profitShare: {
+    investor: number;
+    producer: number;
+  };
   /** 정산일 (회차 종료 후 n일) */
   settlementDays: number;
   /**

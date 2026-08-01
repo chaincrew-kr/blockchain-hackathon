@@ -90,13 +90,14 @@ export async function extractContract(
 
 // ── KOBIS ──────────────────────────────────────────────────────────────
 
+/** @chaincrew/ai-data의 KobisMovieInfo와 동일 형태 (정규화된 필드명). */
 export interface KobisMovieInfo {
-  movieNm: string;
-  openDt: string;
-  genres: { genreNm: string }[];
-  directors: { peopleNm: string }[];
-  companys: { companyNm: string; companyPartNm: string }[];
-  audits: { watchGradeNm: string }[];
+  movieName: string;
+  openDate: string;
+  genres: string[];
+  directors: string[];
+  companies: { name: string; role: string }[];
+  watchGrade: string | null;
 }
 
 export interface KobisDailyPoint {

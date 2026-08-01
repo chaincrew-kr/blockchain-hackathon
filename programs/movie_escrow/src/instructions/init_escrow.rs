@@ -45,13 +45,19 @@ pub struct InitEscrow<'info> {
 pub fn handler(
     ctx: Context<InitEscrow>,
     movie_id: String,
+    theater: Pubkey,
     contract_hash: [u8; 32],
     rule_hash: [u8; 32],
     rule_version: u16,
+    // 계약서상 MG(미니멈 개런티) 총액 — 0이면 이 영화는 MG 없음.
+    mg_amount: u64,
+    // 계약서상 투자금 총액 — 0이면 외부 투자자 없음.
+    investment_amount: u64,
 ) -> Result<()> {
     let escrow = &mut ctx.accounts.escrow;
     escrow.movie_id = movie_id;
     escrow.authority = ctx.accounts.authority.key();
+    escrow.theater = theater;
     escrow.usdc_mint = ctx.accounts.usdc_mint.key();
     escrow.vault = ctx.accounts.vault.key();
     escrow.contract_hash = contract_hash;
@@ -65,6 +71,9 @@ pub fn handler(
     escrow.paid_out = 0;
     escrow.refunded = 0;
     escrow.batch_count = 0;
+    escrow.dispute_count = 0;
+    escrow.mg_remaining = mg_amount;
+    escrow.investment_remaining = investment_amount;
     escrow.bump = ctx.bumps.escrow;
     Ok(())
 }

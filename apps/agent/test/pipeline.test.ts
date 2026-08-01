@@ -29,7 +29,7 @@ describe("runSettlementBatch — STAGE 3→4→체인 호출", () => {
 
     expect(anomalous.decision.verdict).toBe("partial-hold");
     expect(anomalous.decision.heldAmount).toBe(9 * TICKET_PRICE);
-    expect(anomalous.decision.basisClauses.join()).toContain("무료 발권 상한");
+    expect(anomalous.decision.basisClauses.join()).toContain("계약 상한 5%");
     expect(anomalous.decision.narrative).not.toContain("TODO");
 
     expect(gateway.calls).toEqual([
