@@ -7,7 +7,7 @@ import type { AddressInfo } from "node:net";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { createApp } from "../src/app.js";
+import { createApp, parseAllowedOrigins } from "../src/app.js";
 import type { ChainGateway, SettleBatchResult } from "../src/chain/gateway.js";
 import { StubChainGateway } from "../src/chain/gateway.js";
 import { demoBatch } from "../src/fixtures/screenings.js";
@@ -241,5 +241,45 @@ describe("requestId 전파", () => {
     });
     expect(response.headers.get("x-request-id")).toBe("trace-me-123");
     expect((await response.json()).error.requestId).toBe("trace-me-123");
+  });
+});
+
+describe("CORS 허용 출처", () => {
+  it("환경변수의 공백·중복·빈 항목을 정리한다", () => {
+    expect(
+      parseAllowedOrigins(" https://web.example,https://web.example, ,"),
+    ).toEqual(["https://web.example"]);
+  });
+
+  it("허용한 웹 Origin에만 CORS 응답 헤더를 붙인다", async () => {
+    const app = createApp(
+      new AgentStore(demoBatch),
+      { chainGateway: new StubChainGateway() },
+      { allowedOrigins: ["https://web.example"] },
+    );
+    const server = app.listen(0, "127.0.0.1");
+    await new Promise((resolve) => server.once("listening", resolve));
+    const { port } = server.address() as AddressInfo;
+    servers.push({
+      url: `http://127.0.0.1:${port}`,
+      close: async () => {
+        server.closeAllConnections();
+        await new Promise<void>((resolve, reject) =>
+          server.close((error) => (error ? reject(error) : resolve())),
+        );
+      },
+    });
+
+    const allowed = await fetch(`http://127.0.0.1:${port}/health`, {
+      headers: { Origin: "https://web.example" },
+    });
+    expect(allowed.headers.get("access-control-allow-origin")).toBe(
+      "https://web.example",
+    );
+
+    const denied = await fetch(`http://127.0.0.1:${port}/health`, {
+      headers: { Origin: "https://evil.example" },
+    });
+    expect(denied.headers.get("access-control-allow-origin")).toBeNull();
   });
 });

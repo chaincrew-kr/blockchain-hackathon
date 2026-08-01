@@ -6,6 +6,7 @@ import {
   DEMO_THEATER,
   demoBatch,
   NORMAL_SCREENING_ID,
+  regressionAnomalyBatch,
   TICKET_PRICE,
 } from "../src/fixtures/screenings.js";
 import { netAmountOf, runSettlementBatch } from "../src/pipeline.js";
@@ -44,6 +45,27 @@ describe("runSettlementBatch — STAGE 3→4→체인 호출", () => {
       },
     ]);
   });
+
+  it.each(regressionAnomalyBatch)(
+    "$meta.screeningId 이상을 partial-hold로 고정한다",
+    async (screening) => {
+      const gateway = new StubChainGateway();
+      const result = await runSettlementBatch("THEATER-TEST", [screening], {
+        chainGateway: gateway,
+      });
+      const outcome = result.outcomes[0];
+
+      expect(outcome?.decision.verdict).toBe("partial-hold");
+      expect(outcome?.decision.heldAmount).toBeGreaterThan(0);
+      expect(gateway.calls).toEqual([
+        {
+          instruction: "mark_disputed",
+          screeningId: screening.meta.screeningId,
+          amount: outcome?.decision.heldAmount,
+        },
+      ]);
+    },
+  );
 });
 
 describe("AgentStore.snapshot — 불변식 gross = pending+allocated+disputed+paid+refunded", () => {

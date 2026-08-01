@@ -52,8 +52,6 @@ describe("dispute", () => {
     )
     .digest();
 
-  const EXPECTED_THEATER = 4_413_063;
-  const EXPECTED_PRODUCER = 3_971_757;
   const DISPUTE_AMOUNT = 1_000_000;
 
   let usdcMint: PublicKey;
@@ -210,6 +208,12 @@ describe("dispute", () => {
     const movieId = `dispute-mark-${Date.now()}`;
     const escrowPda = await setupSettledEscrow(movieId);
     const before = await program.account.movieEscrow.fetch(escrowPda);
+    const producerBefore = await program.account.allocation.fetch(
+      allocationPda(movieId, 2),
+    );
+    const theaterBefore = await program.account.allocation.fetch(
+      allocationPda(movieId, 0),
+    );
 
     await program.methods
       .markDisputed(new anchor.BN(DISPUTE_AMOUNT))
@@ -226,14 +230,14 @@ describe("dispute", () => {
     );
     expect(producer.disputed.toNumber()).toBe(DISPUTE_AMOUNT);
     // claimable은 건드리지 않는다 — settle_batch가 확정한 원래 몫 보존
-    expect(producer.claimable.toNumber()).toBe(EXPECTED_PRODUCER);
+    expect(producer.claimable.toNumber()).toBe(producerBefore.claimable.toNumber());
 
     // 다른 권리자는 영향 없음
     const theater = await program.account.allocation.fetch(
       allocationPda(movieId, 0),
     );
     expect(theater.disputed.toNumber()).toBe(0);
-    expect(theater.claimable.toNumber()).toBe(EXPECTED_THEATER);
+    expect(theater.claimable.toNumber()).toBe(theaterBefore.claimable.toNumber());
 
     const after = await program.account.movieEscrow.fetch(escrowPda);
     expect(after.disputed.toNumber()).toBe(DISPUTE_AMOUNT);
@@ -257,10 +261,13 @@ describe("dispute", () => {
     const escrowPda = await setupWithDispute(movieId);
     const escrow = await program.account.movieEscrow.fetch(escrowPda);
     expect(escrow.state).toEqual({ disputed: {} });
+    const theaterBefore = await program.account.allocation.fetch(
+      allocationPda(movieId, 0),
+    );
 
     // 분쟁과 무관한 극장은 전액 인출 가능해야 한다
     await program.methods
-      .claim(new anchor.BN(EXPECTED_THEATER))
+      .claim(theaterBefore.claimable)
       .accounts({
         beneficiary: theaterWallet.publicKey,
         escrow: escrowPda,
@@ -275,7 +282,7 @@ describe("dispute", () => {
     const theater = await program.account.allocation.fetch(
       allocationPda(movieId, 0),
     );
-    expect(theater.claimed.toNumber()).toBe(EXPECTED_THEATER);
+    expect(theater.claimed.toNumber()).toBe(theaterBefore.claimable.toNumber());
   });
 
   it("blocks the disputed portion but allows the rest", async () => {
@@ -283,11 +290,17 @@ describe("dispute", () => {
     const escrowPda = await setupWithDispute(movieId);
     const escrow = await program.account.movieEscrow.fetch(escrowPda);
     const producerAta = await ataFor(producerWallet.publicKey);
+    const producerBefore = await program.account.allocation.fetch(
+      allocationPda(movieId, 2),
+    );
+    const remaining = producerBefore.claimable.sub(
+      new anchor.BN(DISPUTE_AMOUNT),
+    );
 
     // 전액 요청은 보류분 때문에 거부
     await expect(
       program.methods
-        .claim(new anchor.BN(EXPECTED_PRODUCER))
+        .claim(producerBefore.claimable)
         .accounts({
           beneficiary: producerWallet.publicKey,
           escrow: escrowPda,
@@ -302,7 +315,7 @@ describe("dispute", () => {
 
     // 보류분을 뺀 나머지는 인출 가능
     await program.methods
-      .claim(new anchor.BN(EXPECTED_PRODUCER - DISPUTE_AMOUNT))
+      .claim(remaining)
       .accounts({
         beneficiary: producerWallet.publicKey,
         escrow: escrowPda,
@@ -317,7 +330,7 @@ describe("dispute", () => {
     const producer = await program.account.allocation.fetch(
       allocationPda(movieId, 2),
     );
-    expect(producer.claimed.toNumber()).toBe(EXPECTED_PRODUCER - DISPUTE_AMOUNT);
+    expect(producer.claimed.toNumber()).toBe(remaining.toNumber());
   });
 
   it("rejects mark_disputed from a wallet that isn't escrow.authority", async () => {
@@ -347,6 +360,9 @@ describe("dispute", () => {
     const movieId = `dispute-approve-${Date.now()}`;
     const escrowPda = await setupWithDispute(movieId);
     const before = await program.account.movieEscrow.fetch(escrowPda);
+    const producerBefore = await program.account.allocation.fetch(
+      allocationPda(movieId, 2),
+    );
 
     await program.methods
       .resolveDispute(true)
@@ -362,7 +378,7 @@ describe("dispute", () => {
       allocationPda(movieId, 2),
     );
     expect(producer.disputed.toNumber()).toBe(0);
-    expect(producer.claimable.toNumber()).toBe(EXPECTED_PRODUCER);
+    expect(producer.claimable.toNumber()).toBe(producerBefore.claimable.toNumber());
 
     const after = await program.account.movieEscrow.fetch(escrowPda);
     expect(after.disputed.toNumber()).toBe(0);
@@ -373,7 +389,7 @@ describe("dispute", () => {
 
     // 복구됐으니 전액 인출 가능
     await program.methods
-      .claim(new anchor.BN(EXPECTED_PRODUCER))
+      .claim(producerBefore.claimable)
       .accounts({
         beneficiary: producerWallet.publicKey,
         escrow: escrowPda,
@@ -390,6 +406,9 @@ describe("dispute", () => {
     const movieId = `dispute-reject-${Date.now()}`;
     const escrowPda = await setupWithDispute(movieId);
     const before = await program.account.movieEscrow.fetch(escrowPda);
+    const producerBefore = await program.account.allocation.fetch(
+      allocationPda(movieId, 2),
+    );
 
     await program.methods
       .resolveDispute(false)
@@ -407,7 +426,7 @@ describe("dispute", () => {
     expect(producer.disputed.toNumber()).toBe(0);
     // 기각이므로 몫에서 영구 삭감
     expect(producer.claimable.toNumber()).toBe(
-      EXPECTED_PRODUCER - DISPUTE_AMOUNT,
+      producerBefore.claimable.toNumber() - DISPUTE_AMOUNT,
     );
 
     const after = await program.account.movieEscrow.fetch(escrowPda);

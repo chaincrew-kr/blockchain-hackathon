@@ -13,6 +13,7 @@
  *   미실행   → 실행
  */
 import { Router } from "express";
+import type { BatchRunResponse } from "@chaincrew/schema";
 
 import { ConflictError } from "../errors.js";
 import { DEMO_THEATER } from "../fixtures/screenings.js";
@@ -20,7 +21,10 @@ import type { BatchRunResult, PipelineDeps } from "../pipeline.js";
 import { runSettlementBatch } from "../pipeline.js";
 import type { AgentStore } from "../store.js";
 
-function toResponse(result: BatchRunResult, replayed: boolean) {
+function toResponse(
+  result: BatchRunResult,
+  replayed: boolean,
+): BatchRunResponse {
   return {
     theater: result.theater,
     /** true면 이번 요청이 새로 실행한 게 아니라 기존 결과를 다시 준 것 */

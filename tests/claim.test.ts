@@ -55,9 +55,6 @@ describe("claim", () => {
     )
     .digest();
 
-  const EXPECTED_THEATER = 4_413_063;
-  const EXPECTED_DISTRIBUTION_FEE = 441_306;
-
   let usdcMint: PublicKey;
   let payerTokenAccount: PublicKey;
   const authority = Keypair.generate();
@@ -198,9 +195,12 @@ describe("claim", () => {
     const before = await program.account.movieEscrow.fetch(escrowPda);
     const ata = await theaterAta();
     const ataBefore = await getAccount(provider.connection, ata);
+    const theaterBefore = await program.account.allocation.fetch(
+      allocationPda(movieId, 0),
+    );
 
     await program.methods
-      .claim(new anchor.BN(EXPECTED_THEATER))
+      .claim(theaterBefore.claimable)
       .accounts({
         beneficiary: theaterWallet.publicKey,
         escrow: escrowPda,
@@ -215,22 +215,22 @@ describe("claim", () => {
     const theater = await program.account.allocation.fetch(
       allocationPda(movieId, 0),
     );
-    expect(theater.claimed.toNumber()).toBe(EXPECTED_THEATER);
-    expect(theater.claimable.toNumber()).toBe(EXPECTED_THEATER);
+    expect(theater.claimed.toNumber()).toBe(theaterBefore.claimable.toNumber());
+    expect(theater.claimable.toNumber()).toBe(theaterBefore.claimable.toNumber());
     expect(theater.disputed.toNumber()).toBe(0);
 
     const after = await program.account.movieEscrow.fetch(escrowPda);
     expect(after.allocated.toNumber()).toBe(
-      before.allocated.toNumber() - EXPECTED_THEATER,
+      before.allocated.toNumber() - theaterBefore.claimable.toNumber(),
     );
     expect(after.paidOut.toNumber()).toBe(
-      before.paidOut.toNumber() + EXPECTED_THEATER,
+      before.paidOut.toNumber() + theaterBefore.claimable.toNumber(),
     );
 
     // 실제 USDC가 극장 지갑으로 들어왔는지
     const ataAfter = await getAccount(provider.connection, ata);
     expect(Number(ataAfter.amount) - Number(ataBefore.amount)).toBe(
-      EXPECTED_THEATER,
+      theaterBefore.claimable.toNumber(),
     );
 
     // 불변식 ①
@@ -248,10 +248,13 @@ describe("claim", () => {
     const escrowPda = await setupSettledEscrow(movieId);
     const before = await program.account.movieEscrow.fetch(escrowPda);
     const ata = await theaterAta();
+    const distributorBefore = await program.account.allocation.fetch(
+      allocationPda(movieId, 1),
+    );
 
     await expect(
       program.methods
-        .claim(new anchor.BN(EXPECTED_DISTRIBUTION_FEE))
+        .claim(distributorBefore.claimable)
         .accounts({
           beneficiary: theaterWallet.publicKey,
           escrow: escrowPda,
@@ -276,10 +279,13 @@ describe("claim", () => {
     const escrowPda = await setupSettledEscrow(movieId);
     const before = await program.account.movieEscrow.fetch(escrowPda);
     const ata = await theaterAta();
+    const theaterBefore = await program.account.allocation.fetch(
+      allocationPda(movieId, 0),
+    );
 
     await expect(
       program.methods
-        .claim(new anchor.BN(EXPECTED_THEATER + 1))
+        .claim(theaterBefore.claimable.addn(1))
         .accounts({
           beneficiary: theaterWallet.publicKey,
           escrow: escrowPda,

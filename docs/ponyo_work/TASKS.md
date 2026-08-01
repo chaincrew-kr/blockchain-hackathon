@@ -105,22 +105,25 @@ SCR-2026-0730-23  partial-hold  held 90000000
 테스트 22개 통과 (T2로 9개 추가). 컨테이너에서도 연타 → `replayed: true`,
 reset → 재실행 가능을 확인했다.
 
-### T3 🟡 CORS
+### T3 ✅ CORS — 완료 (2026-07-31)
 
-- [ ] `cors` 의존성 추가 (`apps/agent/package.json`에 아직 없음)
-- [ ] 허용 출처를 환경변수로 분리 — A의 배포 URL이 정해지기 전에도 작업 가능
-- [ ] `.env.example`에 변수 반영
+- [x] `cors`·`@types/cors` 의존성 추가
+- [x] `AGENT_CORS_ORIGINS`로 허용 출처 분리(쉼표로 복수 지정)
+- [x] 로컬 기본값 `localhost:4020`·`127.0.0.1:4020`
+- [x] Origin이 없는 Scheduler·health check·서버 간 요청은 허용
+- [x] 허용·비허용 Origin HTTP 테스트
+- [x] `.env.example`에 변수 반영
 
-### T4 🟡 이상 시나리오 픽스처 확대
+### T4 ✅ 이상 시나리오 픽스처 확대 — 완료 (2026-07-31)
 
 현재 이상 회차가 **무료 발권 초과 1건뿐**이다. 검증은 4종인데 나머지 3종은 실제로
 보류를 유발하는 픽스처가 없어서 회귀 테스트가 비어 있다.
 
-- [ ] 환불률 상한 초과 회차 (P3)
-- [ ] 좌석 수 초과 발권 회차 (P4)
-- [ ] 해시 연속성 훼손 회차 (P5) — 사후 조작 시연용
-- [ ] 각 회차의 판정·보류액·근거 조항 테스트 추가
-- [ ] 데모용으로 어떤 회차를 쓸지 선택 (심사 시연 시나리오는 무료 발권 초과)
+- [x] 환불률 상한 초과 회차 (P3)
+- [x] 좌석 수 초과 발권 회차 (P4)
+- [x] 해시 연속성 훼손 회차 (P5) — 사후 조작 시연용
+- [x] 각 회차가 `partial-hold`를 만드는 파이프라인 회귀 테스트
+- [x] 기본 심사 시연은 무료 발권 초과를 유지하고 나머지는 회귀 테스트용으로 분리
 
 ---
 
@@ -242,6 +245,13 @@ GET /health → {"status":"ok","chain":"stub"}
 | `balances[]` 권리자별 잔액      | —                                                                   | B 워터폴  |
 | Explorer 링크                   | —                                                                   | B·C 실 tx |
 
+실제 IDL 연결 전에 이상 회차의 자금 전이를 확정해야 한다. 현재 D의
+`heldAmount`는 회차 순매출 전액이고 C의 `mark_disputed`는 권리자
+Allocation 하나를 대상으로 하므로, 실행 순서와 보류액 분배를
+[#33](https://github.com/chaincrew-kr/blockchain-hackathon/issues/33)에서 팀에
+요청했다. API 공통 스키마 변경은
+[#34](https://github.com/chaincrew-kr/blockchain-hackathon/issues/34) 리뷰 대기 중이다.
+
 ### 임의 결정 검토 — [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15)
 
 구현하며 기준 문서에 없거나 어긋나게 정한 값·규칙을 전수 정리해 올렸다.
@@ -259,9 +269,9 @@ GET /health → {"status":"ok","chain":"stub"}
 1. ~~**T1** Docker~~ ✅ 완료
 2. ~~**T2** 배치 API 견고성~~ ✅ 완료
 3. ~~**T6** Anchor 골격~~ ✅ 완료 — 마감 4일이라 T4보다 먼저 처리
-4. **T4** 픽스처 확대 — 검증 4종 중 3종이 아직 회귀 테스트 공백
+4. ~~**T4** 픽스처 확대~~ ✅
 5. **T5** Gemini — D5 완료 기준이나 8/3에는 템플릿으로도 제출 가능
-6. **T3** CORS — A의 배포 URL 나오면 즉시 마무리
+6. ~~**T3** CORS~~ ✅ — 배포 URL은 `AGENT_CORS_ORIGINS`에 추가
 7. ~~**T7~T9** Cloud Run 배포~~ — 8/3 기준 **후순위**. 라이브 URL은 권장
    항목이라 디벨롭 기간에 채운다 ([DEADLINE.md](DEADLINE.md))
 8. ⛔ 해제되는 순서대로 D 구간 연결
