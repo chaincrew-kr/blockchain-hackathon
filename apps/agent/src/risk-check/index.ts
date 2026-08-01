@@ -2,7 +2,7 @@
  * STAGE 3 위험조정검증 — 온체인 이력만으로 완결 (Phase 1).
  *
  * 입력:  STAGE 1 발권·환불 로그(온체인) + 같은 상영관의 과거 정산 이력
- * 출력:  조정된 임계값 + 정합성 검증 4종(P3~P5) 결과
+ * 출력:  조정된 임계값 + 데모 정합성 검증 3종(P3~P4) 결과
  */
 import type {
   AdjustedThresholds,
@@ -14,22 +14,15 @@ import type {
   VerificationResult,
 } from "@chaincrew/schema";
 
-import { GENESIS_HASH, hashTicketEvent } from "./hash.js";
 import { FixtureHistoryProvider, type HistoryProvider } from "./history.js";
 
 /**
- * 정산 보류를 거는 이상탐지 임계값 — SPEC §5 `disputeThresholds` 및
- * 실행계획서 STAGE 4 권장안(P3=10%/15%) 그대로.
- *
- * ⚠️ 계약서의 무료 발권 상한(`compTicketCap`, 0.05)과 **같은 값이 아니다.**
- *   계약 상한 초과 → 계약 위반
- *   이 값 초과     → 자금 격리
- * 계약 위반이라고 곧바로 돈을 묶지 않으려는 완충이므로 일치시키면 안 된다.
- * 계약 조항 값은 @chaincrew/ai-data가 근거 문구용으로 관리한다.
+ * 환불률은 시스템 기본 10%를 쓰고, 무료 발권은 표준상영계약서의
+ * 명시적 상한 5%와 보류 기준을 같게 쓴다(#9).
  */
 export const DEFAULT_THRESHOLDS = {
   maxRefundRate: 0.1,
-  maxFreeRate: 0.15,
+  maxFreeRate: 0.05,
 } as const;
 
 /**
@@ -56,7 +49,7 @@ export function adjustThresholds(
   const tighten = history.isNew ? NEW_THEATER_TIGHTEN_FACTOR : 1;
   return {
     maxRefundRate: DEFAULT_THRESHOLDS.maxRefundRate * tighten,
-    maxFreeRate: DEFAULT_THRESHOLDS.maxFreeRate * tighten,
+    maxFreeRate: DEFAULT_THRESHOLDS.maxFreeRate,
     maxTicketsPerScreening: meta.seatCount,
   };
 }
@@ -112,29 +105,7 @@ function checkOverIssue(
   };
 }
 
-/** P5 해시 연속성: 각 이벤트의 prevHash가 직전 이벤트 해시와 일치하는지 */
-function checkHashChain(events: TicketEvent[]): CheckResult {
-  let expected = GENESIS_HASH;
-  for (const [i, event] of events.entries()) {
-    if (event.prevHash !== expected) {
-      return {
-        check: "hash-chain",
-        passed: false,
-        observed: `broken at #${i} (${event.txSignature})`,
-        threshold: "continuous",
-      };
-    }
-    expected = hashTicketEvent(event);
-  }
-  return {
-    check: "hash-chain",
-    passed: true,
-    observed: "continuous",
-    threshold: "continuous",
-  };
-}
-
-/** 정합성 검증 4종: 환불률(P3)·무료비율(P3)·발권초과(P4)·해시연속성(P5) */
+/** 데모 검증 3종. 온체인 기록은 서명·slot·계정 상태로 검증한다(#8). */
 export function verifyIntegrity(
   events: TicketEvent[],
   thresholds: AdjustedThresholds,
@@ -144,7 +115,6 @@ export function verifyIntegrity(
     checkRefundRate(events, thresholds),
     checkFreeRate(events, thresholds),
     checkOverIssue(events, thresholds),
-    checkHashChain(events),
   ];
   return {
     screeningId: meta.screeningId,

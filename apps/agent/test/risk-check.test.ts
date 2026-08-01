@@ -39,25 +39,25 @@ describe("adjustThresholds", () => {
   it("신규 상영관은 보수적(강화) 임계값", () => {
     const t = adjustThresholds(NEW_THEATER, normalMeta);
     expect(t.maxRefundRate).toBeCloseTo(0.1 * NEW_THEATER_TIGHTEN_FACTOR);
-    expect(t.maxFreeRate).toBeCloseTo(0.15 * NEW_THEATER_TIGHTEN_FACTOR);
+    expect(t.maxFreeRate).toBe(0.05);
     expect(t.maxTicketsPerScreening).toBe(normalMeta.seatCount);
   });
 
   it("이력 있는 상영관은 기본 임계값", () => {
     const t = adjustThresholds(TRUSTED_THEATER, normalMeta);
     expect(t.maxRefundRate).toBe(0.1);
-    expect(t.maxFreeRate).toBe(0.15);
+    expect(t.maxFreeRate).toBe(0.05);
   });
 });
 
-describe("verifyIntegrity — 4종 검증", () => {
+describe("verifyIntegrity — 데모 3종 검증", () => {
   it("정상 회차는 전 항목 통과", () => {
     const result = verifyIntegrity(
       normalEvents,
       thresholdsFor(normalMeta.seatCount),
       normalMeta,
     );
-    expect(result.checks).toHaveLength(4);
+    expect(result.checks).toHaveLength(3);
     expect(result.allPassed).toBe(true);
   });
 
@@ -113,32 +113,6 @@ describe("verifyIntegrity — 4종 검증", () => {
     expect(over?.passed).toBe(false);
     expect(over?.observed).toBe(5);
     expect(over?.threshold).toBe(4);
-  });
-
-  it("P5 해시체인 변조(중간 이벤트 삭제)를 잡는다", () => {
-    const tampered = normalEvents.filter((_, i) => i !== 3);
-    const result = verifyIntegrity(
-      tampered,
-      thresholdsFor(normalMeta.seatCount),
-      normalMeta,
-    );
-    const chain = result.checks.find((c) => c.check === "hash-chain");
-    expect(chain?.passed).toBe(false);
-    expect(String(chain?.observed)).toContain("broken at #3");
-  });
-
-  it("P5 해시체인 변조(금액 조작)를 잡는다", () => {
-    const tampered = normalEvents.map((e, i) =>
-      i === 2 ? { ...e, amount: e.amount + 1 } : e,
-    );
-    const result = verifyIntegrity(
-      tampered,
-      thresholdsFor(normalMeta.seatCount),
-      normalMeta,
-    );
-    expect(result.checks.find((c) => c.check === "hash-chain")?.passed).toBe(
-      false,
-    );
   });
 
   it("이벤트가 없으면 비율 검증은 0으로 통과", () => {

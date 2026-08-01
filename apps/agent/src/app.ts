@@ -19,6 +19,8 @@ export interface AppOptions {
   allowedOrigins?: readonly string[];
   /** Anchor 모드에서는 MovieEscrow.theater 공개키, stub에서는 데모 식별자. */
   theater?: string;
+  /** Anchor MovieEscrow PDA의 movie_id. */
+  movieId?: string;
 }
 
 export const DEFAULT_ALLOWED_ORIGINS = [
@@ -69,7 +71,16 @@ export function createApp(
   });
 
   app.use("/api", logsRouter(store));
-  app.use("/api", batchRouter(store, deps, options.theater));
+  app.use(
+    "/api",
+    batchRouter(
+      store,
+      deps,
+      options.theater,
+      options.movieId,
+      options.chainMode,
+    ),
+  );
 
   // 순서 중요 — 404는 모든 라우트 뒤, 오류 처리기는 가장 마지막.
   app.use(notFound);

@@ -8,7 +8,7 @@ D 혼자 정할 수 없어서 팀을 기다리는 항목만 모았다. **"코드
 
 ---
 
-## 1. 전원 리뷰 필수 — `packages/schema` 변경 (전역 결정 G6)
+## 1. 완료 — `packages/schema`의 무료 발권 기준 (#9)
 
 바꾼 파일은 `packages/schema/src/index.ts` 하나다. 이 파일 첫 줄에 "이 파일이
 4인 병렬 개발의 계약서다"라고 적혀 있어 변경은 전원 리뷰 대상이다.
@@ -20,12 +20,11 @@ SPEC-INDIE-002 §5의 규칙 JSON에는 있는데 스키마에 대응 필드가 
 ```ts
 disputeThresholds: {
   refundRate: number; // 0.10
-  freeTicketRate: number; // 0.15
+  freeTicketRate: number; // 표준상영계약 데모 0.05
 }
 ```
 
-**영향:** A가 STAGE 0 승인 UI에서 이 값을 그려야 한다. 계약 조항 값과 나란히
-보여주면 "계약 상한 5% / 보류 임계 15%"의 두 층위가 화면에 드러난다.
+표준상영계약서의 무료 입장 한도와 데모 보류 기준을 모두 5%로 통일했다.
 
 ### 1-2. `freeTicketCapRate` 주석 정정
 
@@ -36,12 +35,9 @@ disputeThresholds: {
 /** 무료 발권 상한 비율 (예: 0.05) — STAGE 3 P3 검증과 숫자 일치 필수 */
 ```
 
-SPEC은 `compTicketCap`(0.05)과 `disputeThresholds.freeTicketRate`(0.15)를 같은
-규칙 JSON 안에 **의도적으로 분리**해 뒀다. 계약 위반 기준과 자금 격리 기준은
-다른 층위이고, 계약 위반이라고 곧바로 돈을 묶지 않으려는 완충이다.
-
-D가 이 주석을 근거로 두 값을 같게 맞추려다 판정 문구가 어긋났다(아래 3번 참고).
-같은 오해를 A·B·C가 반복하지 않도록 두 층위를 설명하는 주석으로 바꿨다.
+계약서에 무료 입장 상한이 있으면 추출 서버가 그 값을
+`disputeThresholds.freeTicketRate`에도 사용한다. D Agent 기본값도 0.05로
+맞췄고, 신규 상영관 −30% 보정은 이 계약 상한에는 적용하지 않는다.
 
 **깨지는 코드 없음** — 현재 `SettlementRule`을 생성하는 코드가 저장소에 없다
 (grep 확인). 필드 추가지만 기존 사용처에 영향이 없다.
@@ -50,14 +46,13 @@ D가 이 주석을 근거로 두 값을 같게 맞추려다 판정 문구가 어
 
 ## 2. 답이 필요한 결정 — 코드 리뷰가 아니라 판단 요청
 
-| 대상   | 항목                               | 이슈                                                                      | 왜 급한가                               |
-| ------ | ---------------------------------- | ------------------------------------------------------------------------- | --------------------------------------- |
-| **B**  | 발권 이벤트 해시 산식              | [#8](https://github.com/chaincrew-kr/blockchain-hackathon/issues/8)       | 안 맞으면 **정상 회차도 전부 보류**된다 |
-| **A**  | 계약 조항 번호                     | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) B-6 | 제5조 외에는 D가 임의로 붙였다          |
-| **팀** | 환불률을 **건수** vs **금액** 기준 | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) B-1 | **판정 결과 자체가 바뀐다**             |
-| **팀** | 신규 상영관 강화 −30% 확정         | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) C-3 | 문서에 "합의 필요"인데 D가 확정해서 씀  |
-| **팀** | D5 규모 950/50 vs 픽스처 180/90    | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) C-2 | 보류 비중이 5% vs 33%로 다르다          |
-| **팀** | GCP 결제 계정 신청자               | [#13](https://github.com/chaincrew-kr/blockchain-hackathon/issues/13)     | Cloud Run 배포가 전면 차단됨            |
+| 대상   | 항목                               | 이슈                                                                      | 왜 급한가                              |
+| ------ | ---------------------------------- | ------------------------------------------------------------------------- | -------------------------------------- |
+| **A**  | 계약 조항 번호                     | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) B-6 | 제5조 외에는 D가 임의로 붙였다         |
+| **팀** | 환불률을 **건수** vs **금액** 기준 | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) B-1 | **판정 결과 자체가 바뀐다**            |
+| **팀** | 신규 상영관 강화 −30% 확정         | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) C-3 | 문서에 "합의 필요"인데 D가 확정해서 씀 |
+| **팀** | D5 규모 950/50 vs 픽스처 180/90    | [#15](https://github.com/chaincrew-kr/blockchain-hackathon/issues/15) C-2 | 보류 비중이 5% vs 33%로 다르다         |
+| **팀** | GCP 결제 계정 신청자               | [#13](https://github.com/chaincrew-kr/blockchain-hackathon/issues/13)     | Cloud Run 배포가 전면 차단됨           |
 
 가장 무거운 건 **환불률 기준(B-1)** 이다. 문서에 "환불률 > 10%"라고만 있고
 분모·분자가 없어서 D가 건수 기준으로 구현했는데, 금액 기준이면 같은 데이터로도
@@ -65,7 +60,7 @@ D가 이 주석을 근거로 두 값을 같게 맞추려다 판정 문구가 어
 
 ---
 
-## 3. 참고 — 스키마 오해가 만든 실제 버그
+## 3. 완료 — 데모 정책 정리
 
 1-2의 주석을 근거로 임계값과 계약 상한을 같은 것으로 다루다가, 판정 근거 문구가
 계약서와 어긋났다.
@@ -73,21 +68,23 @@ D가 이 주석을 근거로 두 값을 같게 맞추려다 판정 문구가 어
 ```
 이전: 제5조(무료 발권 상한) — 상한 10.5% 대비 18.2% 발권
           ↑ 제5조의 상한은 5%인데 10.5%라고 말함
-이후: 제5조(무료 발권 상한) — 계약 상한 5% 대비 18.2% 발권 (보류 임계 10.5% 초과)
+이후: 제10조(무료입장) — 계약 상한·보류 기준 5% 대비 18.2% 발권
 ```
 
 심사위원이 계약서와 판정 화면을 나란히 보면 드러나는 종류의 불일치였다.
 수정은 완료했고, 같은 함수에서 좌석 초과 판정이 `좌석수 5000%석 대비 5500%건`
 으로 깨지던 버그도 함께 잡았다(검사마다 단위가 다른데 포맷터 하나로 처리했다).
 
+#8의 `prev_hash` 검사는 온체인 데모에서 제외했다. Solana 기록은 트랜잭션
+서명·slot·계정 상태로 검증하고, 해시체인은 향후 Excel·CSV·외부 발권 API처럼
+수정 가능한 오프체인 자료를 받을 때 적용한다.
+
 ---
 
-## 4. 제안 — A가 쓸 API 계약이 스키마 밖에 있다
+## 4. 완료 — Agent API 공통 스키마 (#34)
 
-> **2026-07-31 D 반영:** `BatchRunResponse`, `ApiErrorResponse`,
-> `ApiErrorCode`를 `packages/schema`에 추가한 PR 초안을 작성했다.
-> 공통 스키마 변경이므로 A·B·C 리뷰 후 확정한다.
-> 리뷰 이슈: [#34](https://github.com/chaincrew-kr/blockchain-hackathon/issues/34)
+> **2026-08-01 리뷰 반영 완료:** `BatchRunResponse`, `ApiErrorResponse`,
+> `ApiErrorCode`를 `packages/schema`에 확정했다.
 
 `DashboardSnapshot`은 `packages/schema`에 있는데, D가 추가한 아래 두 형식은
 스키마에 없다. **A가 추측해서 프론트를 짜야 하는 상태다.**
@@ -95,7 +92,9 @@ D가 이 주석을 근거로 두 값을 같게 맞추려다 판정 문구가 어
 ```ts
 /** POST /api/batch/trigger 응답 */
 interface BatchRunResponse {
+  movieId: string;
   theater: string;
+  chainMode: "stub" | "anchor";
   /** true면 새로 실행한 게 아니라 기존 결과를 다시 준 것 (멱등성) */
   replayed: boolean;
   decisions: JudgeDecision[];
@@ -120,7 +119,8 @@ type ApiErrorCode =
 좋다. 오류 `code`는 A가 화면 분기에 쓰므로 유니온 타입으로 고정하면 A가 분기를
 빠뜨렸을 때 컴파일 단계에서 잡힌다.
 
-**결정 요청:** 스키마에 올릴지, D가 별도 문서로만 공유할지.
+**리뷰 반영:** `replayed`·`requestId`를 유지하고, 성공 응답에
+`movieId`·`chainMode`를 추가했다. 데모 금액은 `number`를 유지한다.
 
 ---
 

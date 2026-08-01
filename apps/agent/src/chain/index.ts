@@ -21,6 +21,7 @@ export interface ChainSetup {
   /** anchor 모드일 때 온체인 상영관 공개키 */
   theater?: string;
   historyProvider?: HistoryProvider;
+  movieId?: string;
 }
 
 /** anchor 모드에 필요한 환경변수 — 하나라도 비면 스텁으로 떨어진다. */
@@ -84,6 +85,7 @@ export function createChainGateway(
       authority: gateway.authority,
       theater: gateway.theater,
       historyProvider: gateway.historyProvider,
+      movieId: env.ESCROW_MOVIE_ID as string,
     };
   } catch (error) {
     // 키파일 누락·잘못된 program id 등 설정 오류. 서버는 뜨게 두되 스텁으로

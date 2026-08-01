@@ -2,7 +2,7 @@
  * 배치 트리거(P7) → STAGE 3 → STAGE 4 → 체인 호출 오케스트레이션.
  *
  * 흐름(실행계획서 §1):
- *   이력 조회 → 임계값 조정 → 정합성 검증 4종 → (Phase 2 훅, 지금은 no-op)
+ *   이력 조회 → 임계값 조정 → 데모 정합성 검증 3종 → (Phase 2 훅, 지금은 no-op)
  *   → 판정 → 진행이면 settle_batch(B), 보류면 mark_disputed(C)
  */
 import type {
