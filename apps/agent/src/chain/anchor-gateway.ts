@@ -4,12 +4,13 @@ import { readFileSync } from "node:fs";
 import {
   AnchorError,
   AnchorProvider,
-  BN,
   Program,
   Wallet,
   web3,
+  type BN as AnchorBN,
   type Idl,
 } from "@coral-xyz/anchor";
+import anchor from "@coral-xyz/anchor";
 import type { OnchainHistorySummary } from "@chaincrew/schema";
 
 import { ChainCallError } from "../errors.js";
@@ -17,6 +18,10 @@ import { logger, type Logger } from "../logger.js";
 import type { HistoryProvider } from "../risk-check/history.js";
 import type { ChainGateway, SettleBatchResult } from "./gateway.js";
 import { loadKeypairFile } from "./keypair.js";
+
+// Anchor 0.32의 타입 선언은 BN named export를 노출하지만 Node ESM 런타임에서는
+// default CJS namespace에만 있다.
+const { BN } = anchor;
 
 export interface AnchorGatewayConfig {
   rpcUrl: string;
@@ -47,19 +52,19 @@ const ROLE_INDEX: Record<Role, number> = {
 
 interface MovieEscrowAccount {
   theater: web3.PublicKey;
-  grossIn: BN;
-  pending: BN;
-  allocated: BN;
-  disputed: BN;
-  paidOut: BN;
-  refunded: BN;
+  grossIn: AnchorBN;
+  pending: AnchorBN;
+  allocated: AnchorBN;
+  disputed: AnchorBN;
+  paidOut: AnchorBN;
+  refunded: AnchorBN;
   batchCount: number;
   disputeCount: number;
   state: Record<string, unknown>;
 }
 
 interface AllocationAccount {
-  claimable: BN;
+  claimable: AnchorBN;
 }
 
 interface AccountClientLike {
@@ -104,7 +109,7 @@ function toChainCallError(
   );
 }
 
-function asSafeNumber(value: BN | number): number {
+function asSafeNumber(value: AnchorBN | number): number {
   const n = typeof value === "number" ? value : value.toNumber();
   if (!Number.isSafeInteger(n)) {
     throw new Error("온체인 u64 값이 JavaScript 안전 정수 범위를 초과했습니다");
