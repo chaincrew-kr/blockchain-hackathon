@@ -142,7 +142,7 @@ export function DashboardPage() {
         <span className="chip-role">D — 로그 API</span> STAGE 6 — 투명 대시보드
         · 전 권리자 공개
       </p>
-      <h1>《미광》 정산 현황</h1>
+      <h1>《붉은 노을 아래》 정산 현황</h1>
       <p className="sub">
         모든 숫자는 온체인 계정에서 직접 읽습니다. 판정은 에이전트가 내리지만,
         근거는 전부 여기 공개됩니다.
@@ -358,7 +358,8 @@ export function DashboardPage() {
       <div className="grid chart-pair">
         <div className="card">
           <h2>
-            《미광》 일별 발권 <span className="muted">— 우리 데모 · 건</span>
+            《붉은 노을 아래》 일별 발권{" "}
+            <span className="muted">— 우리 데모 · 건</span>
           </h2>
           <BarChart
             data={demoDaily}
