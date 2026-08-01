@@ -119,10 +119,7 @@ export function PurchasePage() {
 
   return (
     <section className="screen">
-      <p className="eyebrow">
-        <span className="chip-role">담당 A</span> STAGE 1 — 자금 유입 · 관객
-        화면
-      </p>
+      <p className="eyebrow">STAGE 1 — 자금 유입 · 관객 화면</p>
       <h1>티켓 예매</h1>
       <p className="sub">
         결제 수취 주소가 곧 영화별 에스크로 PDA입니다. 경유 계좌 없이, 결제
@@ -133,8 +130,10 @@ export function PurchasePage() {
         <div className="poster">
           <div>
             <div className="kicker">독립영화 · 상영중</div>
-            <div className="title">미광 微光</div>
-            <div className="meta">감독 김도영 · 87분 · 독립예술관 1관</div>
+            <div className="title">붉은 노을 아래</div>
+            <div className="meta">
+              감독 Sola Na · 104분 · 인디스퀘어 시네마 1관
+            </div>
           </div>
         </div>
 
@@ -186,8 +185,8 @@ export function PurchasePage() {
             </div>
             <p className="pay-note">
               Phantom 지갑으로 서명하면 온체인 <b>deposit</b>이 즉시 실행됩니다.
-              수취 주소는 <b>《미광》 에스크로 PDA</b> — 극장도 배급사도 이 돈을
-              먼저 만질 수 없습니다.
+              수취 주소는 <b>《붉은 노을 아래》 에스크로 PDA</b> — 극장도
+              배급사도 이 돈을 먼저 만질 수 없습니다.
             </p>
             <div className="pay-actions">
               <button

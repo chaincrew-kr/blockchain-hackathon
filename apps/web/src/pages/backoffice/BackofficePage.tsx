@@ -100,10 +100,7 @@ export function BackofficePage() {
 
   return (
     <section className="screen">
-      <p className="eyebrow">
-        <span className="chip-role">담당 A</span>
-        <span className="chip-role">B — 온체인 등록</span> STAGE 0 — 계약 온보딩
-      </p>
+      <p className="eyebrow">STAGE 0 — 계약 온보딩</p>
       <h1>계약 온보딩</h1>
       <p className="sub">
         상영계약서 PDF에서 Gemini가 정산 규칙을 추출합니다. 배급·상영 양측이
