@@ -215,3 +215,32 @@ export interface DashboardSnapshot {
   timeline: TimelineEntry[];
   decisions: JudgeDecision[];
 }
+
+// ── HTTP API 공통 응답 (D → A) ───────────────────────────────────────────
+
+/** POST /api/batch/trigger 응답. */
+export interface BatchRunResponse {
+  theater: string;
+  /** true면 이번 요청이 실행한 것이 아니라 기존 멱등 결과를 재생한 것이다. */
+  replayed: boolean;
+  decisions: JudgeDecision[];
+  timeline: TimelineEntry[];
+}
+
+/** A가 화면 분기에 사용하는 에이전트 API 오류 코드. */
+export type ApiErrorCode =
+  | "bad_request"
+  | "conflict"
+  | "batch_in_progress"
+  | "not_found"
+  | "chain_call_failed"
+  | "internal_error";
+
+/** 4xx·5xx 공통 오류 응답. requestId는 X-Request-Id 헤더와 같다. */
+export interface ApiErrorResponse {
+  error: {
+    code: ApiErrorCode;
+    message: string;
+    requestId: string;
+  };
+}

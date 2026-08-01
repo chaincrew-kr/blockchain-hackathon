@@ -1,3 +1,5 @@
+import type { ApiErrorCode } from "@chaincrew/schema";
+
 /**
  * 에이전트 오류 분류 — HTTP 상태코드를 여기서만 정한다.
  *
@@ -13,7 +15,7 @@ export class AgentError extends Error {
   constructor(
     readonly status: number,
     /** A가 분기에 쓰는 안정적인 식별자 — 메시지 문구와 달리 바뀌지 않는다. */
-    readonly code: string,
+    readonly code: ApiErrorCode,
     message: string,
     options?: { cause?: unknown },
   ) {
@@ -24,14 +26,14 @@ export class AgentError extends Error {
 
 /** 400 — 요청 본문·파라미터가 잘못됨. 같은 요청을 재시도해도 실패한다. */
 export class BadRequestError extends AgentError {
-  constructor(message: string, code = "bad_request") {
+  constructor(message: string, code: ApiErrorCode = "bad_request") {
     super(400, code, message);
   }
 }
 
 /** 404 — 없는 경로·리소스. */
 export class NotFoundError extends AgentError {
-  constructor(message: string, code = "not_found") {
+  constructor(message: string, code: ApiErrorCode = "not_found") {
     super(404, code, message);
   }
 }
@@ -41,7 +43,7 @@ export class NotFoundError extends AgentError {
  * 재시도 자체는 의미가 있으므로 4xx이되 400과 구분한다.
  */
 export class ConflictError extends AgentError {
-  constructor(message: string, code = "conflict") {
+  constructor(message: string, code: ApiErrorCode = "conflict") {
     super(409, code, message);
   }
 }
