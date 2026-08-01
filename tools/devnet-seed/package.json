@@ -7,11 +7,15 @@
     "build-init": "tsx src/build-init-escrow.ts",
     "sign-submit": "tsx src/sign-and-submit.ts",
     "fund": "tsx src/fund-escrow.ts",
+    "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
     "@solana/spl-token": "^0.4.15",
     "@solana/web3.js": "^1.98.4"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.10"
   }
 }
