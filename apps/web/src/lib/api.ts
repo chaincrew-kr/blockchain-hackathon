@@ -1,6 +1,7 @@
 // src/lib/api.ts
 // apps/web/server의 /api/extract를 호출하는 함수.
 // 서버는 로컬 개발 중 http://localhost:8787 에서 떠 있어야 함.
+import type { ApiErrorResponse, BatchRunResponse } from "@chaincrew/schema";
 
 /** 서버(/api/extract)가 그대로 돌려주는 원본 응답 형태.
  *  apps/web/server/extraction-schema.json 의 구조와 1:1로 맞춘다. */
@@ -137,4 +138,64 @@ export async function fetchKobisDaily(
     );
   }
   return res.json();
+}
+
+// ── 정산 배치 (apps/agent) ────────────────────────────────────────────
+//
+// 상대 경로("/api/...")로 부른다 — vite.config.ts의 dev proxy가
+// "/api" 요청을 apps/agent(4030)로 넘긴다. 프로덕션 빌드에서는 이 프록시가
+// 없으므로 별도 리버스 프록시나 절대 URL 설정이 필요하다 (배포 시 TODO).
+
+export class AgentApiError extends Error {
+  constructor(
+    message: string,
+    public readonly code: ApiErrorResponse["error"]["code"],
+    public readonly requestId: string,
+  ) {
+    super(message);
+    this.name = "AgentApiError";
+  }
+}
+
+async function agentFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(path, init);
+  if (!res.ok) {
+    const body: Partial<ApiErrorResponse> = await res.json().catch(() => ({}));
+    if (body.error) {
+      throw new AgentApiError(
+        body.error.message,
+        body.error.code,
+        body.error.requestId,
+      );
+    }
+    throw new Error(`정산 에이전트 오류 (${res.status})`);
+  }
+  return res.json();
+}
+
+/** 정산 배치 실행 — 이미 완료된 배치가 있으면 재실행하지 않고 같은 결과를 돌려받는다(replayed: true). */
+export function triggerBatch(): Promise<BatchRunResponse> {
+  return agentFetch<BatchRunResponse>("/api/batch/trigger", {
+    method: "POST",
+  });
+}
+
+/** 리허설용 초기화 — 데모를 반복하려면 배치 실행 후 이걸 호출해 잠금을 푼다. */
+export function resetBatch(): Promise<{ status: string; runState: string }> {
+  return agentFetch("/api/batch/reset", { method: "POST" });
+}
+
+export function describeAgentError(error: unknown): string {
+  if (error instanceof AgentApiError) {
+    if (error.code === "batch_in_progress") {
+      return "이미 정산 배치가 실행 중입니다 — 잠시 후 다시 시도하세요";
+    }
+    if (error.code === "chain_call_failed") {
+      return `체인 호출에 실패했습니다 — RPC/체인 게이트웨이 상태를 확인하세요 (요청 ID: ${error.requestId})`;
+    }
+    return `${error.message} (요청 ID: ${error.requestId})`;
+  }
+  return error instanceof Error
+    ? error.message
+    : "정산 배치 요청에 실패했습니다";
 }

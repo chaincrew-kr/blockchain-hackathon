@@ -460,6 +460,12 @@ h1 {
 .iso-line .tick {
   color: var(--white);
 }
+.error-text {
+  font-size: 12px;
+  color: #ff8a8a;
+  border-left: 2px solid #ff8a8a;
+  padding-left: 10px;
+}
 
 /* ── S0 백오피스 ─────────────────────────────────── */
 .steps {
@@ -775,6 +781,9 @@ tr.conflict td {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+.bordered-top {
+  border-top: 1px solid var(--ash);
 }
 .checks {
   display: flex;

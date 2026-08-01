@@ -3,20 +3,34 @@
  *
  * 교체 진행 상황:
  *   - KOBIS 차트 → 실제 연동 완료 (apps/web/server /api/kobis/*)
- *   - snapshot/checks/decision → 아직 목업 (apps/agent 실제 API 나오면 교체)
+ *   - "정산일 도래" 버튼 → 실제 연동 완료 (POST apps/agent /api/batch/trigger,
+ *     lib/api.ts triggerBatch). 판정 근거·tx 타임라인은 트리거 후 실제 응답으로
+ *     교체되고, 트리거 전엔 mocks/demo.ts 미리보기를 보여준다.
+ *   - snapshot(잔액·상태머신) → 아직 목업 — /api/batch/trigger는 판정 결과만
+ *     주고 온체인 잔액은 안 준다. 별도 스냅샷 API 나오면 교체.
  *   - tx 링크 → Solana Explorer (?cluster=devnet)
  */
 import { useEffect, useState } from "react";
-import type { CheckResult, EscrowStatus } from "@chaincrew/schema";
+import type {
+  BatchRunResponse,
+  CheckResult,
+  EscrowStatus,
+} from "@chaincrew/schema";
 
 import { BarChart } from "../../components/BarChart";
 import {
+  describeAgentError,
   fetchKobisDaily,
   fetchKobisMovieInfo,
+  resetBatch,
+  triggerBatch,
   type KobisDailyPoint,
   type KobisMovieInfo,
 } from "../../lib/api";
 import { checks, decision, demoDaily, snapshot } from "../../mocks/demo";
+import { formatUsdc } from "../../lib/usdc";
+
+type BatchState = "idle" | "running" | "done" | "error";
 
 const STATUS_ORDER: EscrowStatus[] = [
   "pending",
@@ -61,6 +75,10 @@ export function DashboardPage() {
   const [kobisInfo, setKobisInfo] = useState<KobisMovieInfo | null>(null);
   const [kobisError, setKobisError] = useState<string | null>(null);
 
+  const [batchState, setBatchState] = useState<BatchState>("idle");
+  const [batchResult, setBatchResult] = useState<BatchRunResponse | null>(null);
+  const [batchError, setBatchError] = useState<string | null>(null);
+
   useEffect(() => {
     fetchKobisDaily()
       .then(setKobisDaily)
@@ -69,6 +87,35 @@ export function DashboardPage() {
       .then(setKobisInfo)
       .catch((e) => setKobisError(String(e.message ?? e)));
   }, []);
+
+  const handleTrigger = async () => {
+    setBatchState("running");
+    setBatchError(null);
+    try {
+      const result = await triggerBatch();
+      setBatchResult(result);
+      setBatchState("done");
+    } catch (error) {
+      setBatchError(describeAgentError(error));
+      setBatchState("error");
+    }
+  };
+
+  const handleReset = async () => {
+    setBatchError(null);
+    try {
+      await resetBatch();
+      setBatchResult(null);
+      setBatchState("idle");
+    } catch (error) {
+      setBatchError(describeAgentError(error));
+    }
+  };
+
+  const usingRealDecisions = batchResult !== null;
+  const activeDecisions = batchResult ? batchResult.decisions : [decision];
+  const activeTimeline = batchResult ? batchResult.timeline : snapshot.timeline;
+  const fmt = usingRealDecisions ? formatUsdc : usdc;
 
   const partsSum =
     snapshot.pending +
@@ -122,8 +169,29 @@ export function DashboardPage() {
             </span>
           </>
         )}
-        <button className="ghost">정산일 도래 — 시간 압축 ▸</button>
+        <button
+          className="ghost"
+          disabled={batchState === "running"}
+          onClick={handleTrigger}
+        >
+          {batchState === "running"
+            ? "정산 배치 실행 중…"
+            : "정산일 도래 — 시간 압축 ▸"}
+        </button>
+        {batchResult?.replayed && (
+          <span className="chip state-dim">재생됨 — 기존 결과</span>
+        )}
+        {batchState === "done" && (
+          <button className="ghost" onClick={handleReset}>
+            리허설 초기화
+          </button>
+        )}
       </div>
+      {batchError && (
+        <p className="error-text" role="alert">
+          {batchError}
+        </p>
+      )}
 
       <div className="grid stats">
         {stats.map((s) => (
@@ -145,40 +213,69 @@ export function DashboardPage() {
       <div className="grid two-col">
         <div className="card">
           <h2>
-            AI 판정 근거 <span className="muted">— STAGE 4 · Gemini 생성</span>
+            AI 판정 근거{" "}
+            <span className="muted">
+              — STAGE 4 · Gemini 생성
+              {!usingRealDecisions && " (미리보기 · 목업)"}
+            </span>
           </h2>
-          <div className="verdict-head">
-            <span
-              className={`chip ${decision.verdict === "partial-hold" ? "state-hold" : "state-live"}`}
+          {activeDecisions.length === 0 && (
+            <p className="chart-caption">
+              이번 배치에는 판정 대상 회차가 없습니다.
+            </p>
+          )}
+          {activeDecisions.map((d, i) => (
+            <div
+              key={d.screeningId}
+              style={i > 0 ? { marginTop: 18, paddingTop: 18 } : undefined}
+              className={i > 0 ? "bordered-top" : undefined}
             >
-              {decision.verdict === "partial-hold" ? "부분 보류" : "진행"}
-            </span>
-            <span
-              className="mono"
-              style={{ fontSize: 11, color: "var(--smoke)" }}
-            >
-              {new Date(decision.decidedAt).toLocaleString("ko-KR", {
-                dateStyle: "short",
-                timeStyle: "short",
-              })}{" "}
-              · 회차 {decision.screeningId}
-            </span>
-          </div>
-          <p className="serif" style={{ marginTop: 14, color: "var(--mist)" }}>
-            {decision.narrative}
-          </p>
-          <div className="checks">
-            {checks.map((c) => (
-              <div
-                key={c.check}
-                className={`check ${c.passed ? "pass" : "fail"}`}
-              >
-                <span className="mark">{c.passed ? "✓" : "✕"}</span>
-                <span>{CHECK_LABEL[c.check]}</span>
-                <span className="mono">{checkValue(c)}</span>
+              <div className="verdict-head">
+                <span
+                  className={`chip ${d.verdict === "partial-hold" ? "state-hold" : "state-live"}`}
+                >
+                  {d.verdict === "partial-hold" ? "부분 보류" : "진행"}
+                </span>
+                <span
+                  className="mono"
+                  style={{ fontSize: 11, color: "var(--smoke)" }}
+                >
+                  {new Date(d.decidedAt).toLocaleString("ko-KR", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })}{" "}
+                  · 회차 {d.screeningId}
+                  {d.verdict === "partial-hold" &&
+                    ` · 보류 ${fmt(d.heldAmount)} USDC`}
+                </span>
               </div>
-            ))}
-          </div>
+              <p
+                className="serif"
+                style={{ marginTop: 14, color: "var(--mist)" }}
+              >
+                {d.narrative}
+              </p>
+              {d.basisClauses.length > 0 && (
+                <p className="chart-caption">
+                  근거: {d.basisClauses.join(" · ")}
+                </p>
+              )}
+            </div>
+          ))}
+          {!usingRealDecisions && (
+            <div className="checks">
+              {checks.map((c) => (
+                <div
+                  key={c.check}
+                  className={`check ${c.passed ? "pass" : "fail"}`}
+                >
+                  <span className="mark">{c.passed ? "✓" : "✕"}</span>
+                  <span>{CHECK_LABEL[c.check]}</span>
+                  <span className="mono">{checkValue(c)}</span>
+                </div>
+              ))}
+            </div>
+          )}
           <p className="chart-caption">
             임계값은 상영관 온체인 이력으로 조정됩니다 — 신규 상영관이라
             기본값보다 30% 엄격하게 적용 중.
@@ -230,11 +327,13 @@ export function DashboardPage() {
             </span>
           </div>
           <hr className="hair" />
-          <h2 style={{ marginBottom: 10 }}>tx 타임라인</h2>
+          <h2 style={{ marginBottom: 10 }}>
+            tx 타임라인{!usingRealDecisions && " (미리보기 · 목업)"}
+          </h2>
           <div className="timeline">
-            {snapshot.timeline.map((t) => (
+            {activeTimeline.map((t, i) => (
               <div
-                key={t.label}
+                key={`${t.label}-${i}`}
                 className={`tl${t.label.includes("거부") ? " reject" : ""}`}
               >
                 <span className="t">{time(t.timestamp)}</span>
