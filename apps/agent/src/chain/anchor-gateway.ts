@@ -1,88 +1,102 @@
-/**
- * 실제 온체인 호출 게이트웨이 — B·C의 movie_escrow 프로그램 어댑터.
- *
- * **현재 상태: 연결 계층만 완성돼 있고 instruction 호출부가 비어 있다.**
- *
- * IDL(`packages/schema/idl/movie_escrow.json`)이 아직 없어서 `Program` 객체를
- * 만들 수 없다. IDL이 커밋되는 즉시 아래 `callInstruction`의 TODO 한 곳만
- * 채우면 동작한다 — RPC 연결·지갑·에러 매핑·재시도는 이미 준비돼 있다.
- *
- * 연결 순서(IDL 도착 시):
- *   1. B·C가 `anchor build` 후 IDL을 packages/schema/idl로 복사 (이슈 #17)
- *   2. 이 파일의 `loadProgram()` 주석 해제
- *   3. `callInstruction()`의 TODO를 실제 methods 호출로 교체
- *   4. .env에 SOLANA_PROGRAM_ID·AGENT_KEYPAIR_PATH 설정
- *
- * 시그니처가 확정되지 않은 상태라(이슈 #6) 미리 짜 두면 틀릴 수 있으므로,
- * 확정된 부분만 구현하고 호출부는 명시적으로 비워 뒀다.
- */
-import { AnchorProvider, AnchorError, web3, Wallet } from "@coral-xyz/anchor";
+/** IDL 기반 movie_escrow 실제 호출 어댑터. */
+import { readFileSync } from "node:fs";
+
+import {
+  AnchorError,
+  AnchorProvider,
+  BN,
+  Program,
+  Wallet,
+  web3,
+  type Idl,
+} from "@coral-xyz/anchor";
+import type { OnchainHistorySummary } from "@chaincrew/schema";
 
 import { ChainCallError } from "../errors.js";
 import { logger, type Logger } from "../logger.js";
+import type { HistoryProvider } from "../risk-check/history.js";
 import type { ChainGateway, SettleBatchResult } from "./gateway.js";
 import { loadKeypairFile } from "./keypair.js";
 
 export interface AnchorGatewayConfig {
   rpcUrl: string;
   programId: string;
-  /** Solana CLI JSON 키파일 경로 — MovieEscrow.authority로 서명한다 */
   keypairPath: string;
-  /** 트랜잭션 확정 수준. 데모는 confirmed로 충분하다 */
+  idlPath: string;
+  movieId: string;
+  theaterWallet: string;
+  distributorWallet: string;
+  producerWallet: string;
+  investorWallet: string;
+  theaterBps: number;
+  distributorBps: number;
+  distributionFeeBps: number;
+  investorProfitBps: number;
   commitment?: web3.Commitment;
 }
 
-type Instruction = "settle_batch" | "mark_disputed";
+type Instruction = "verify_escrow" | "settle_batch" | "mark_disputed";
+type Role = "theater" | "distributor" | "producer" | "investor";
 
-/**
- * 온체인 오류 → 사람이 읽을 수 있는 설명.
- * `programs/movie_escrow/src/error.rs`의 EscrowError와 대응한다.
- */
-const ESCROW_ERROR_HINTS: Record<string, string> = {
-  NotImplemented:
-    "프로그램이 아직 스텁입니다 — B·C의 instruction 구현 대기 (이슈 #17)",
-  ExceedsClaimable: "인출 요청이 Claimable 잔액을 초과했습니다",
-  InvalidState: "현재 에스크로 상태에서는 실행할 수 없는 instruction입니다",
-  MathOverflow: "정산 계산에서 정수 오버플로가 발생했습니다",
-  RuleHashMismatch: "승인된 정산 규칙 해시와 일치하지 않습니다",
+const ROLE_INDEX: Record<Role, number> = {
+  theater: 0,
+  distributor: 1,
+  producer: 2,
+  investor: 3,
 };
 
-/**
- * IDL 미도착 — 우리가 만든 진단용 예외.
- *
- * 업스트림 예외 메시지는 응답에 싣지 않지만(스택·내부 경로 유출), 이건 우리가
- * 쓴 문장이라 노출해도 안전하고 **노출해야 한다.** "그냥 실패했습니다"만 보이면
- * 운영자가 B·C 대기 중인지 RPC 장애인지 구분할 수 없다.
- */
-class IdlUnavailableError extends Error {
-  constructor() {
-    super("movie_escrow IDL not found");
-    this.name = "IdlUnavailableError";
-  }
+interface MovieEscrowAccount {
+  theater: web3.PublicKey;
+  grossIn: BN;
+  pending: BN;
+  allocated: BN;
+  disputed: BN;
+  paidOut: BN;
+  refunded: BN;
+  batchCount: number;
+  disputeCount: number;
+  state: Record<string, unknown>;
 }
 
-/** Anchor 예외를 ChainCallError(502)로 정규화 — 원인은 로그로만 남긴다. */
+interface AllocationAccount {
+  claimable: BN;
+}
+
+interface AccountClientLike {
+  fetchNullable(address: web3.PublicKey): Promise<unknown | null>;
+  all(): Promise<Array<{ account: unknown }>>;
+}
+
+interface MethodBuilderLike {
+  accountsStrict(accounts: Record<string, web3.PublicKey>): {
+    rpc(): Promise<string>;
+  };
+}
+
+const ESCROW_ERROR_HINTS: Record<string, string> = {
+  ExceedsClaimable: "인출 또는 보류 요청이 사용 가능한 잔액을 초과했습니다",
+  InvalidState: "현재 에스크로 상태에서는 실행할 수 없는 instruction입니다",
+  MathOverflow: "정산 계산에서 정수 오버플로가 발생했습니다",
+  RuleHashMismatch: "승인된 정산 규칙 해시와 호출 인자가 일치하지 않습니다",
+  Unauthorized: "에이전트 authority 또는 권리자 지갑이 일치하지 않습니다",
+};
+
 function toChainCallError(
   error: unknown,
   instruction: Instruction,
   screeningId: string,
 ): ChainCallError {
   let detail = "체인 호출이 실패했습니다";
-
-  if (error instanceof IdlUnavailableError) {
-    detail =
-      "movie_escrow IDL 미도착 — B·C의 anchor build 산출물을 " +
-      "packages/schema/idl에 커밋해야 합니다 (이슈 #17)";
-  } else if (error instanceof AnchorError) {
+  if (error instanceof AnchorError) {
     const code = error.error.errorCode.code;
-    const hint = ESCROW_ERROR_HINTS[code];
-    detail = hint
-      ? `${code} — ${hint}`
+    detail = ESCROW_ERROR_HINTS[code]
+      ? `${code} — ${ESCROW_ERROR_HINTS[code]}`
       : `${code} (${error.error.errorMessage})`;
   } else if (error instanceof web3.SendTransactionError) {
     detail = "트랜잭션 전송이 거부되었습니다 (RPC 또는 시뮬레이션 실패)";
+  } else if (error instanceof Error) {
+    detail = error.message;
   }
-
   return new ChainCallError(
     `${instruction} failed for ${screeningId}: ${detail}`,
     instruction,
@@ -90,112 +104,313 @@ function toChainCallError(
   );
 }
 
-export class AnchorChainGateway implements ChainGateway {
+function asSafeNumber(value: BN | number): number {
+  const n = typeof value === "number" ? value : value.toNumber();
+  if (!Number.isSafeInteger(n)) {
+    throw new Error("온체인 u64 값이 JavaScript 안전 정수 범위를 초과했습니다");
+  }
+  return n;
+}
+
+function validateBps(config: AnchorGatewayConfig): void {
+  const values = [
+    config.theaterBps,
+    config.distributorBps,
+    config.distributionFeeBps,
+    config.investorProfitBps,
+  ];
+  if (values.some((v) => !Number.isInteger(v) || v < 0 || v > 10_000)) {
+    throw new Error("정산 BPS는 0~10000 사이 정수여야 합니다");
+  }
+  if (config.theaterBps + config.distributorBps !== 10_000) {
+    throw new Error("theaterBps + distributorBps는 10000이어야 합니다");
+  }
+}
+
+export class AnchorChainGateway implements ChainGateway, HistoryProvider {
   private readonly connection: web3.Connection;
   private readonly provider: AnchorProvider;
   private readonly programId: web3.PublicKey;
+  private readonly program: Program;
+  private readonly config: AnchorGatewayConfig;
   private readonly log: Logger;
 
   constructor(
     config: AnchorGatewayConfig,
     log: Logger = logger.child({ component: "AnchorChainGateway" }),
   ) {
+    validateBps(config);
     const commitment = config.commitment ?? "confirmed";
-
+    this.config = config;
     this.connection = new web3.Connection(config.rpcUrl, commitment);
     this.programId = new web3.PublicKey(config.programId);
-
     const keypair = loadKeypairFile(config.keypairPath);
     this.provider = new AnchorProvider(this.connection, new Wallet(keypair), {
       commitment,
     });
 
+    const parsed = JSON.parse(readFileSync(config.idlPath, "utf8")) as Idl;
+    // 같은 IDL을 Localnet·Devnet에 배포할 수 있으므로 실행 환경의 Program ID를 쓴다.
+    const idl = { ...parsed, address: this.programId.toBase58() } as Idl;
+    this.program = new Program(idl, this.provider);
     this.log = log;
-    // 공개키는 로그에 남겨도 안전하다 — Explorer에서 authority 확인용.
     this.log.info("anchor gateway configured", {
       rpcUrl: config.rpcUrl,
       programId: this.programId.toBase58(),
       authority: keypair.publicKey.toBase58(),
+      movieId: config.movieId,
+      theater: config.theaterWallet,
       commitment,
     });
   }
 
-  /** 에이전트 서명 지갑의 공개키 — Explorer 대조·잔액 확인용 */
   get authority(): string {
     return this.provider.wallet.publicKey.toBase58();
   }
 
-  /**
-   * RPC 연결과 프로그램 배포 여부를 확인한다.
-   * 서버 기동 시 한 번 불러 두면 설정 오류를 데모 도중이 아니라 미리 잡는다.
-   */
+  get theater(): string {
+    return this.config.theaterWallet;
+  }
+
+  get historyProvider(): HistoryProvider {
+    return this;
+  }
+
+  /** Localnet/Devnet 준비 시 계정 주소를 CLI·Explorer와 대조한다. */
+  get addresses(): {
+    escrow: string;
+    allocations: Record<Role, string>;
+  } {
+    return {
+      escrow: this.escrowPda().toBase58(),
+      allocations: {
+        theater: this.allocationPda("theater").toBase58(),
+        distributor: this.allocationPda("distributor").toBase58(),
+        producer: this.allocationPda("producer").toBase58(),
+        investor: this.allocationPda("investor").toBase58(),
+      },
+    };
+  }
+
+  private get accounts(): Record<string, AccountClientLike> {
+    return this.program.account as unknown as Record<string, AccountClientLike>;
+  }
+
+  private method(name: string, ...args: unknown[]): MethodBuilderLike {
+    const methods = this.program.methods as unknown as Record<
+      string,
+      (...values: unknown[]) => MethodBuilderLike
+    >;
+    const factory = methods[name];
+    if (!factory) throw new Error(`IDL instruction not found: ${name}`);
+    return factory(...args);
+  }
+
+  private escrowPda(): web3.PublicKey {
+    return web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("escrow"), Buffer.from(this.config.movieId)],
+      this.programId,
+    )[0];
+  }
+
+  private allocationPda(role: Role): web3.PublicKey {
+    return web3.PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("allocation"),
+        Buffer.from(this.config.movieId),
+        Buffer.from([ROLE_INDEX[role]]),
+      ],
+      this.programId,
+    )[0];
+  }
+
+  private wallets(): Record<Role, web3.PublicKey> {
+    return {
+      theater: new web3.PublicKey(this.config.theaterWallet),
+      distributor: new web3.PublicKey(this.config.distributorWallet),
+      producer: new web3.PublicKey(this.config.producerWallet),
+      investor: new web3.PublicKey(this.config.investorWallet),
+    };
+  }
+
   async preflight(): Promise<{
     rpcVersion: string;
     programDeployed: boolean;
+    escrowInitialized: boolean;
     authorityBalanceLamports: number;
   }> {
-    const version = await this.connection.getVersion();
-    const account = await this.connection.getAccountInfo(this.programId);
-    const balance = await this.connection.getBalance(
-      this.provider.wallet.publicKey,
+    const [version, programAccount, escrowAccount, balance] = await Promise.all(
+      [
+        this.connection.getVersion(),
+        this.connection.getAccountInfo(this.programId),
+        this.connection.getAccountInfo(this.escrowPda()),
+        this.connection.getBalance(this.provider.wallet.publicKey),
+      ],
     );
-
     return {
       rpcVersion: version["solana-core"],
-      // 프로그램 계정이 없거나 executable이 아니면 아직 배포 전이다.
-      programDeployed: account?.executable === true,
+      programDeployed: programAccount?.executable === true,
+      escrowInitialized: escrowAccount !== null,
       authorityBalanceLamports: balance,
     };
+  }
+
+  private async fetchEscrow(): Promise<MovieEscrowAccount> {
+    const account = await this.accounts.movieEscrow?.fetchNullable(
+      this.escrowPda(),
+    );
+    if (!account) {
+      throw new Error(
+        `MovieEscrow가 초기화되지 않았습니다 (movieId=${this.config.movieId})`,
+      );
+    }
+    return account as MovieEscrowAccount;
+  }
+
+  private async ensureVerified(screeningId: string): Promise<string[]> {
+    const escrow = await this.fetchEscrow();
+    if (!("pending" in escrow.state)) return [];
+    const signature = await this.method("verifyEscrow")
+      .accountsStrict({
+        authority: this.provider.wallet.publicKey,
+        escrow: this.escrowPda(),
+      })
+      .rpc();
+    this.log.info("escrow verified", { screeningId, signature });
+    return [signature];
+  }
+
+  private async allocationClaimable(role: Role): Promise<number> {
+    const account = await this.accounts.allocation?.fetchNullable(
+      this.allocationPda(role),
+    );
+    return account ? asSafeNumber((account as AllocationAccount).claimable) : 0;
+  }
+
+  private async settle(screeningId: string, amount: number): Promise<string[]> {
+    if (!Number.isSafeInteger(amount) || amount <= 0) {
+      throw new Error("정산 금액은 안전한 양의 정수여야 합니다");
+    }
+    const wallets = this.wallets();
+    const verifySignatures = await this.ensureVerified(screeningId);
+    const signature = await this.method(
+      "settleBatch",
+      screeningId,
+      new BN(amount),
+      this.config.theaterBps,
+      this.config.distributorBps,
+      this.config.distributionFeeBps,
+      this.config.investorProfitBps,
+    )
+      .accountsStrict({
+        authority: this.provider.wallet.publicKey,
+        escrow: this.escrowPda(),
+        theaterAllocation: this.allocationPda("theater"),
+        theaterWallet: wallets.theater,
+        distributorAllocation: this.allocationPda("distributor"),
+        distributorWallet: wallets.distributor,
+        producerAllocation: this.allocationPda("producer"),
+        producerWallet: wallets.producer,
+        investorAllocation: this.allocationPda("investor"),
+        investorWallet: wallets.investor,
+        systemProgram: web3.SystemProgram.programId,
+      })
+      .rpc();
+    this.log.info("screening settled", { screeningId, amount, signature });
+    return [...verifySignatures, signature];
   }
 
   async settleBatch(
     screeningId: string,
     amount: number,
   ): Promise<SettleBatchResult> {
-    return this.callInstruction("settle_batch", screeningId, amount);
+    try {
+      const txSignatures = await this.settle(screeningId, amount);
+      return {
+        txSignature: txSignatures.at(-1) as string,
+        txSignatures,
+      };
+    } catch (error) {
+      throw toChainCallError(error, "settle_batch", screeningId);
+    }
   }
 
+  /** #33 결정: 먼저 settle한 뒤 이번 회차에 증가한 권리자별 몫을 모두 보류한다. */
   async markDisputed(
     screeningId: string,
     amount: number,
   ): Promise<SettleBatchResult> {
-    return this.callInstruction("mark_disputed", screeningId, amount);
+    try {
+      const roles = Object.keys(ROLE_INDEX) as Role[];
+      const before = Object.fromEntries(
+        await Promise.all(
+          roles.map(async (role) => [
+            role,
+            await this.allocationClaimable(role),
+          ]),
+        ),
+      ) as Record<Role, number>;
+      const txSignatures = await this.settle(screeningId, amount);
+
+      for (const role of roles) {
+        const delta = (await this.allocationClaimable(role)) - before[role];
+        if (delta <= 0) continue;
+        const signature = await this.method("markDisputed", new BN(delta))
+          .accountsStrict({
+            authority: this.provider.wallet.publicKey,
+            escrow: this.escrowPda(),
+            allocation: this.allocationPda(role),
+          })
+          .rpc();
+        txSignatures.push(signature);
+        this.log.info("allocation disputed", {
+          screeningId,
+          role,
+          amount: delta,
+          signature,
+        });
+      }
+
+      return {
+        txSignature: txSignatures.at(-1) as string,
+        txSignatures,
+      };
+    } catch (error) {
+      throw toChainCallError(error, "mark_disputed", screeningId);
+    }
   }
 
-  /**
-   * ⛔ 여기가 IDL 대기 중인 유일한 지점이다.
-   *
-   * IDL이 들어오면 이 메서드 안을 아래처럼 채운다. 나머지(연결·지갑·에러
-   * 매핑·로깅)는 이미 완성돼 있으므로 손댈 필요가 없다.
-   *
-   * ```ts
-   * const program = new Program(idl, this.programId, this.provider);
-   * const signature =
-   *   instruction === "settle_batch"
-   *     ? await program.methods.settleBatch(...).accounts({...}).rpc()
-   *     : await program.methods.markDisputed(new BN(amount)).accounts({...}).rpc();
-   * return { txSignature: signature };
-   * ```
-   *
-   * 계정 목록과 인자는 이슈 #6에서 B·C가 확정한 뒤에 채운다 — 지금 추측해서
-   * 쓰면 틀린 코드를 리뷰하게 된다.
-   */
-  private async callInstruction(
-    instruction: Instruction,
-    screeningId: string,
-    amount: number,
-  ): Promise<SettleBatchResult> {
-    this.log.warn("chain call attempted before IDL is available", {
-      instruction,
-      screeningId,
-      amount,
-    });
-
-    try {
-      // TODO(D, IDL 커밋 후): Program 생성 + methods 호출로 교체 (이슈 #6·#17)
-      throw new IdlUnavailableError();
-    } catch (error) {
-      throw toChainCallError(error, instruction, screeningId);
-    }
+  async fetchTheaterHistory(theater: string): Promise<OnchainHistorySummary> {
+    const theaterKey = new web3.PublicKey(theater);
+    // movie_id가 가변 길이 String이라 theater의 byte offset이 고정되지 않는다.
+    // 데모 규모에서는 전체 MovieEscrow를 디코딩한 뒤 공개키로 필터링한다.
+    const all = (await this.accounts.movieEscrow?.all()) ?? [];
+    const matches = all
+      .map(({ account }) => account as MovieEscrowAccount)
+      .filter((account) => account.theater.equals(theaterKey));
+    const settledBatchCount = matches.reduce(
+      (sum, account) => sum + account.batchCount,
+      0,
+    );
+    const disputeCount = matches.reduce(
+      (sum, account) => sum + account.disputeCount,
+      0,
+    );
+    const totalSettledAmount = matches.reduce(
+      (sum, account) =>
+        sum +
+        asSafeNumber(account.allocated) +
+        asSafeNumber(account.disputed) +
+        asSafeNumber(account.paidOut),
+      0,
+    );
+    return {
+      theater,
+      settledBatchCount,
+      totalSettledAmount,
+      anomalyCount: disputeCount,
+      disputeCount,
+      isNew: settledBatchCount === 0,
+    };
   }
 }

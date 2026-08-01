@@ -5,7 +5,7 @@ STAGE 3(위험조정검증) · STAGE 4(정산 실행 판단)를 수행하는 Nod
 
 ```text
 src/
-├── risk-check/   # STAGE 3: 이력 조회 → 임계값 조정 → 정합성 검증 4종(P3~P5)
+├── risk-check/   # STAGE 3: 이력 조회 → 임계값 조정 → 데모 정합성 검증 3종(P3~P4)
 │                 #   + Phase 2 훅 2개 (checkTrustFreshness / checkRefundEvidence)
 ├── judge/        # STAGE 4: 진행/부분 보류 판정 + Gemini 자연어 근거 (A와 공동)
 └── routes/       # STAGE 6 대시보드용 로그 API (DashboardSnapshot 반환)

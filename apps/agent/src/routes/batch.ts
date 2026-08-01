@@ -24,9 +24,13 @@ import type { AgentStore } from "../store.js";
 function toResponse(
   result: BatchRunResult,
   replayed: boolean,
+  movieId: string,
+  chainMode: BatchRunResponse["chainMode"],
 ): BatchRunResponse {
   return {
+    movieId,
     theater: result.theater,
+    chainMode,
     /** true면 이번 요청이 새로 실행한 게 아니라 기존 결과를 다시 준 것 */
     replayed,
     decisions: result.outcomes.map((o) => o.decision),
@@ -34,7 +38,13 @@ function toResponse(
   };
 }
 
-export function batchRouter(store: AgentStore, deps: PipelineDeps): Router {
+export function batchRouter(
+  store: AgentStore,
+  deps: PipelineDeps,
+  theater = DEMO_THEATER,
+  movieId = "indie-demo-001",
+  chainMode: BatchRunResponse["chainMode"] = "stub",
+): Router {
   const router = Router();
 
   router.post("/batch/trigger", async (request, response, next) => {
@@ -45,7 +55,7 @@ export function batchRouter(store: AgentStore, deps: PipelineDeps): Router {
         theater: completed.theater,
         decisionCount: completed.outcomes.length,
       });
-      response.json(toResponse(completed, true));
+      response.json(toResponse(completed, true, movieId, chainMode));
       return;
     }
 
@@ -61,7 +71,7 @@ export function batchRouter(store: AgentStore, deps: PipelineDeps): Router {
     }
 
     try {
-      const result = await runSettlementBatch(DEMO_THEATER, store.batch, deps);
+      const result = await runSettlementBatch(theater, store.batch, deps);
       store.recordBatchRun(result);
 
       const held = result.outcomes.filter(
@@ -74,7 +84,7 @@ export function batchRouter(store: AgentStore, deps: PipelineDeps): Router {
         heldAmount: held.reduce((sum, o) => sum + o.decision.heldAmount, 0),
       });
 
-      response.json(toResponse(result, false));
+      response.json(toResponse(result, false, movieId, chainMode));
     } catch (error) {
       // 슬롯을 반드시 놓아준다 — 안 그러면 이후 요청이 영원히 409를 받는다.
       store.abortRun();

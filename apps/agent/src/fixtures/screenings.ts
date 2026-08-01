@@ -53,7 +53,7 @@ function seats(prefix: string, count: number): string[] {
 }
 
 // ── 정상 회차: 유료 19 + 무료 1(5%) 발권, 환불 1건(5%) ────────────────────────
-// 환불률 1/20=5% < 10%, 무료율 1/20=5% < 15%, 발권 20 ≤ 좌석 50, 해시체인 정상.
+// 환불률 1/20=5% < 10%, 무료율 1/20=5% ≤ 계약 상한 5%, 발권 20 ≤ 좌석 50.
 
 export const NORMAL_SCREENING_ID = "SCR-2026-0730-14";
 
@@ -134,28 +134,10 @@ export const overIssueAnomalyEvents = buildEventChain(
   })),
 );
 
-export const hashAnomalyMeta: ScreeningMeta = {
-  ...normalMeta,
-  screeningId: "SCR-2026-0730-HASH",
-};
-const validHashEvents = buildEventChain(
-  hashAnomalyMeta.screeningId,
-  seats("H", 4).map((seat) => ({
-    kind: "issue" as const,
-    seat,
-    amount: TICKET_PRICE,
-  })),
-);
-/** 두 번째 이벤트 금액을 사후 조작해 다음 prevHash와 불일치시킨다. */
-export const hashAnomalyEvents = validHashEvents.map((event, index) =>
-  index === 1 ? { ...event, amount: event.amount + 1 } : event,
-);
-
 /** 기본 데모에는 넣지 않지만 각 검증 규칙의 회귀 테스트에 쓰는 고정 시나리오. */
 export const regressionAnomalyBatch = [
   { meta: refundAnomalyMeta, events: refundAnomalyEvents },
   { meta: overIssueAnomalyMeta, events: overIssueAnomalyEvents },
-  { meta: hashAnomalyMeta, events: hashAnomalyEvents },
 ] as const;
 
 /** 데모 배치 = 회차 2개 (정상 1 + 이상 1) */

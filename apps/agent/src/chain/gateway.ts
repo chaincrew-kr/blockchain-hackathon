@@ -7,6 +7,8 @@
 
 export interface SettleBatchResult {
   txSignature: string;
+  /** 한 회차에서 settle + 권리자별 보류처럼 여러 트랜잭션이 발생할 수 있다. */
+  txSignatures?: string[];
 }
 
 export interface ChainGateway {

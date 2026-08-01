@@ -84,6 +84,8 @@ describe("POST /api/batch/trigger — 멱등성", () => {
     const firstBody = await first.json();
     expect(first.status).toBe(200);
     expect(firstBody.replayed).toBe(false);
+    expect(firstBody.movieId).toBe("indie-demo-001");
+    expect(firstBody.chainMode).toBe("stub");
     expect(firstBody.decisions).toHaveLength(2);
 
     const second = await fetch(`${url}/api/batch/trigger`, { method: "POST" });
