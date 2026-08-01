@@ -119,10 +119,7 @@ export function PurchasePage() {
 
   return (
     <section className="screen">
-      <p className="eyebrow">
-        <span className="chip-role">담당 A</span> STAGE 1 — 자금 유입 · 관객
-        화면
-      </p>
+      <p className="eyebrow">STAGE 1 — 자금 유입 · 관객 화면</p>
       <h1>티켓 예매</h1>
       <p className="sub">
         결제 수취 주소가 곧 영화별 에스크로 PDA입니다. 경유 계좌 없이, 결제

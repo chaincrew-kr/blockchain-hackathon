@@ -137,11 +137,7 @@ export function DashboardPage() {
 
   return (
     <section className="screen">
-      <p className="eyebrow">
-        <span className="chip-role">담당 A</span>
-        <span className="chip-role">D — 로그 API</span> STAGE 6 — 투명 대시보드
-        · 전 권리자 공개
-      </p>
+      <p className="eyebrow">STAGE 6 — 투명 대시보드 · 전 권리자 공개</p>
       <h1>《붉은 노을 아래》 정산 현황</h1>
       <p className="sub">
         모든 숫자는 온체인 계정에서 직접 읽습니다. 판정은 에이전트가 내리지만,
@@ -255,7 +251,10 @@ export function DashboardPage() {
               >
                 {d.narrative}
               </p>
-              {d.basisClauses.length > 0 && (
+              {/* 실데이터 narrative는 D의 에이전트가 근거 조항을 문장 안에
+                  이미 포함해서 생성한다 — mock 미리보기만 별도로 보여준다
+                  (mock 문구엔 인용이 안 박혀 있어서 중복이 안 생김). */}
+              {!usingRealDecisions && d.basisClauses.length > 0 && (
                 <p className="chart-caption">
                   근거: {d.basisClauses.join(" · ")}
                 </p>
