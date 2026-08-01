@@ -21,10 +21,12 @@ import { resolve } from "node:path";
 import { web3 } from "@coral-xyz/anchor";
 
 import { loadKeypairFile, repoRoot, requireEnv } from "./common.js";
+import { validateInitEscrowTransaction } from "./validate-init.js";
 
 const RPC_URL = process.env.SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
 const AUTHORITY_KEYPAIR_PATH = requireEnv("AUTHORITY_KEYPAIR_PATH");
 const TX_FILE = requireEnv("TX_FILE");
+const PROGRAM_ID = new web3.PublicKey(requireEnv("SOLANA_PROGRAM_ID"));
 
 async function main(): Promise<void> {
   const connection = new web3.Connection(RPC_URL, "confirmed");
@@ -33,6 +35,9 @@ async function main(): Promise<void> {
 
   const b64 = readFileSync(resolve(repoRoot, TX_FILE), "utf8").trim();
   const tx = web3.Transaction.from(Buffer.from(b64, "base64"));
+
+  validateInitEscrowTransaction(tx, authority.publicKey, PROGRAM_ID);
+  console.log("검증 완료: 예상 Program ID의 init_escrow 1건");
 
   tx.partialSign(authority);
 

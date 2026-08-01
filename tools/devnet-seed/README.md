@@ -39,9 +39,18 @@ npm run build-init --workspace=@chaincrew/devnet-seed
 
 ```bash
 AUTHORITY_KEYPAIR_PATH=.secrets/agent-devnet.json \
+SOLANA_PROGRAM_ID=<배포된 devnet program id> \
 TX_FILE=<B가 보낸 .unsigned.b64 파일 경로> \
 npm run sign-submit --workspace=@chaincrew/devnet-seed
 ```
+
+서명 도구는 제출 전에 다음을 검사한다.
+
+- instruction이 합의된 Program ID의 `init_escrow` 정확히 1건인지
+- D Agent 공개키가 authority signer인지
+- B의 payer 선행 서명이 들어 있는지
+
+하나라도 다르면 Agent 개인키로 서명하지 않고 종료한다.
 
 **3. B — 입금(deposit)까지 마무리**
 
