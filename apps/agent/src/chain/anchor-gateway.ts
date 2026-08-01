@@ -51,6 +51,7 @@ const ROLE_INDEX: Record<Role, number> = {
 };
 
 interface MovieEscrowAccount {
+  authority: web3.PublicKey;
   theater: web3.PublicKey;
   grossIn: AnchorBN;
   pending: AnchorBN;
@@ -257,6 +258,38 @@ export class AnchorChainGateway implements ChainGateway, HistoryProvider {
       programDeployed: programAccount?.executable === true,
       escrowInitialized: escrowAccount !== null,
       authorityBalanceLamports: balance,
+    };
+  }
+
+  /** Devnet 리허설 전 잔액·권한을 읽기 전용으로 확인한다. */
+  async inspectEscrow(): Promise<null | {
+    address: string;
+    authority: string;
+    theater: string;
+    state: string;
+    pending: number;
+    allocated: number;
+    disputed: number;
+    paidOut: number;
+    batchCount: number;
+    disputeCount: number;
+  }> {
+    const account = await this.accounts.movieEscrow?.fetchNullable(
+      this.escrowPda(),
+    );
+    if (!account) return null;
+    const escrow = account as MovieEscrowAccount;
+    return {
+      address: this.escrowPda().toBase58(),
+      authority: escrow.authority.toBase58(),
+      theater: escrow.theater.toBase58(),
+      state: Object.keys(escrow.state)[0] ?? "unknown",
+      pending: asSafeNumber(escrow.pending),
+      allocated: asSafeNumber(escrow.allocated),
+      disputed: asSafeNumber(escrow.disputed),
+      paidOut: asSafeNumber(escrow.paidOut),
+      batchCount: escrow.batchCount,
+      disputeCount: escrow.disputeCount,
     };
   }
 

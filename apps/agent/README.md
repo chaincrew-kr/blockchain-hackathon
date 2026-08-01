@@ -15,6 +15,13 @@ src/
 npm run dev:agent   # 루트에서 실행 → http://localhost:4030/health
 ```
 
+실제 거래 전에 Devnet 프로그램·Escrow·authority·잔액과 데모 배치 필요 금액을
+읽기 전용으로 점검합니다.
+
+```bash
+npm run chain:inspect --workspace @chaincrew/agent
+```
+
 ## 규칙
 
 - 입출력 타입은 전부 [`@chaincrew/schema`](../../packages/schema/src/index.ts)에서
