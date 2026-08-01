@@ -16,10 +16,17 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { BN, Program, AnchorProvider, Wallet, web3 } from "@coral-xyz/anchor";
+import anchor, {
+  Program,
+  AnchorProvider,
+  Wallet,
+  web3,
+} from "@coral-xyz/anchor";
 import { getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 
 import { loadIdl, loadKeypairFile, programMethod, repoRoot } from "./common.js";
+
+const { BN } = anchor;
 
 const PAYER_KEYPAIR_PATH =
   process.env.PAYER_KEYPAIR_PATH ??

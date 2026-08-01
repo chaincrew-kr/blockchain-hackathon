@@ -17,7 +17,12 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { BN, Program, AnchorProvider, Wallet, web3 } from "@coral-xyz/anchor";
+import anchor, {
+  Program,
+  AnchorProvider,
+  Wallet,
+  web3,
+} from "@coral-xyz/anchor";
 import { createMint } from "@solana/spl-token";
 
 import {
@@ -29,6 +34,8 @@ import {
   repoRoot,
   requireEnv,
 } from "./common.js";
+
+const { BN } = anchor;
 
 const RPC_URL = process.env.SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
 const PAYER_KEYPAIR_PATH =
