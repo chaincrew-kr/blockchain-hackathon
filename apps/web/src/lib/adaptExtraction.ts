@@ -16,12 +16,21 @@ import { movieIdFromContractHash } from "./hash";
 
 type Evidence = ExtractionApiResponse["evidence"][number];
 
-/** fieldPath가 주어진 접두사로 시작하는 첫 evidence를 찾는다. */
+/**
+ * fieldPath가 주어진 접두사로 시작하는 첫 evidence를 찾는다.
+ *
+ * extraction-schema.json의 fieldPath 설명 예시("regionSplit[0].split")엔
+ * "rule." 접두사가 없지만, 실제 Gemini 응답은 "rule.regionSplit[0].split"처럼
+ * "rule."을 붙여서 준다 — 스펙 문서와 실제 응답이 어긋나 있다. 어느 쪽이 와도
+ * 매칭되도록 앞의 "rule."을 지우고 비교한다.
+ */
 function findEvidence(
   evidence: Evidence[],
   prefix: string,
 ): Evidence | undefined {
-  return evidence.find((e) => e.fieldPath.startsWith(prefix));
+  return evidence.find((e) =>
+    e.fieldPath.replace(/^rule\./, "").startsWith(prefix),
+  );
 }
 
 /** evidence를 못 찾았을 때의 기본값 (화면이 깨지지 않게) */
@@ -109,7 +118,10 @@ export function adaptExtraction(
             profitStep.profitSplit.PRODUCER * 100
           }%`
         : "정보 없음",
-      findEvidence(evidence, "waterfall"),
+      // waterfall[2](RECOUP)를 건너뛰고 PROFIT_SPLIT은 항상 마지막 4단계 —
+      // FEE(0)/MG_RECOUP(1)와 같은 방식으로 고정 인덱스를 쓴다. bare
+      // "waterfall"은 첫 매치(waterfall[0])로 잘못 걸린다 (버그였음).
+      findEvidence(evidence, "waterfall[3]"),
     ),
     toClause(
       "무료 발권 상한",
