@@ -144,7 +144,7 @@ D**다. A의 프롬프트가 확정되기 전에도 D 몫은 전부 구현할 �
 데모에서 "보류됨"만 뜨고 이유가 룰베이스로 보이면 감점 항목이라, D5 완료 기준
 3개 중 1개가 여기에 걸려 있다.
 
-### T6 ✅ AnchorChainGateway 골격 — 완료 (2026-07-30)
+### T6 🟡 AnchorChainGateway 실제 IDL 연동 (2026-08-01)
 
 마감이 4일이라 원래 순서(T4 → T6)를 바꿔 먼저 처리했다. IDL이 도착하는 순간의
 연결 시간을 줄이는 게 지금 가장 값어치 있는 준비다.
@@ -155,19 +155,16 @@ D**다. A의 프롬프트가 확정되기 전에도 D 몫은 전부 구현할 �
 - [x] 환경변수 기반 stub ↔ anchor 자동 선택 (`chain/index.ts`)
 - [x] `preflight()` — RPC 버전·프로그램 배포 여부·authority 잔액 확인
 - [x] `GET /health`에 `chain` 모드 노출 (이슈 #18 투명성)
-- [ ] instruction 호출부는 비워둠 ([#6](https://github.com/chaincrew-kr/blockchain-hackathon/issues/6) 시그니처 확정 대기)
+- [x] 실제 IDL 로드·escrow/Allocation PDA 파생
+- [x] `verify_escrow` → `settle_batch` 실제 Anchor 호출 구현
+- [x] 이상 회차: 권리자별 귀속액 산출 후 `mark_disputed` 호출 (#33 2안)
+- [x] `MovieEscrow` 온체인 이력을 상영관별로 집계하는 HistoryProvider
+- [x] 고정 `DEMO_THEATER`대신 환경의 theater 지갑을 배치 문맥에 주입
+- [x] mock RPC 계약 테스트
+- [ ] Localnet 실행 ([DEVNET_E2E.md](DEVNET_E2E.md) 선행 조건 필요)
+- [ ] Devnet 공동 E2E
 
-**IDL 도착 시 채울 곳은 `anchor-gateway.ts`의 `callInstruction()` 한 곳뿐이다.**
-연결·지갑·에러 매핑·로깅은 전부 준비돼 있다.
-
-```ts
-const program = new Program(idl, this.programId, this.provider);
-const signature = await program.methods.settleBatch(...).accounts({...}).rpc();
-return { txSignature: signature };
-```
-
-계정 목록과 인자는 #6에서 B·C가 확정한 뒤에 채운다 — 지금 추측해서 쓰면 틀린
-코드를 리뷰하게 된다.
+실제 RPC 통합 순서와 팀원별 책임은 [DEVNET_E2E.md](DEVNET_E2E.md)를 따른다.
 
 동작 방식:
 

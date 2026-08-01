@@ -27,6 +27,7 @@ const narrative = createNarrativeGeneratorFromEnv();
 const chain = createChainGateway();
 const deps = {
   chainGateway: chain.gateway,
+  ...(chain.historyProvider ? { historyProvider: chain.historyProvider } : {}),
   narrativeGenerator: narrative.generator,
 };
 
@@ -34,6 +35,7 @@ const allowedOrigins = parseAllowedOrigins(process.env.AGENT_CORS_ORIGINS);
 const app = createApp(store, deps, {
   chainMode: chain.mode,
   allowedOrigins,
+  ...(chain.theater ? { theater: chain.theater } : {}),
 });
 
 // Cloud Run은 PORT를 주입한다 — 로컬 개발은 .env의 AGENT_PORT를 계속 쓴다.

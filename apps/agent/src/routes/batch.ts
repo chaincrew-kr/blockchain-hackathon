@@ -34,7 +34,11 @@ function toResponse(
   };
 }
 
-export function batchRouter(store: AgentStore, deps: PipelineDeps): Router {
+export function batchRouter(
+  store: AgentStore,
+  deps: PipelineDeps,
+  theater = DEMO_THEATER,
+): Router {
   const router = Router();
 
   router.post("/batch/trigger", async (request, response, next) => {
@@ -61,7 +65,7 @@ export function batchRouter(store: AgentStore, deps: PipelineDeps): Router {
     }
 
     try {
-      const result = await runSettlementBatch(DEMO_THEATER, store.batch, deps);
+      const result = await runSettlementBatch(theater, store.batch, deps);
       store.recordBatchRun(result);
 
       const held = result.outcomes.filter(
