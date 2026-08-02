@@ -1,14 +1,21 @@
-# Anchor 워크스페이스 설정 — B·C가 관리.
-# 프로그램 ID는 placeholder다. `anchor keys sync`로 각자 키에 맞춰 갱신할 것.
+# anchor-lang 0.31.1이 기본 추천하는 solana 2.1.0/platform-tools v1.43(rustc 1.79)은
+# edition2024를 쓰는 최신 crates.io 의존성(zeroize_derive, block-buffer 등)을 못 빌드함.
+# solana_version을 명시로 고정해 팀 전원이 같은(더 최신) 툴체인을 쓰도록 강제.
+[toolchain]
+solana_version = "4.1.1"
+
 [features]
-resolver = true
+resolution = true
 skip-lint = false
 
-[programs.localnet]
-movie_escrow = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
-
+# `anchor keys sync`가 devnet 항목만 갱신하고 localnet은 placeholder로 남기는
+# 버그가 있어 수동으로 맞춤 — 둘 다 target/deploy/movie_escrow-keypair.json의
+# 실제 주소(= lib.rs declare_id!)와 일치해야 `anchor deploy`가 제대로 동작함.
 [programs.devnet]
-movie_escrow = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+movie_escrow = "C65w81oX73ngPa6PjdLR49rsXag9kM1mRD1rPT21NTik"
+
+[programs.localnet]
+movie_escrow = "C65w81oX73ngPa6PjdLR49rsXag9kM1mRD1rPT21NTik"
 
 [registry]
 url = "https://api.apr.dev"
@@ -19,4 +26,4 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "echo 'TODO(B·C): anchor 테스트 러너 연결'"
+test = "npx vitest run tests"

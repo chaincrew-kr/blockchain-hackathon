@@ -145,13 +145,6 @@ nav {
   gap: 10px;
   flex-wrap: wrap;
 }
-.eyebrow .chip-role {
-  border: 1px solid var(--ash);
-  border-radius: 500px;
-  padding: 1px 10px;
-  color: var(--mist);
-  letter-spacing: 0.1em;
-}
 h1 {
   font-size: 26px;
   font-weight: 600;
@@ -292,38 +285,14 @@ h1 {
   justify-content: flex-end;
   padding: 28px;
   background:
-    radial-gradient(
-      ellipse 70% 45% at 50% 32%,
-      rgba(107, 116, 192, 0.38),
-      transparent 68%
+    linear-gradient(
+      180deg,
+      transparent 45%,
+      rgba(0, 0, 0, 0.55) 75%,
+      rgba(0, 0, 0, 0.92) 100%
     ),
-    radial-gradient(
-      ellipse 30% 18% at 50% 32%,
-      rgba(255, 255, 255, 0.22),
-      transparent 70%
-    ),
+    url("/poster.png") center / cover no-repeat,
     linear-gradient(180deg, #05060c 0%, #000 100%);
-}
-.poster::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 32%;
-  width: 150px;
-  height: 150px;
-  transform: translate(-50%, -50%);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 50%;
-}
-.poster::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 32%;
-  width: 190px;
-  height: 190px;
-  transform: translate(-50%, -50%) rotate(45deg);
-  border: 1px dashed rgba(107, 116, 192, 0.5);
 }
 .poster .kicker {
   font-size: 10px;
@@ -459,6 +428,12 @@ h1 {
 }
 .iso-line .tick {
   color: var(--white);
+}
+.error-text {
+  font-size: 12px;
+  color: #ff8a8a;
+  border-left: 2px solid #ff8a8a;
+  padding-left: 10px;
 }
 
 /* ── S0 백오피스 ─────────────────────────────────── */
@@ -776,6 +751,9 @@ tr.conflict td {
   gap: 12px;
   flex-wrap: wrap;
 }
+.bordered-top {
+  border-top: 1px solid var(--ash);
+}
 .checks {
   display: flex;
   flex-direction: column;
@@ -814,6 +792,13 @@ tr.conflict td {
   position: relative;
   height: 170px;
   margin-top: 18px;
+}
+.plot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 30px;
 }
 .gridline {
   position: absolute;

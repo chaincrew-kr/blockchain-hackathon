@@ -28,7 +28,7 @@ export function App() {
             Movie Escrow<small>영화 정산 에이전트</small>
           </div>
           <span className="nav-dot" aria-hidden="true" />
-          <span className="net">DEVNET · DEMO · UI v0.1</span>
+          <span className="net">DEVNET · DEMO</span>
           <nav aria-label="화면 전환">
             {SCREENS.map((s) => (
               <button
@@ -49,10 +49,8 @@ export function App() {
       {current.page}
 
       <footer>
-        <span>UI v0.1 — PLAN-INDIE-003 화면 S1 · S0 · S6</span>
-        <span>
-          디자인 시스템: docs/DESIGN (1).md — void black · dusk violet
-        </span>
+        <span>독립영화관 온체인 정산 인프라</span>
+        <span>ChainCrew — 박세령 · 정서윤 · 진규빈 · 최상아</span>
       </footer>
     </>
   );

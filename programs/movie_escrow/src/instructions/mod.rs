@@ -3,6 +3,7 @@ pub mod deposit;
 pub mod init_escrow;
 pub mod refund_pending;
 pub mod settle_batch;
+pub mod verify_escrow;
 
 // C 판정집행
 pub mod claim;
@@ -16,3 +17,4 @@ pub use mark_disputed::*;
 pub use refund_pending::*;
 pub use resolve_dispute::*;
 pub use settle_batch::*;
+pub use verify_escrow::*;

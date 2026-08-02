@@ -1,8 +1,38 @@
+# 빌드 컨텍스트 제외 — 이미지 크기와 비밀값 유출을 함께 막는다.
+
 .git
 .github
+.claude
+.vscode
+.idea
+
+# 비밀값 — .env.example만 남긴다
 .env
-coverage
-dist
+.env.*
+!.env.example
+.secrets
+*-keypair.json
+buyer-devnet.json
+merchant-devnet.json
+
+# 빌드·테스트 산출물
 node_modules
+**/node_modules
+dist
+coverage
+.next
+out
+target
+.anchor
+test-ledger
+*.tsbuildinfo
+
+# 에이전트 이미지에 들어갈 이유가 없는 것들
 notice
+docs
+legacy
+programs
+
 *.log
+.DS_Store
+Thumbs.db

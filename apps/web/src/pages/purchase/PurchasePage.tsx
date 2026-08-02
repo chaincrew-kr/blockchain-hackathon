@@ -1,33 +1,125 @@
 /**
- * STAGE 1 — 모의 티켓 구매 웹 (관객 화면).
- * 목업: Phantom 연결·Solana Pay 결제를 상태로 시뮬레이션한다.
- * 실제 연동 시 교체 지점:
- *   - "Phantom 연결" → @solana/wallet-adapter connect
- *   - "결제하기" → Solana Pay 트랜잭션 (수취 = 영화별 에스크로 PDA) + deposit
+ * STAGE 1 — 티켓 구매 웹 (관객 화면).
+ * Phantom 지갑으로 직접 movie_escrow의 deposit/refund_pending을 호출한다
+ * (lib/chain.ts). localnet/devnet 전환은 .env의 VITE_SOLANA_RPC_URL만
+ * 바꾸면 된다 — program id는 IDL에 이미 담겨 있다.
  */
 import { useState } from "react";
 
-const SHOWTIMES = ["7/31 (금) 19:30", "8/1 (토) 14:00", "8/1 (토) 19:30"];
+import {
+  DEMO_MOVIE_ID,
+  depositTickets,
+  describeChainError,
+  explorerTxUrl,
+  getPhantomProvider,
+  refundPendingTickets,
+  type PhantomProvider,
+  type SeatTicket,
+} from "../../lib/chain";
+import { toUsdcSmallestUnit } from "../../lib/usdc";
+
+const SHOWTIMES = [
+  { label: "7/31 (금) 19:30", screeningId: "SCR-2026-0731-1930" },
+  { label: "8/1 (토) 14:00", screeningId: "SCR-2026-0801-1400" },
+  { label: "8/1 (토) 19:30", screeningId: "SCR-2026-0801-1930" },
+];
 const PRICE = 10;
 
-type PayState = "idle" | "connected" | "signing" | "paid";
+type PayState =
+  | "idle"
+  | "connecting"
+  | "connected"
+  | "signing"
+  | "paid"
+  | "refunding"
+  | "refunded";
+
+function seatLabels(qty: number): string[] {
+  return Array.from({ length: qty }, (_, i) => `A${i + 1}`);
+}
+
+function currentScreening(index: number) {
+  const showtime = SHOWTIMES[index];
+  if (!showtime) throw new Error(`invalid showtime index ${index}`);
+  return showtime;
+}
 
 export function PurchasePage() {
   const [showtime, setShowtime] = useState(0);
   const [qty, setQty] = useState(1);
   const [pay, setPay] = useState<PayState>("idle");
+  const [wallet, setWallet] = useState<PhantomProvider | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [seats, setSeats] = useState<string[]>([]);
+  const [txSignature, setTxSignature] = useState<string | null>(null);
+  const [refundSignature, setRefundSignature] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const startPayment = () => {
-    setPay("signing");
-    window.setTimeout(() => setPay("paid"), 700);
+  const connectWallet = async () => {
+    setErrorMessage(null);
+    setPay("connecting");
+    try {
+      const provider = getPhantomProvider();
+      const { publicKey } = await provider.connect();
+      setWallet(provider);
+      setWalletAddress(publicKey.toBase58());
+      setPay("connected");
+    } catch (error) {
+      setErrorMessage(describeChainError(error));
+      setPay("idle");
+    }
   };
+
+  const startPayment = async () => {
+    if (!wallet) return;
+    setErrorMessage(null);
+    setPay("signing");
+    try {
+      const pickedSeats = seatLabels(qty);
+      const tickets: SeatTicket[] = pickedSeats.map((seat) => ({
+        screeningId: currentScreening(showtime).screeningId,
+        seat,
+        amountSmallestUnit: toUsdcSmallestUnit(PRICE),
+      }));
+      const signature = await depositTickets(wallet, DEMO_MOVIE_ID, tickets);
+      setSeats(pickedSeats);
+      setTxSignature(signature);
+      setRefundSignature(null);
+      setPay("paid");
+    } catch (error) {
+      setErrorMessage(describeChainError(error));
+      setPay("connected");
+    }
+  };
+
+  const requestRefund = async () => {
+    if (!wallet || seats.length === 0) return;
+    setErrorMessage(null);
+    setPay("refunding");
+    try {
+      const tickets: SeatTicket[] = seats.map((seat) => ({
+        screeningId: currentScreening(showtime).screeningId,
+        seat,
+        amountSmallestUnit: toUsdcSmallestUnit(PRICE),
+      }));
+      const signature = await refundPendingTickets(
+        wallet,
+        DEMO_MOVIE_ID,
+        tickets,
+      );
+      setRefundSignature(signature);
+      setPay("refunded");
+    } catch (error) {
+      setErrorMessage(describeChainError(error));
+      setPay("paid");
+    }
+  };
+
+  const total = qty * PRICE;
 
   return (
     <section className="screen">
-      <p className="eyebrow">
-        <span className="chip-role">담당 A</span> STAGE 1 — 자금 유입 · 관객
-        화면
-      </p>
+      <p className="eyebrow">STAGE 1 — 자금 유입 · 관객 화면</p>
       <h1>티켓 예매</h1>
       <p className="sub">
         결제 수취 주소가 곧 영화별 에스크로 PDA입니다. 경유 계좌 없이, 결제
@@ -38,8 +130,10 @@ export function PurchasePage() {
         <div className="poster">
           <div>
             <div className="kicker">독립영화 · 상영중</div>
-            <div className="title">미광 微光</div>
-            <div className="meta">감독 김도영 · 87분 · 독립예술관 1관</div>
+            <div className="title">붉은 노을 아래</div>
+            <div className="meta">
+              감독 Sola Na · 104분 · 인디스퀘어 시네마 1관
+            </div>
           </div>
         </div>
 
@@ -50,11 +144,12 @@ export function PurchasePage() {
               <div className="choices">
                 {SHOWTIMES.map((s, i) => (
                   <button
-                    key={s}
+                    key={s.screeningId}
                     className={`choice${i === showtime ? " on" : ""}`}
+                    disabled={pay === "signing" || pay === "refunding"}
                     onClick={() => setShowtime(i)}
                   >
-                    {s}
+                    {s.label}
                   </button>
                 ))}
               </div>
@@ -64,6 +159,7 @@ export function PurchasePage() {
               <span className="qty">
                 <button
                   aria-label="인원 줄이기"
+                  disabled={pay === "signing" || pay === "refunding"}
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
                 >
                   −
@@ -71,6 +167,7 @@ export function PurchasePage() {
                 <span className="mono">{qty}</span>
                 <button
                   aria-label="인원 늘리기"
+                  disabled={pay === "signing" || pay === "refunding"}
                   onClick={() => setQty((q) => Math.min(8, q + 1))}
                 >
                   +
@@ -83,83 +180,129 @@ export function PurchasePage() {
                 결제 금액
               </div>
               <div className="amount">
-                {qty * PRICE} <small>USDC</small>
+                {total} <small>USDC</small>
               </div>
             </div>
             <p className="pay-note">
-              Phantom 지갑으로 서명하면 <b>Solana Pay</b>로 즉시 결제됩니다.
-              수취 주소는 <b>《미광》 에스크로 PDA</b> — 극장도 배급사도 이 돈을
-              먼저 만질 수 없습니다.
+              Phantom 지갑으로 서명하면 온체인 <b>deposit</b>이 즉시 실행됩니다.
+              수취 주소는 <b>《붉은 노을 아래》 에스크로 PDA</b> — 극장도
+              배급사도 이 돈을 먼저 만질 수 없습니다.
             </p>
             <div className="pay-actions">
               <button
                 className="ghost"
-                onClick={() => setPay((p) => (p === "idle" ? "connected" : p))}
+                disabled={pay === "connecting" || pay === "signing"}
+                onClick={connectWallet}
               >
-                {pay === "idle" ? "Phantom 연결" : "Gx4f…9kQe 연결됨"}
+                {walletAddress
+                  ? `${walletAddress.slice(0, 4)}…${walletAddress.slice(-4)} 연결됨`
+                  : "Phantom 연결"}
               </button>
               <button
                 className="pill"
-                disabled={pay !== "connected"}
+                disabled={
+                  !wallet ||
+                  pay === "signing" ||
+                  pay === "paid" ||
+                  pay === "refunding"
+                }
                 onClick={startPayment}
               >
                 결제하기
               </button>
-              {pay === "idle" && (
+              {pay === "idle" && !walletAddress && (
                 <span className="chip state-dim">지갑 미연결</span>
+              )}
+              {pay === "connecting" && (
+                <span className="chip state-dim">지갑 연결 중…</span>
               )}
               {pay === "connected" && (
                 <span className="chip state-dim">서명 대기</span>
               )}
               {pay === "signing" && (
-                <span className="chip state-dim">Solana Pay 전송 중…</span>
+                <span className="chip state-dim">트랜잭션 전송 중…</span>
               )}
-              {pay === "paid" && (
-                <span className="chip state-live">
-                  결제 완료 · ~0.4s 최종성
-                </span>
+              {(pay === "paid" ||
+                pay === "refunding" ||
+                pay === "refunded") && (
+                <span className="chip state-live">결제 완료</span>
               )}
             </div>
 
-            {pay === "paid" && (
-              <div className="receipt">
-                <div className="row">
-                  <span className="k">상태</span>
-                  <span className="chip state-live">Pending — 격리됨</span>
-                </div>
-                <div className="row">
-                  <span className="k">입금 tx</span>
-                  <a
-                    className="hash"
-                    href="https://explorer.solana.com/?cluster=devnet"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    5Kd2…vXq9 ↗ Explorer
-                  </a>
-                </div>
-                <div className="row">
-                  <span className="k">수취 (에스크로 PDA)</span>
-                  <span className="hash">Esc7…miGw</span>
-                </div>
-                <hr className="hair" style={{ margin: "6px 0" }} />
-                <div className="iso-line">
-                  <span className="tick">✓</span>경유 계좌 0개 — 결제 수취
-                  주소가 곧 에스크로
-                </div>
-                <div className="iso-line">
-                  <span className="tick">✓</span>PDA에는 개인키가 없음 — 누구도
-                  임의 인출 불가
-                </div>
-                <div className="iso-line">
-                  <span className="tick">✓</span>Pending 자금의 유일한 출구는
-                  관객 환불
-                </div>
-                <div style={{ marginTop: 8 }}>
-                  <button className="ghost">환불 요청</button>
-                </div>
-              </div>
+            {errorMessage && (
+              <p className="error-text" role="alert">
+                {errorMessage}
+              </p>
             )}
+
+            {(pay === "paid" || pay === "refunding" || pay === "refunded") &&
+              txSignature && (
+                <div className="receipt">
+                  <div className="row">
+                    <span className="k">상태</span>
+                    <span className="chip state-live">
+                      {pay === "refunded" ? "Refunded" : "Pending — 격리됨"}
+                    </span>
+                  </div>
+                  <div className="row">
+                    <span className="k">입금 tx</span>
+                    <a
+                      className="hash"
+                      href={explorerTxUrl(txSignature)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {txSignature.slice(0, 4)}…{txSignature.slice(-4)} ↗
+                      Explorer
+                    </a>
+                  </div>
+                  <div className="row">
+                    <span className="k">좌석</span>
+                    <span className="hash">
+                      {currentScreening(showtime).screeningId} ·{" "}
+                      {seats.join(", ")}
+                    </span>
+                  </div>
+                  {refundSignature && (
+                    <div className="row">
+                      <span className="k">환불 tx</span>
+                      <a
+                        className="hash"
+                        href={explorerTxUrl(refundSignature)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {refundSignature.slice(0, 4)}…
+                        {refundSignature.slice(-4)} ↗ Explorer
+                      </a>
+                    </div>
+                  )}
+                  <hr className="hair" style={{ margin: "6px 0" }} />
+                  <div className="iso-line">
+                    <span className="tick">✓</span>경유 계좌 0개 — 결제 수취
+                    주소가 곧 에스크로
+                  </div>
+                  <div className="iso-line">
+                    <span className="tick">✓</span>PDA에는 개인키가 없음 —
+                    누구도 임의 인출 불가
+                  </div>
+                  <div className="iso-line">
+                    <span className="tick">✓</span>Pending 자금의 유일한 출구는
+                    관객 환불
+                  </div>
+                  {pay !== "refunded" && (
+                    <div style={{ marginTop: 8 }}>
+                      <button
+                        className="ghost"
+                        disabled={pay === "refunding"}
+                        onClick={requestRefund}
+                      >
+                        {pay === "refunding" ? "환불 처리 중…" : "환불 요청"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
           </div>
         </div>
       </div>

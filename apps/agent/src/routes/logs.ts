@@ -4,23 +4,20 @@
  */
 import { Router } from "express";
 
-import type { DashboardSnapshot } from "@chaincrew/schema";
+import type { AgentStore } from "../store.js";
 
-export const logsRouter = Router();
+export function logsRouter(store: AgentStore): Router {
+  const router = Router();
 
-logsRouter.get("/snapshot", (_request, response) => {
-  // TODO(D): 온체인 상태 + 판단 로그(Firestore) 취합
-  const snapshot: DashboardSnapshot = {
-    status: "pending",
-    grossIn: 0,
-    pending: 0,
-    allocated: 0,
-    disputed: 0,
-    paidOut: 0,
-    refunded: 0,
-    balances: [],
-    timeline: [],
-    decisions: [],
-  };
-  response.json(snapshot);
-});
+  /** 상태머신·잔액·타임라인·판정 로그 스냅샷 */
+  router.get("/snapshot", (_request, response) => {
+    response.json(store.snapshot());
+  });
+
+  /** 회차별 발권·환불 이벤트 원본 — A의 대시보드 타임라인·구매웹 개발용 */
+  router.get("/screenings", (_request, response) => {
+    response.json(store.batch.map(({ meta, events }) => ({ meta, events })));
+  });
+
+  return router;
+}

@@ -21,8 +21,9 @@
 | **C. Multi-Agent Commerce**             | 에이전트 간 A2A/A2B 협상·주문·결제                | 커머스/리테일 · 카드/페이 · 여행/마켓플레이스 |
 | **D. Verifiable Distribution at Scale** | 자격 판정 → 온체인 증명 → 대규모 지급·정산        | 공공 · 카드/페이 · 리테일 · HR/페이롤         |
 
-> 우리 프로젝트(x402 요청당 결제)는 **A/B 트랙**에 가장 가깝고, A2A 확장 시 **C
-> 트랙**으로도 이어집니다.
+> 현재 독립영화 정산 프로젝트는 **B. Autonomous On-chain Settlement**와
+> **D. Verifiable Distribution at Scale**에 가장 가깝습니다. x402/pay.sh는
+> Phase 2에서 신뢰도·증빙 데이터를 조건부 구매하는 보조 경로입니다.
 
 ## 상금 (Total $5,000)
 
@@ -50,6 +51,9 @@
 **권장**
 
 - 라이브 배포 엔드포인트: 심사 기간 중 접근 가능한 동작 URL
+
+프로젝트 소개서와 결과 보고서 작성은
+[프로젝트 보고서 틀](../PROJECT_REPORT_TEMPLATE.md)을 사용한다.
 
 > 제출물 대비 현황은 [구현 현황](../onboarding/STATUS.md)을 참고하세요. (Repo/README
 > 진행 중, 데모 영상·라이브 배포 미착수)

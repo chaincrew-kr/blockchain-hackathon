@@ -35,3 +35,6 @@ Thumbs.db
 .secrets/
 buyer-devnet.json
 merchant-devnet.json
+
+# Local product research / raw team discussion
+docs/private/

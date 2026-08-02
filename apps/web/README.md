@@ -12,7 +12,7 @@ npm run dev:web   # 루트에서 실행 → http://localhost:4020
 ```text
 src/
 ├── App.tsx           # 화면 셸 — 탭 전환 (라우터 도입 시 pages/를 라우트로 승격)
-├── styles.css        # 디자인 토큰 + 전체 스타일 (docs/DESIGN (1).md 기준)
+├── styles.css        # 디자인 토큰 + 전체 스타일 (docs/DESIGN.md 기준)
 ├── pages/
 │   ├── purchase/     # STAGE 1: 티켓 구매 — Phantom 연결→Solana Pay 시뮬레이션
 │   ├── backoffice/   # STAGE 0: 계약 온보딩 — Gemini 추출 테이블·충돌·양측 승인
@@ -34,7 +34,7 @@ src/
 
 ## 디자인
 
-[docs/DESIGN (1).md](<../../docs/DESIGN (1).md>) — void black 캔버스, 고스트
+[docs/DESIGN.md](../../docs/DESIGN.md) — void black 캔버스, 고스트
 카드(헤어라인 보더), 단일 액센트 Dusk Violet `#343755`, 필 버튼. 토큰은
 `src/styles.css`의 `:root`에 정의. 차트 마크 색 `#6B74C0`은 Dusk Violet 계열
 밝은 스텝으로 접근성(대비·CVD) 검증을 통과한 값이니 유지할 것.

@@ -34,6 +34,8 @@ export interface RuleConflict {
 /** 양측 승인을 거쳐 확정된 정산 규칙. 해시가 온체인(init_escrow)에 등록된다. */
 export interface SettlementRule {
   version: number;
+  /** 에스크로 PDA 시드로 쓰이는 식별자 — Anchor state.rs의 movie_id와 동일 값 */
+  movieId: string;
   movieTitle: string;
   /** 부율 — 예: 서울 한국영화 5:5 */
   revenueShare: { theater: number; distributor: number };
@@ -41,13 +43,39 @@ export interface SettlementRule {
   distributionFeeRate: number;
   /** MG(미니멈 개런티) — 소액 권장, 없으면 null */
   minimumGuarantee: number | null;
+  /** 손익분기 후 잔여이익 배분율 */
+  profitShare: {
+    investor: number;
+    producer: number;
+  };
   /** 정산일 (회차 종료 후 n일) */
   settlementDays: number;
-  /** 무료 발권 상한 비율 (예: 0.05) — STAGE 3 P3 검증과 숫자 일치 필수 */
+  /**
+   * 계약서상 무료 발권 상한 비율 (SPEC §5 `compTicketCap`, 예: 0.05).
+   *
+   * 데모에서는 아래 `disputeThresholds.freeTicketRate`도 같은 0.05를 쓴다.
+   * 계약 위반인데 정산을 진행하는 5~15%의 모호한 구간을 만들지 않는다(#9).
+   */
   freeTicketCapRate: number;
+  /**
+   * 정산 보류를 거는 이상탐지 임계값 (SPEC §5 `disputeThresholds`).
+   * STAGE 3의 P3 검증이 이 값을 기준으로 판정한다.
+   */
+  disputeThresholds: {
+    /** 환불률 상한 (SPEC 기본 0.10) */
+    refundRate: number;
+    /** 무료 발권 비율 상한. 계약서에 명시된 값을 쓴다(데모 0.05). */
+    freeTicketRate: number;
+  };
   clauses: ExtractedClause[];
   conflicts: RuleConflict[];
   approvals: { distributor: boolean; theater: boolean };
+  /**
+   * 계약서 원문(PDF) 해시(hex). 온체인 contract_hash와 일치해야 한다.
+   * ruleHash(추출된 규칙 JSON의 해시)와는 다른 축 — 원문↔추출규칙 두 지점을
+   * 각각 증명한다.
+   */
+  contractHash: string | null;
   /** 승인 완료 후 계산된 규칙 해시(hex). 온체인 rule_hash와 일치해야 한다 */
   ruleHash: string | null;
 }
@@ -95,7 +123,7 @@ export interface OnchainHistorySummary {
 export interface AdjustedThresholds {
   /** P3: 환불률 상한 (기본 0.10) */
   maxRefundRate: number;
-  /** P3: 무료 발권 비율 상한 (기본 0.15) */
+  /** P3: 무료 발권 비율 상한 (표준상영계약 데모 0.05) */
   maxFreeRate: number;
   /** P4: 발권수 상한 = 좌석수 */
   maxTicketsPerScreening: number;
@@ -167,6 +195,10 @@ export interface TimelineEntry {
 }
 
 export interface DashboardSnapshot {
+  /** Anchor state.rs의 movie_id — 에스크로 PDA 조회에 사용 */
+  movieId: string;
+  /** 계약서 원문 해시(hex) — SettlementRule.contractHash와 동일 값 */
+  contractHash: string;
   status: EscrowStatus;
   grossIn: number;
   pending: number;
@@ -178,4 +210,37 @@ export interface DashboardSnapshot {
   balances: BeneficiaryBalance[];
   timeline: TimelineEntry[];
   decisions: JudgeDecision[];
+}
+
+// ── HTTP API 공통 응답 (D → A) ───────────────────────────────────────────
+
+/** POST /api/batch/trigger 응답. */
+export interface BatchRunResponse {
+  /** Anchor MovieEscrow PDA의 movie_id. */
+  movieId: string;
+  theater: string;
+  /** stub이면 timeline의 트랜잭션은 가짜다. */
+  chainMode: "stub" | "anchor";
+  /** true면 이번 요청이 실행한 것이 아니라 기존 멱등 결과를 재생한 것이다. */
+  replayed: boolean;
+  decisions: JudgeDecision[];
+  timeline: TimelineEntry[];
+}
+
+/** A가 화면 분기에 사용하는 에이전트 API 오류 코드. */
+export type ApiErrorCode =
+  | "bad_request"
+  | "conflict"
+  | "batch_in_progress"
+  | "not_found"
+  | "chain_call_failed"
+  | "internal_error";
+
+/** 4xx·5xx 공통 오류 응답. requestId는 X-Request-Id 헤더와 같다. */
+export interface ApiErrorResponse {
+  error: {
+    code: ApiErrorCode;
+    message: string;
+    requestId: string;
+  };
 }
