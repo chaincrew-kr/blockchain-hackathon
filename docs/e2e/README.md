@@ -17,9 +17,10 @@
 python3 docs/e2e/build_report.py
 ```
 
-생성기는 `docs/manual/shots/*.png`를 읽어 `report.template.html`의 이미지
-자리표시자를 치환한다. 결과물에는 `file://` 링크가 없어야 하며, 다운로드 후
-Chrome 또는 Edge에서 열면 폴더 없이 모든 이미지가 보인다.
+생성기는 제품 화면인 `docs/manual/shots/*.png`와 기사·현장 조사 근거인
+`docs/e2e/evidence/*.png`를 읽어 `report.template.html`의 이미지 자리표시자를
+치환한다. 결과물에는 `file://` 링크가 없어야 하며, 다운로드 후 Chrome 또는
+Edge에서 열면 폴더 없이 모든 이미지가 보인다.
 
 Telegram 내부 미리보기는 로컬 HTML의 링크 이동을 제한할 수 있으므로 공유할 때
 “파일 다운로드 후 Chrome/Edge에서 열기”라고 안내한다. PDF가 필요하면 브라우저의

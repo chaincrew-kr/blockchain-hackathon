@@ -26,6 +26,10 @@ IMAGES = {
     "IMG_DASHBOARD": DOCS / "manual/shots/05-dashboard-overview.png",
     "IMG_EVIDENCE": DOCS / "manual/shots/06-dashboard-evidence.png",
     "IMG_KOBIS": DOCS / "manual/shots/07-dashboard-kobis.png",
+    "IMG_KIFV_ARTICLE": HERE / "evidence/kifv-unpaid-settlement.png",
+    "IMG_YONHAP_ARTICLE": HERE / "evidence/yonhap-unpaid-settlement.png",
+    "IMG_CINEMA_QUESTIONNAIRE": HERE / "evidence/cinema-questionnaire.png",
+    "IMG_CINECUBE_RESPONSE": HERE / "evidence/cinecube-response.png",
 }
 
 
