@@ -1,0 +1,23 @@
+# 단일 HTML 종합 프로젝트·E2E 보고서
+
+공유 파일은 `ChainCrew_E2E_Report.html` 하나다. README의 프로젝트 목적·문제
+정의, 제품 플로우, 시스템 아키텍처, 모듈별 책임, 사용·발표 순서, E2E 결과와
+화면 캡처를 한 문서로 구조화했다. 화면 캡처와 커버는 PNG 파일을 참조하지 않고
+`data:image/png;base64,...` URL로 HTML 내부에 포함된다. 아키텍처 시각화는
+외부 라이브러리 없이 인라인 SVG로 들어간다.
+
+## 다시 생성
+
+루트에서 다음 명령을 실행한다.
+
+```bash
+python3 docs/e2e/build_report.py
+```
+
+생성기는 `docs/manual/shots/*.png`를 읽어 `report.template.html`의 이미지
+자리표시자를 치환한다. 결과물에는 `file://` 링크가 없어야 하며, 다운로드 후
+Chrome 또는 Edge에서 열면 폴더 없이 모든 이미지가 보인다.
+
+Telegram 내부 미리보기는 로컬 HTML의 링크 이동을 제한할 수 있으므로 공유할 때
+“파일 다운로드 후 Chrome/Edge에서 열기”라고 안내한다. PDF가 필요하면 브라우저의
+인쇄 기능으로 별도 저장한다.

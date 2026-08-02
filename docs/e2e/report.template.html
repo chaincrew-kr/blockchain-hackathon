@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChainCrew E2E 검증 보고서</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #171511;
+        --muted: #676157;
+        --paper: #fffdf7;
+        --panel: #f5f0e6;
+        --line: #d8cfbf;
+        --accent: #ff5a36;
+        --accent-soft: #ffe3d8;
+        --ok: #146c43;
+        --ok-soft: #dff4e9;
+        --warn: #8a5a00;
+        --warn-soft: #fff0c7;
+        --blocked: #9f2f2f;
+        --blocked-soft: #fbe1e1;
+        --navy: #11233f;
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: #ebe5da;
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR",
+          "Segoe UI", sans-serif;
+        line-height: 1.65;
+        word-break: keep-all;
+      }
+      a { color: #164f9a; text-underline-offset: 3px; }
+      code, .mono {
+        font-family: "SFMono-Regular", Consolas, monospace;
+        word-break: break-all;
+      }
+      .page {
+        width: min(1120px, calc(100% - 32px));
+        margin: 24px auto 72px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        box-shadow: 0 18px 60px rgba(42, 33, 20, 0.12);
+      }
+      header {
+        padding: 72px 72px 58px;
+        color: white;
+        background:
+          radial-gradient(circle at 85% 10%, rgba(255, 90, 54, 0.85), transparent 28%),
+          linear-gradient(135deg, #101d34 0%, #172e4f 70%, #28476c 100%);
+      }
+      .kicker {
+        margin: 0 0 20px;
+        color: #ffb49f;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(38px, 6vw, 72px);
+        line-height: 1.05;
+        letter-spacing: -0.055em;
+      }
+      header .lead {
+        max-width: 760px;
+        margin: 26px 0 0;
+        color: #dce6f4;
+        font-size: 19px;
+      }
+      .meta, .badges, .flow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .meta { margin-top: 34px; color: #dce6f4; font-size: 14px; }
+      .meta span { padding: 7px 11px; border: 1px solid rgba(255,255,255,.24); border-radius: 999px; }
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding: 10px 18px;
+        background: rgba(255, 253, 247, 0.96);
+        border-bottom: 1px solid var(--line);
+        backdrop-filter: blur(12px);
+      }
+      nav a {
+        flex: 0 0 auto;
+        padding: 8px 11px;
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        border-radius: 999px;
+      }
+      nav a:hover { background: var(--panel); }
+      main { padding: 28px 72px 72px; }
+      section { padding-top: 44px; scroll-margin-top: 62px; }
+      h2 {
+        margin: 0 0 18px;
+        font-size: clamp(28px, 4vw, 42px);
+        line-height: 1.15;
+        letter-spacing: -0.04em;
+      }
+      h3 { margin: 34px 0 12px; font-size: 22px; letter-spacing: -0.025em; }
+      p { margin: 10px 0; }
+      .section-no { color: var(--accent); font-weight: 900; font-size: 14px; letter-spacing: .1em; }
+      .callout, .card, .shot, table {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: white;
+      }
+      .callout { padding: 20px 22px; margin: 18px 0; background: var(--panel); }
+      .callout strong { color: var(--navy); }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+      .card { padding: 18px; }
+      .card h3 { margin-top: 0; }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 850;
+      }
+      .pass { color: var(--ok); background: var(--ok-soft); }
+      .conditional { color: var(--warn); background: var(--warn-soft); }
+      .pending { color: var(--blocked); background: var(--blocked-soft); }
+      .flow { align-items: center; margin: 22px 0; }
+      .flow span {
+        padding: 9px 12px;
+        background: var(--navy);
+        color: white;
+        border-radius: 10px;
+        font-weight: 750;
+      }
+      .flow b { color: var(--accent); }
+      table { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; }
+      th, td { padding: 13px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+      th { background: var(--panel); font-size: 13px; }
+      tr:last-child td { border-bottom: 0; }
+      .shot { margin: 18px 0 28px; overflow: hidden; box-shadow: 0 8px 28px rgba(30, 24, 16, .08); }
+      .shot img { display: block; width: 100%; height: auto; background: #ddd; }
+      .shot figcaption { padding: 14px 18px 16px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+      .shot figcaption strong { color: var(--ink); }
+      .status-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .tx-list { list-style: none; margin: 14px 0; padding: 0; }
+      .tx-list li { padding: 12px 0; border-bottom: 1px dashed var(--line); }
+      .tx-list li:last-child { border-bottom: 0; }
+      .small { color: var(--muted); font-size: 13px; }
+      .hero-cover {
+        display: block;
+        width: 100%;
+        margin-top: 34px;
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 18px;
+      }
+      .architecture {
+        margin: 20px 0 28px;
+        padding: 16px;
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: #f8f4ec;
+      }
+      .architecture svg { display: block; width: 100%; min-width: 760px; height: auto; }
+      .stage-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(105px, 1fr));
+        gap: 8px;
+        margin: 22px 0;
+        overflow-x: auto;
+      }
+      .stage {
+        min-width: 105px;
+        padding: 16px 12px;
+        color: white;
+        background: var(--navy);
+        border-radius: 14px;
+      }
+      .stage em { display: block; color: #ffad98; font-size: 11px; font-style: normal; font-weight: 850; }
+      .stage strong { display: block; margin-top: 5px; font-size: 14px; }
+      .stage p { margin: 5px 0 0; color: #cbd7e8; font-size: 11px; line-height: 1.5; }
+      .tree {
+        padding: 18px 20px;
+        overflow-x: auto;
+        color: #e8eef7;
+        background: #101d34;
+        border-radius: 14px;
+        font: 13px/1.65 "SFMono-Regular", Consolas, monospace;
+        white-space: pre;
+      }
+      .warning { border-left: 5px solid var(--warn); background: var(--warn-soft); }
+      .critical { border-left: 5px solid var(--blocked); background: var(--blocked-soft); }
+      footer { padding: 28px 72px 44px; color: var(--muted); border-top: 1px solid var(--line); font-size: 13px; }
+      @media (max-width: 760px) {
+        .page { width: 100%; margin: 0; border: 0; }
+        header, main, footer { padding-left: 20px; padding-right: 20px; }
+        header { padding-top: 46px; }
+        .grid { grid-template-columns: 1fr; }
+        th, td { padding: 10px 8px; font-size: 12px; }
+        nav { position: static; }
+      }
+      @media print {
+        body { background: white; }
+        .page { width: 100%; margin: 0; border: 0; box-shadow: none; }
+        nav { display: none; }
+        section, figure, table { break-inside: avoid; }
+        a { color: inherit; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <p class="kicker">ChainCrew · Devnet Evidence</p>
+        <h1>E2E 검증 보고서</h1>
+        <p class="lead">
+          독립영화 티켓 매출의 계약 구조화, 에스크로 입금, Agent 검증,
+          워터폴 정산과 부분 보류를 실제 배포 환경과 Solana Devnet 증거로 정리했습니다.
+        </p>
+        <div class="meta">
+          <span>기준일 2026-08-03 KST</span>
+          <span>Program C65w81…NTik</span>
+          <span>Movie indie-2026-001</span>
+          <span>단일 HTML · 이미지 내장</span>
+        </div>
+        <img class="hero-cover" src="{{IMG_COVER}}" alt="AI Movie Settlement 프로젝트 커버" />
+      </header>
+
+      <nav aria-label="문서 목차">
+        <a href="#summary">요약</a>
+        <a href="#purpose">목적</a>
+        <a href="#flow">전체 플로우</a>
+        <a href="#architecture">아키텍처</a>
+        <a href="#modules">모듈</a>
+        <a href="#demo">시연 방법</a>
+        <a href="#environment">환경</a>
+        <a href="#matrix">검증표</a>
+        <a href="#s0">S0 계약</a>
+        <a href="#s1">S1 구매</a>
+        <a href="#chain">온체인 E2E</a>
+        <a href="#s6">S6 대시보드</a>
+        <a href="#limits">제한·다음 단계</a>
+        <a href="#share">공유 방법</a>
+      </nav>
+
+      <main>
+        <section id="summary">
+          <div class="section-no">01 · EXECUTIVE SUMMARY</div>
+          <h2>무엇을 검증했는가</h2>
+          <p>
+            ChainCrew는 관객 결제금을 영화별 Escrow PDA에 격리하고, 정산 Agent가
+            승인 규칙과 발권 데이터를 검증한 뒤 정상 금액을 귀속하고 이상 금액만
+            <span class="mono">Disputed</span>로 분리하는 시스템입니다.
+          </p>
+          <div class="flow" aria-label="핵심 E2E 흐름">
+            <span>계약 추출</span><b>→</b><span>양측 승인</span><b>→</b>
+            <span>티켓 입금</span><b>→</b><span>Agent 검증</span><b>→</b>
+            <span>정산·부분 보류</span><b>→</b><span>대시보드</span>
+          </div>
+          <div class="grid">
+            <div class="card">
+              <div class="status-line"><span class="badge pass">PASS</span><strong>핵심 체인 E2E</strong></div>
+              <p>실제 Devnet에서 Escrow 생성, 정산 2회, 역할별 분쟁 격리를 완료했습니다.</p>
+            </div>
+            <div class="card">
+              <div class="status-line"><span class="badge pass">PASS</span><strong>Cloud 통합</strong></div>
+              <p>웹·Agent Cloud Run, IAM 프록시, Gemini·KOBIS Secret 연결을 검증했습니다.</p>
+            </div>
+            <div class="card">
+              <div class="status-line"><span class="badge conditional">PARTIAL</span><strong>브라우저 구매</strong></div>
+              <p>Devnet 번들은 배포됐지만 실제 Phantom 서명 결제 1회는 최종 리허설에 남아 있습니다.</p>
+            </div>
+            <div class="card">
+              <div class="status-line"><span class="badge conditional">PARTIAL</span><strong>대시보드 잔액</strong></div>
+              <p>판정·타임라인 API는 연결됐지만 일부 잔액·상태 수치는 데모 스냅샷입니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="purpose">
+          <div class="section-no">02 · PURPOSE & CONTEXT</div>
+          <h2>왜 이 제품을 만들었는가</h2>
+          <p>
+            국내 영화 티켓 매출은 극장 운영사나 예매 사업자에게 먼저 모인 뒤
+            배급사·제작사·투자자에게 사후 정산됩니다. 중간 사업자에게 유동성 문제나
+            회생·파산이 발생하면 이미 판매된 표의 권리자 몫까지 운영자금과 함께
+            묶일 수 있습니다. ChainCrew는 계산 자동화만이 아니라
+            <strong>결제 순간부터 자금을 영화별로 분리하는 구조</strong>를 제안합니다.
+          </p>
+          <div class="grid">
+            <div class="card">
+              <h3>문제</h3>
+              <ul>
+                <li>티켓 매출과 운영자금의 혼합</li>
+                <li>계약 해석·공제·배분의 수작업 의존</li>
+                <li>권리자별 귀속 금액과 지급 근거의 불투명성</li>
+                <li>일부 이상 때문에 전체 정산이 멈추는 구조</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>해결</h3>
+              <ul>
+                <li>영화별 Solana Escrow PDA로 자금 격리</li>
+                <li>Gemini로 계약 후보 규칙과 근거 조항 구조화</li>
+                <li>사람이 승인한 규칙만 결정론적으로 실행</li>
+                <li>이상 금액만 Disputed로 부분 보류</li>
+              </ul>
+            </div>
+          </div>
+          <h3>KOBIS 이후에 필요한 실행 계층</h3>
+          <div class="flow">
+            <span>KOBIS · 매출 발생 집계</span><b>+</b>
+            <span>계약 규칙</span><b>+</b><span>자금 격리</span><b>+</b>
+            <span>실제 정산·부분 보류</span>
+          </div>
+          <p>
+            KOBIS는 영화별 발권과 매출의 발생 사실을 집계하는 데이터 인프라입니다.
+            ChainCrew는 극장 발권 원장·솔루션 API를 1차 입력으로 받고 KOBIS를 사후
+            대조 자료로 사용해, 승인된 계약과 실제 자금 흐름을 연결하는 실행
+            인프라를 목표로 합니다.
+          </p>
+          <div class="callout">
+            <strong>제품 경계:</strong> 해커톤 데모는 Devnet USDC로 격리를 증명하지만,
+            상용 서비스는 관객에게 암호화폐를 강요하는 서비스가 아닙니다. 기존 원화
+            PG·신탁·에스크로 계좌와 결합하는 B2B 정산 인프라가 목표입니다.
+          </div>
+        </section>
+
+        <section id="flow">
+          <div class="section-no">03 · END-TO-END FLOW</div>
+          <h2>제품 전체 플로우</h2>
+          <div class="stage-grid" aria-label="제품 단계">
+            <div class="stage"><em>STAGE 0</em><strong>계약 온보딩</strong><p>Gemini 추출·충돌 확인·양측 승인</p></div>
+            <div class="stage"><em>STAGE 1</em><strong>티켓 결제</strong><p>Phantom 서명·Escrow deposit</p></div>
+            <div class="stage"><em>STAGE 2</em><strong>데이터 수집</strong><p>발권·환불·무료표·KOBIS 대조</p></div>
+            <div class="stage"><em>STAGE 3</em><strong>위험 검증</strong><p>환불률·무료표·좌석·정합성</p></div>
+            <div class="stage"><em>STAGE 4</em><strong>정산 판단</strong><p>proceed 또는 partial-hold</p></div>
+            <div class="stage"><em>STAGE 5</em><strong>온체인 실행</strong><p>settle_batch·mark_disputed</p></div>
+            <div class="stage"><em>STAGE 6</em><strong>공개·인출</strong><p>근거·잔액·Explorer·claim</p></div>
+          </div>
+          <h3>정산 판단 원칙</h3>
+          <table>
+            <thead><tr><th>책임 주체</th><th>수행 내용</th><th>수행하지 않는 일</th></tr></thead>
+            <tbody>
+              <tr><td>Gemini</td><td>계약 후보 규칙·근거 조항 추출, 설명 생성</td><td>자금 배분 수치 임의 변경</td></tr>
+              <tr><td>정산 Agent</td><td>데이터 검증, 정책 적용, 트랜잭션 의도 생성</td><td>승인되지 않은 규칙 집행</td></tr>
+              <tr><td>Anchor 프로그램</td><td>규칙 해시·권한·상태·인출 한도 강제</td><td>자연어 계약 해석</td></tr>
+              <tr><td>사람</td><td>계약 규칙 승인, 분쟁 최종 해결</td><td>반복 정산 계산의 수작업 수행</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="architecture">
+          <div class="section-no">04 · SYSTEM ARCHITECTURE</div>
+          <h2>배포·데이터 아키텍처</h2>
+          <div class="architecture" role="img" aria-label="ChainCrew 시스템 아키텍처">
+            <svg viewBox="0 0 1000 590" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#ff5a36"/></marker>
+                <style>
+                  .box{fill:#fffdf7;stroke:#11233f;stroke-width:2}.cloud{fill:#e9f1ff}.chain{fill:#e5f7ed}.ai{fill:#f1e9ff}.label{font:700 17px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#171511}.sub{font:13px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#5d574e}.line{stroke:#ff5a36;stroke-width:3;fill:none;marker-end:url(#arrow)}.dash{stroke-dasharray:7 6}
+                </style>
+              </defs>
+              <rect x="28" y="205" rx="18" width="155" height="125" class="box"/>
+              <text x="105" y="248" text-anchor="middle" class="label">사용자</text>
+              <text x="105" y="275" text-anchor="middle" class="sub">관객 · 운영자</text>
+              <text x="105" y="298" text-anchor="middle" class="sub">권리자 · 발표자</text>
+
+              <rect x="250" y="70" rx="20" width="270" height="245" class="box cloud"/>
+              <text x="385" y="105" text-anchor="middle" class="label">chaincrew-web · Cloud Run</text>
+              <rect x="278" y="130" rx="12" width="214" height="52" class="box"/><text x="385" y="162" text-anchor="middle" class="sub">React · 구매/백오피스/대시보드</text>
+              <rect x="278" y="198" rx="12" width="214" height="52" class="box"/><text x="385" y="230" text-anchor="middle" class="sub">Express · API·IAM 프록시</text>
+              <rect x="278" y="266" rx="12" width="214" height="30" class="box"/><text x="385" y="287" text-anchor="middle" class="sub">Basic Auth · Secret 연결</text>
+
+              <rect x="590" y="80" rx="18" width="176" height="92" class="box ai"/>
+              <text x="678" y="117" text-anchor="middle" class="label">Gemini</text><text x="678" y="144" text-anchor="middle" class="sub">계약 규칙 구조화</text>
+              <rect x="796" y="80" rx="18" width="176" height="92" class="box ai"/>
+              <text x="884" y="117" text-anchor="middle" class="label">KOBIS</text><text x="884" y="144" text-anchor="middle" class="sub">매출·관객 대조</text>
+
+              <rect x="590" y="220" rx="20" width="382" height="140" class="box cloud"/>
+              <text x="781" y="255" text-anchor="middle" class="label">chaincrew-agent · Cloud Run</text>
+              <text x="781" y="285" text-anchor="middle" class="sub">검증 → 판정 → Anchor Gateway → 판단 로그</text>
+              <text x="781" y="312" text-anchor="middle" class="sub">IAM 비공개 · Agent authority 서명</text>
+              <text x="781" y="339" text-anchor="middle" class="sub">Cloud Scheduler는 현재 PAUSED</text>
+
+              <rect x="250" y="425" rx="20" width="722" height="125" class="box chain"/>
+              <text x="611" y="460" text-anchor="middle" class="label">Solana Devnet · Movie Escrow Program</text>
+              <text x="611" y="490" text-anchor="middle" class="sub">Escrow PDA · Vault · Allocation PDA × 4</text>
+              <text x="611" y="518" text-anchor="middle" class="sub">deposit · verify · settle · dispute · resolve · claim</text>
+
+              <path d="M183 260 H250" class="line"/>
+              <path d="M520 135 H590" class="line"/>
+              <path d="M520 155 C650 185 740 170 796 150" class="line dash"/>
+              <path d="M520 245 H590" class="line"/>
+              <path d="M780 360 V425" class="line"/>
+              <path d="M385 315 V425" class="line"/>
+            </svg>
+          </div>
+          <p class="small">
+            브라우저는 IAM 비공개 Agent를 직접 호출하지 않습니다. 공개 웹의 Express
+            서버가 런타임 서비스 계정으로 ID 토큰을 발급해 Agent를 프록시합니다.
+            Agent 서명 키와 Gemini·KOBIS 키는 Secret Manager에 보관합니다.
+          </p>
+        </section>
+
+        <section id="modules">
+          <div class="section-no">05 · MODULE MAP</div>
+          <h2>모듈 단위 구조와 책임</h2>
+          <div class="tree">blockchain-hackathon/
+├── apps/web/                 React 화면 + Express API + IAM Agent 프록시
+├── apps/agent/               위험 검증 + 정산 판단 + Anchor 트랜잭션 실행
+├── packages/ai-data/         Gemini 설명 + KOBIS 클라이언트
+├── packages/schema/          공통 TypeScript 계약 + Anchor IDL
+├── programs/movie_escrow/    Rust/Anchor 에스크로 프로그램
+├── tools/devnet-seed/        공동 서명 init + 테스트 민트 + Escrow 시딩
+├── tools/wallet/             역할별 Devnet 지갑 생성·주소 확인
+├── scripts/demo-claim.ts     claim·초과 인출·분쟁 해제 리허설
+└── docs/                     요구사항·설계·배포·검증·보고서</div>
+          <table>
+            <thead><tr><th>모듈</th><th>핵심 단위</th><th>입력 → 출력</th><th>담당</th></tr></thead>
+            <tbody>
+              <tr><td><span class="mono">apps/web/src</span></td><td>BackofficePage, PurchasePage, DashboardPage</td><td>사용자 입력 → 계약·결제·정산 UI</td><td>A 진규빈</td></tr>
+              <tr><td><span class="mono">apps/web/server</span></td><td>extract-service, kobis-service, agent-proxy</td><td>PDF/API 요청 → 구조화 규칙·프록시 응답</td><td>A·D 통합</td></tr>
+              <tr><td><span class="mono">apps/agent</span></td><td>risk-check, judge, pipeline, AnchorChainGateway</td><td>ScreeningBatch → 결정·체인 서명·타임라인</td><td>D 박세령</td></tr>
+              <tr><td><span class="mono">packages/schema</span></td><td>SettlementRule, Decision, API 응답, IDL</td><td>팀 합의 → 화면·Agent·체인 공통 계약</td><td>D 통합·전원 리뷰</td></tr>
+              <tr><td><span class="mono">programs/movie_escrow</span></td><td>Escrow, Allocation, instructions</td><td>서명된 instruction → 검증된 상태 전이</td><td>B 정서윤·C 최상아</td></tr>
+              <tr><td><span class="mono">packages/ai-data</span></td><td>Gemini, KOBIS, narrative</td><td>계약·외부 데이터 → 구조화/설명</td><td>A 진규빈</td></tr>
+            </tbody>
+          </table>
+          <h3>공통 데이터 계약</h3>
+          <div class="grid">
+            <div class="card"><strong>SettlementRule</strong><p>부율, 수수료, MG·투자·이익배분, 보류 임계값, 계약·규칙 해시</p></div>
+            <div class="card"><strong>ScreeningBatch</strong><p>회차별 유료·무료·환불 발권과 좌석·상영관 정보</p></div>
+            <div class="card"><strong>SettlementDecision</strong><p>proceed/partial-hold, 정상·보류 금액, 검사 근거</p></div>
+            <div class="card"><strong>Anchor IDL</strong><p>PDA seed, 계정, instruction 인자와 이벤트의 실행 계약</p></div>
+          </div>
+          <p class="small">금액은 온체인에서 micro-USDC 정수, 비율은 basis point 정수로 전달하고 UI 경계에서만 표시 단위로 변환합니다.</p>
+        </section>
+
+        <section id="demo">
+          <div class="section-no">06 · DEMO & USAGE</div>
+          <h2>발표·사용 순서</h2>
+          <ol>
+            <li><strong>S0 충돌 계약서:</strong> PDF 업로드 → Gemini 추출 → 충돌 때문에 양측 승인 차단 확인</li>
+            <li><strong>S0 정상 계약서:</strong> 무충돌 PDF 업로드 → 배급·상영 승인 → 규칙 해시 확정 확인</li>
+            <li><strong>S1 구매:</strong> 정서윤의 Phantom Devnet 지갑 연결 → 10 USDC 티켓 결제 → deposit 서명 기록</li>
+            <li><strong>S6 결과:</strong> 기존 성공 트랜잭션·판정 근거·권리자별 상태를 대시보드와 Explorer로 설명</li>
+          </ol>
+          <div class="callout warning">
+            <strong>발표 안전 규칙:</strong> 현재 Escrow는 정산을 마쳐 pending이 0입니다.
+            새 Escrow를 시딩하지 않았다면 “정산일 도래” 버튼을 다시 누르지 않고 기존
+            성공 결과를 조회합니다. 실제 <span class="mono">init_escrow</span> UI 연동과
+            일부 대시보드 잔액은 구현 범위를 정확히 고지합니다.
+          </div>
+          <h3>개발 환경 실행</h3>
+          <table>
+            <thead><tr><th>대상</th><th>명령</th><th>기본 주소·결과</th></tr></thead>
+            <tbody>
+              <tr><td>설치</td><td class="mono">npm install</td><td>워크스페이스 의존성 설치</td></tr>
+              <tr><td>Web</td><td class="mono">npm run dev:web</td><td>http://localhost:4020</td></tr>
+              <tr><td>Agent</td><td class="mono">npm run dev:agent</td><td>http://localhost:4030/health</td></tr>
+              <tr><td>전체 검사</td><td class="mono">npm run check</td><td>lint · typecheck · test · format</td></tr>
+              <tr><td>Claim 리허설</td><td class="mono">npx tsx scripts/demo-claim.ts</td><td>별도 연습용 Escrow 사용</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="environment">
+          <div class="section-no">07 · TEST ENVIRONMENT</div>
+          <h2>검증 환경</h2>
+          <table>
+            <thead><tr><th>항목</th><th>값</th><th>상태</th></tr></thead>
+            <tbody>
+              <tr><td>Solana</td><td>Devnet · Program <span class="mono">C65w81oX73ngPa6PjdLR49rsXag9kM1mRD1rPT21NTik</span></td><td><span class="badge pass">배포 완료</span></td></tr>
+              <tr><td>Escrow</td><td><span class="mono">6dBxfuds5za9ekG7156Ryu61jyppgpe2XmH5Vv8rowm3</span></td><td><span class="badge pass">정산 완료</span></td></tr>
+              <tr><td>Web</td><td><a href="https://chaincrew-web-612802760361.asia-northeast3.run.app">chaincrew-web</a> · Revision <span class="mono">00006-kc8</span></td><td><span class="badge pass">Devnet 번들</span></td></tr>
+              <tr><td>Agent</td><td><span class="mono">chaincrew-agent-00002-rzf</span> · IAM 비공개</td><td><span class="badge pass">Anchor 모드</span></td></tr>
+              <tr><td>Scheduler</td><td><span class="mono">0 3 * * *</span></td><td><span class="badge pass">PAUSED</span></td></tr>
+              <tr><td>자동 검사</td><td>Agent 42 + AI Data 4 + Devnet Seed 3</td><td><span class="badge pass">49 통과</span></td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="matrix">
+          <div class="section-no">08 · RESULT MATRIX</div>
+          <h2>시나리오별 결과</h2>
+          <table>
+            <thead><tr><th>ID</th><th>시나리오</th><th>결과</th><th>근거</th></tr></thead>
+            <tbody>
+              <tr><td>E2E-01</td><td>라이브 웹·Basic Auth</td><td><span class="badge pass">PASS</span></td><td>무인증 401, 인증 후 React·API 응답</td></tr>
+              <tr><td>E2E-02</td><td>Gemini 계약 추출·충돌 탐지</td><td><span class="badge pass">PASS</span></td><td>실제 PDF 추출, 충돌 1건·신뢰도 0.7</td></tr>
+              <tr><td>E2E-03</td><td>KOBIS 영화·관객 데이터</td><td><span class="badge pass">PASS</span></td><td>Secret 연결 후 라이브 API 응답</td></tr>
+              <tr><td>E2E-04</td><td>Phantom 관객 결제</td><td><span class="badge pending">최종 확인 필요</span></td><td>Devnet 빌드 완료, 사람의 지갑 서명 1회 남음</td></tr>
+              <tr><td>E2E-05</td><td>정상·이상 회차 정산</td><td><span class="badge pass">PASS</span></td><td>실제 settle 2건과 mark_disputed 4건</td></tr>
+              <tr><td>E2E-06</td><td>Claim·초과 인출·분쟁 해제</td><td><span class="badge pass">PASS</span></td><td><span class="mono">scripts/demo-claim.ts</span> 리허설</td></tr>
+              <tr><td>E2E-07</td><td>대시보드 온체인 잔액</td><td><span class="badge conditional">PARTIAL</span></td><td>일부 수치가 <span class="mono">mocks/demo.ts</span> 스냅샷</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="s0">
+          <div class="section-no">09 · STAGE 0</div>
+          <h2>계약 구조화와 승인 게이트</h2>
+          <p>
+            PDF 원문은 브라우저에서 해시하고, Gemini가 정산 규칙과 근거 조항을
+            구조화합니다. 충돌이 있으면 양측 승인 버튼이 비활성화됩니다.
+          </p>
+          <figure class="shot">
+            <img src="{{IMG_CONTRACT_UPLOAD}}" alt="계약서 업로드 화면" />
+            <figcaption><strong>증거 1.</strong> 실제 Cloud Run 백오피스의 계약서 업로드 단계. PDF를 선택한 뒤 추출을 실행합니다.</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="{{IMG_CONTRACT_RESULT}}" alt="계약서 추출 결과와 충돌 화면" />
+            <figcaption><strong>증거 2.</strong> Gemini 추출 결과, 근거 조항, 신뢰도와 충돌 상태가 함께 표시됩니다.</figcaption>
+          </figure>
+          <div class="callout warning">
+            <strong>해석 범위:</strong> 정상 계약서는 양측 승인과 규칙 해시 확정까지
+            시연할 수 있습니다. 백오피스의 실제 <span class="mono">init_escrow</span>
+            버튼은 아직 비활성화이므로 “화면에서 온체인 등록을 완료했다”고 설명하지 않습니다.
+          </div>
+        </section>
+
+        <section id="s1">
+          <div class="section-no">10 · STAGE 1</div>
+          <h2>관객 결제와 지갑 서명</h2>
+          <figure class="shot">
+            <img src="{{IMG_PURCHASE}}" alt="티켓 구매 화면" />
+            <figcaption><strong>증거 3.</strong> 영화·회차·인원을 선택하고 Phantom 결제로 Escrow deposit을 준비하는 화면입니다.</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="{{IMG_WALLET}}" alt="Phantom 지갑 필요 안내" />
+            <figcaption><strong>증거 4.</strong> 지갑이 없는 브라우저에서 결제가 조용히 실패하지 않고 설치 안내를 반환합니다.</figcaption>
+          </figure>
+          <div class="callout critical">
+            <strong>남은 최종 확인:</strong> 시연 담당자가 Phantom을 Devnet으로 전환하고
+            테스트 SOL·USDC가 있는 지갑으로 결제 1회를 서명해야 합니다. 개인키를
+            자동화 브라우저에 주입하지 않는 것은 보안상 의도된 제약입니다.
+          </div>
+        </section>
+
+        <section id="chain">
+          <div class="section-no">11 · ON-CHAIN EVIDENCE</div>
+          <h2>실제 Devnet 정산 증거</h2>
+          <p>
+            아래 링크는 화면 목업이 아니라 Solana Devnet에 기록된 트랜잭션입니다.
+            기존 Escrow는 총 270 USDC 정산을 마쳐 현재 <span class="mono">pending=0</span>입니다.
+          </p>
+          <ul class="tx-list">
+            <li><strong>Escrow 생성</strong> — <a href="https://explorer.solana.com/tx/3rFNeWVUBv2iVNggDEgQuUh4mGiDhVBiM6hTfzTpGGs9ZckmERp4k71CAdV7tXhjyJBEKhN6Yb7U21dHg31wTt2x?cluster=devnet">Explorer에서 확인</a></li>
+            <li><strong>정상 회차 정산</strong> — <a href="https://explorer.solana.com/tx/23amZy1z7CxKyrJ8PFQ5kqe6ZHZdyCzgS9LRHUjiREzGaxa6CkF7FSvqc1NPh2L5tHRqqUiZ7KVdAobdPp6rFPyT?cluster=devnet">Explorer에서 확인</a></li>
+            <li><strong>이상 회차 정산</strong> — <a href="https://explorer.solana.com/tx/2Htwwfdfhfbw9QyWXumUtS4EkPua39vfwVbTiWfdomiGgBxuGmwA14XqzCgZgLgkSdxffwC6GTw6uCcxRPcfSfqk?cluster=devnet">Explorer에서 확인</a></li>
+            <li><strong>역할별 분쟁 격리</strong> — <a href="https://explorer.solana.com/tx/frWMdSGtsvUG7rMMBgwwrrZr9YaJ6cEWxbn9BLqDmwwW2HniHG45yDZr9wGoXiQkya9vJ1uRsyuY5pvhijSzsEJ?cluster=devnet">Explorer에서 확인</a></li>
+          </ul>
+          <table>
+            <thead><tr><th>최종 상태</th><th>최소 단위</th><th>USDC</th></tr></thead>
+            <tbody>
+              <tr><td>Pending</td><td class="mono">0</td><td>0</td></tr>
+              <tr><td>Allocated</td><td class="mono">158,870,257</td><td>158.870257</td></tr>
+              <tr><td>Disputed</td><td class="mono">79,435,129</td><td>79.435129</td></tr>
+              <tr><td>Paid Out</td><td class="mono">31,694,614</td><td>31.694614</td></tr>
+              <tr><td><strong>합계</strong></td><td class="mono"><strong>270,000,000</strong></td><td><strong>270.000000</strong></td></tr>
+            </tbody>
+          </table>
+          <p class="small">batchCount 2 · disputeCount 4 · Agent authority 28jf5ZvidEmbYG4r4JBUdscWKXGwK6Kq9ij8RNVW9HnD</p>
+        </section>
+
+        <section id="s6">
+          <div class="section-no">12 · STAGE 6</div>
+          <h2>판정 근거와 대시보드</h2>
+          <figure class="shot">
+            <img src="{{IMG_DASHBOARD}}" alt="정산 대시보드 개요" />
+            <figcaption><strong>증거 5.</strong> 정산 상태머신, 총 유입과 자금 불변식을 한 화면에서 확인합니다.</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="{{IMG_EVIDENCE}}" alt="에이전트 판단 근거와 권리자별 잔액" />
+            <figcaption><strong>증거 6.</strong> Agent의 검사 근거, 역할별 금액과 트랜잭션 타임라인 영역입니다.</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="{{IMG_KOBIS}}" alt="KOBIS 데이터가 표시된 대시보드" />
+            <figcaption><strong>증거 7.</strong> 데모 발권 기록과 KOBIS 라이브 데이터를 함께 대조합니다.</figcaption>
+          </figure>
+          <div class="callout warning">
+            <strong>중요:</strong> 현재 판정·타임라인 응답은 Agent API와 연결됐지만
+            대시보드의 일부 잔액과 상태머신은 데모 스냅샷입니다. 또한 기존 Escrow는
+            이미 정산됐으므로 신규 시딩 없이 “정산일 도래”를 다시 누르지 않습니다.
+          </div>
+        </section>
+
+        <section id="limits">
+          <div class="section-no">13 · LIMITS & NEXT ACTIONS</div>
+          <h2>완료 전 확인할 항목</h2>
+          <table>
+            <thead><tr><th>우선순위</th><th>조치</th><th>완료 기준</th></tr></thead>
+            <tbody>
+              <tr><td>P0</td><td>정서윤이 라이브 웹에서 Phantom Devnet 결제 1회</td><td>성공 화면·deposit 서명 기록</td></tr>
+              <tr><td>P0</td><td>S6 발표 방식 확정</td><td>기존 결과 조회 또는 신규 Escrow 시딩 중 하나 선택</td></tr>
+              <tr><td>P0</td><td>대시보드 목업 수치 표시 정정</td><td>온체인 조회로 교체하거나 데모 데이터 라벨 노출</td></tr>
+              <tr><td>P1</td><td>백오피스 init_escrow UI 연결</td><td>발표 범위에 포함할 때만 구현</td></tr>
+              <tr><td>P1</td><td>Claim Explorer 링크 기록</td><td>리허설 결과를 보고서 증거에 추가</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="share">
+          <div class="section-no">14 · SHARING</div>
+          <h2>이 파일 공유 방법</h2>
+          <div class="callout">
+            <strong>이 보고서는 단일 HTML입니다.</strong> 모든 캡처는
+            <span class="mono">data:image/png;base64,…</span> 형태로 파일 안에
+            들어 있으며, 이미지 폴더나 로컬 <span class="mono">file:///</span> 링크가 없습니다.
+          </div>
+          <ol>
+            <li><span class="mono">ChainCrew_E2E_Report.html</span> 파일 하나만 전송합니다.</li>
+            <li>수신자는 파일을 다운로드한 뒤 Chrome 또는 Edge에서 엽니다.</li>
+            <li>Telegram 내부 미리보기는 링크 이동을 제한할 수 있으므로 브라우저 열기를 권장합니다.</li>
+            <li>문서 본문과 이미지는 오프라인에서도 보이며, Explorer·Cloud Run 링크만 인터넷이 필요합니다.</li>
+            <li>PDF가 필요하면 브라우저의 “인쇄 → PDF로 저장”을 사용합니다.</li>
+          </ol>
+        </section>
+      </main>
+
+      <footer>
+        ChainCrew · Google × Solana AI Agentic Hackathon · 2026-08-03<br />
+        본 문서는 성공과 제한을 구분해 기록한 검증 보고서이며, 개인키·API Secret을 포함하지 않습니다.
+      </footer>
+    </div>
+  </body>
+</html>
