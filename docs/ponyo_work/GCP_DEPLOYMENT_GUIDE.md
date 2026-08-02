@@ -298,13 +298,75 @@ gcloud scheduler jobs pause chaincrew-settlement-batch \
   --project=chaincrew-movie-escrow
 ```
 
-## 9. 앞으로 배포할 때의 체크리스트
+## 9. React 화면과 Express 서버 통합 배포
+
+웹은 별도 URL 두 개가 아니라 하나의 Cloud Run 서비스에서 함께 제공한다.
+
+```text
+브라우저
+  └─ chaincrew-web (React 정적 파일 + Express API)
+       ├─ Gemini 계약서 분석
+       ├─ KOBIS 조회
+       └─ IAM 인증 프록시
+            └─ chaincrew-agent (비공개)
+                 └─ Solana Devnet
+```
+
+웹 서비스 정보:
+
+- Cloud Run 서비스: `chaincrew-web`
+- URL: `https://chaincrew-web-612802760361.asia-northeast3.run.app`
+- 런타임 계정: `chaincrew-web@chaincrew-movie-escrow.iam.gserviceaccount.com`
+- 현재 접근 정책: **IAM 인증 필요**
+
+`apps/web/Dockerfile`은 먼저 Vite로 React를 빌드한 뒤, 생성된 `dist`와 Express
+서버를 하나의 이미지에 넣는다. Express가 `/api/*`를 처리하고 그 밖의 GET 요청은
+React 앱으로 돌려준다. 따라서 운영 프론트는 `localhost:8787`을 사용하지 않고
+현재 웹 URL의 같은 origin으로 API를 호출한다.
+
+```bash
+gcloud builds submit --config=cloudbuild.web.yaml . \
+  --project=chaincrew-movie-escrow
+```
+
+웹 서버는 자신의 런타임 서비스 계정으로 Agent용 ID 토큰을 자동 발급한다. 운영
+환경에 서비스 계정 JSON 파일을 만들거나 전달할 필요가 없다.
+
+```env
+AGENT_BASE_URL=https://chaincrew-agent-dtqzxlz7hq-du.a.run.app
+AGENT_USE_IAM_AUTH=true
+```
+
+Gemini와 KOBIS 키는 다음 Secret 이름으로 연결한다.
+
+```text
+gemini-api-key → GEMINI_API_KEY
+kobis-api-key  → KOBIS_API_KEY
+```
+
+Secret 이름만 만든 것으로는 부족하다. 각각 `ENABLED` 상태의 버전이 최소 한 개
+있어야 Cloud Run에서 `:latest`를 연결할 수 있다.
+
+```bash
+gcloud secrets versions list gemini-api-key \
+  --project=chaincrew-movie-escrow
+gcloud secrets versions list kobis-api-key \
+  --project=chaincrew-movie-escrow
+```
+
+현재 웹은 IAM 비공개 상태에서 `/health`와 React HTML 응답까지 검증했다. 일반
+심사 브라우저에 공개할 때는 `DEMO_AUTH_USER`와 `DEMO_AUTH_PASSWORD`를 함께
+설정한 뒤 Cloud Run의 비인증 접근을 허용한다. Basic Auth 없이 웹 전체를 공개하면
+누구나 Gemini·KOBIS 호출과 정산 프록시를 사용할 수 있으므로 금지한다.
+
+## 10. 앞으로 배포할 때의 체크리스트
 
 ### 코드 변경 후
 
 - [ ] `npm run check` 통과
 - [ ] `dev` 최신화
 - [ ] `cloudbuild.agent.yaml`로 새 이미지 빌드
+- [ ] 웹 변경이면 `cloudbuild.web.yaml`로 새 이미지 빌드
 - [ ] Cloud Run 새 Revision 배포
 - [ ] 인증된 `/health`에서 `chain: anchor` 확인
 - [ ] Cloud Logging에 개인키·토큰이 출력되지 않는지 확인
@@ -326,11 +388,15 @@ gcloud scheduler jobs pause chaincrew-settlement-batch \
 - [ ] Scheduler 활성화 여부
 - [ ] 실패 시 확인할 Cloud Logging 위치
 
-## 10. 현재 남은 결정
+## 11. 현재 남은 작업
 
-Cloud Run 배포 자체는 완료됐다. 남은 핵심 결정은 다음 하나다.
+Agent 배포와 웹의 IAM 프록시 연결은 완료됐다. 남은 작업은 다음과 같다.
 
-> A의 웹 서버가 IAM 인증 프록시 역할을 할지, 별도의 인증 계층을 추가할지
+- [ ] `gemini-api-key`, `kobis-api-key`에 실제 값 버전 추가
+- [ ] 두 Secret을 `chaincrew-web` 리비전에 연결
+- [ ] 데모용 Basic Auth 비밀번호를 Secret Manager에 등록
+- [ ] 인증이 설정된 것을 확인한 뒤 웹 서비스만 공개 전환
+- [ ] React 화면에서 Gemini·KOBIS 조회를 각각 1회 검증
 
-권장안은 **A 웹 서버 프록시 + 해당 서비스 계정에 Cloud Run Invoker 권한만
-부여**하는 방식이다. 이 결정 전에는 Agent 서비스를 공개로 전환하지 않는다.
+Agent 서비스는 계속 IAM 비공개로 유지한다. 공개되는 것은 Basic Auth가 적용된
+웹 서비스뿐이며, 웹 런타임 계정에만 Agent 호출 권한을 준다.

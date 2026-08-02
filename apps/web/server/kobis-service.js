@@ -5,12 +5,21 @@
 
 import { KobisClient, getRecentDailyAudience } from "@chaincrew/ai-data";
 
-const client = new KobisClient({ apiKey: process.env.KOBIS_API_KEY });
+let client;
+
+function getClient() {
+  const apiKey = process.env.KOBIS_API_KEY;
+  if (!apiKey?.trim()) {
+    throw new Error("KOBIS_API_KEY가 설정되지 않았습니다.");
+  }
+  client ??= new KobisClient({ apiKey });
+  return client;
+}
 
 export async function fetchMovieInfo(movieCd) {
-  return client.getMovieInfo(movieCd);
+  return getClient().getMovieInfo(movieCd);
 }
 
 export async function fetchDailyAudience(movieCd, days = 7) {
-  return getRecentDailyAudience(client, movieCd, days);
+  return getRecentDailyAudience(getClient(), movieCd, days);
 }
