@@ -223,8 +223,9 @@
         <p class="kicker">ChainCrew · Devnet Evidence</p>
         <h1>E2E 검증 보고서</h1>
         <p class="lead">
-          독립영화 티켓 매출의 계약 구조화, 에스크로 입금, Agent 검증,
-          워터폴 정산과 부분 보류를 실제 배포 환경과 Solana Devnet 증거로 정리했습니다.
+          표는 이미 팔렸고 관객 돈도 빠져나갔는데, 정작 제작사와 배급사는 돈을
+          못 받을 수 있습니다. 그래서 계산부터 자동화한 게 아니라 돈을 먼저
+          분리했습니다. 실제 배포 화면과 Solana Devnet 기록까지 같이 정리했습니다.
         </p>
         <div class="meta">
           <span>기준일 2026-08-03 KST</span>
@@ -255,25 +256,31 @@
       <main>
         <section id="summary">
           <div class="section-no">01 · EXECUTIVE SUMMARY</div>
-          <h2>무엇을 검증했는가</h2>
+          <h2>표는 팔렸는데, 왜 돈은 못 받나</h2>
           <p>
-            ChainCrew는 관객 결제금을 영화별 Escrow PDA에 격리하고, 정산 Agent가
-            승인 규칙과 발권 데이터를 검증한 뒤 정상 금액을 귀속하고 이상 금액만
-            <span class="mono">Disputed</span>로 분리하는 시스템입니다.
+            ChainCrew가 해결하려는 건 정산 계산이 조금 느린 문제가 아닙니다.
+            관객이 낸 돈이 운영자금과 섞이는 게 먼저 문제였습니다. 영화별 Escrow
+            PDA에 돈을 떼어 두고, Agent가 계약과 발권 기록을 확인합니다. 이상 없는
+            금액은 그대로 정산하고 걸린 금액만 <span class="mono">Disputed</span>로
+            남깁니다. 전부 멈추지는 않습니다.
           </p>
           <div class="flow" aria-label="핵심 E2E 흐름">
             <span>계약 추출</span><b>→</b><span>양측 승인</span><b>→</b>
             <span>티켓 입금</span><b>→</b><span>Agent 검증</span><b>→</b>
             <span>정산·부분 보류</span><b>→</b><span>대시보드</span>
           </div>
+          <div class="callout">
+            예를 들어 1,000 중 50만 이상하다면 950까지 같이 멈출 이유는 없습니다.
+            950은 계속 정산하고 50만 따로 묶습니다. 이 “부분 보류”가 핵심입니다.
+          </div>
           <div class="grid">
             <div class="card">
               <div class="status-line"><span class="badge pass">PASS</span><strong>핵심 체인 E2E</strong></div>
-              <p>실제 Devnet에서 Escrow 생성, 정산 2회, 역할별 분쟁 격리를 완료했습니다.</p>
+              <p>말로만 만든 흐름은 아닙니다. Devnet에서 Escrow 생성, 정산 2회, 역할별 분쟁 격리까지 직접 돌렸습니다.</p>
             </div>
             <div class="card">
               <div class="status-line"><span class="badge pass">PASS</span><strong>Cloud 통합</strong></div>
-              <p>웹·Agent Cloud Run, IAM 프록시, Gemini·KOBIS Secret 연결을 검증했습니다.</p>
+              <p>웹과 Agent를 Cloud Run에 올렸고 IAM 프록시, Gemini·KOBIS Secret도 실제 환경에서 확인했습니다.</p>
             </div>
             <div class="card">
               <div class="status-line"><span class="badge conditional">PARTIAL</span><strong>브라우저 구매</strong></div>
@@ -288,17 +295,18 @@
 
         <section id="purpose">
           <div class="section-no">02 · PURPOSE & CONTEXT</div>
-          <h2>왜 이 제품을 만들었는가</h2>
+          <h2>이미 번 돈인데도 못 받는 상황</h2>
           <p>
             국내 영화 티켓 매출은 극장 운영사나 예매 사업자에게 먼저 모인 뒤
             배급사·제작사·투자자에게 사후 정산됩니다. 중간 사업자에게 유동성 문제나
             회생·파산이 발생하면 이미 판매된 표의 권리자 몫까지 운영자금과 함께
-            묶일 수 있습니다. ChainCrew는 계산 자동화만이 아니라
-            <strong>결제 순간부터 자금을 영화별로 분리하는 구조</strong>를 제안합니다.
+            묶일 수 있습니다. 실제로 표가 팔렸다는 기록은 있는데 돈을 못 받는 일이
+            생깁니다. 이게 시작점이었습니다. ChainCrew는 계산 자동화보다 먼저
+            <strong>결제 순간부터 자금을 영화별로 분리하는 구조</strong>를 만들었습니다.
           </p>
           <div class="grid">
             <div class="card">
-              <h3>문제</h3>
+              <h3>기존에는</h3>
               <ul>
                 <li>티켓 매출과 운영자금의 혼합</li>
                 <li>계약 해석·공제·배분의 수작업 의존</li>
@@ -307,7 +315,7 @@
               </ul>
             </div>
             <div class="card">
-              <h3>해결</h3>
+              <h3>우리는 이렇게 바꿨습니다</h3>
               <ul>
                 <li>영화별 Solana Escrow PDA로 자금 격리</li>
                 <li>Gemini로 계약 후보 규칙과 근거 조항 구조화</li>
@@ -316,28 +324,29 @@
               </ul>
             </div>
           </div>
-          <h3>KOBIS 이후에 필요한 실행 계층</h3>
+          <h3>KOBIS가 있는데 이게 또 왜 필요한가</h3>
           <div class="flow">
             <span>KOBIS · 매출 발생 집계</span><b>+</b>
             <span>계약 규칙</span><b>+</b><span>자금 격리</span><b>+</b>
             <span>실제 정산·부분 보류</span>
           </div>
           <p>
-            KOBIS는 영화별 발권과 매출의 발생 사실을 집계하는 데이터 인프라입니다.
-            ChainCrew는 극장 발권 원장·솔루션 API를 1차 입력으로 받고 KOBIS를 사후
-            대조 자료로 사용해, 승인된 계약과 실제 자금 흐름을 연결하는 실행
-            인프라를 목표로 합니다.
+            KOBIS는 얼마가 팔렸는지 보여줍니다. 다만 계약서를 읽고 누구 몫인지
+            계산하거나, 돈을 따로 보관해서 실제로 지급하는 곳은 아닙니다.
+            ChainCrew는 극장 발권 원장·솔루션 API를 먼저 받고 KOBIS는 나중에
+            대조합니다. 보이는 매출을 실제 지급까지 이어 붙이는 쪽입니다.
           </p>
           <div class="callout">
-            <strong>제품 경계:</strong> 해커톤 데모는 Devnet USDC로 격리를 증명하지만,
-            상용 서비스는 관객에게 암호화폐를 강요하는 서비스가 아닙니다. 기존 원화
-            PG·신탁·에스크로 계좌와 결합하는 B2B 정산 인프라가 목표입니다.
+            <strong>여기서 오해하면 안 되는 부분:</strong> 데모는 Devnet USDC로
+            자금 격리를 보여줍니다. 그렇다고 실제 관객에게 코인 결제를 강요하겠다는
+            뜻은 아닙니다. 실서비스에서는 기존 원화 PG·신탁·에스크로 계좌 뒤에
+            붙는 B2B 정산 구조로 보는 게 맞습니다.
           </div>
         </section>
 
         <section id="flow">
           <div class="section-no">03 · END-TO-END FLOW</div>
-          <h2>제품 전체 플로우</h2>
+          <h2>돈이 들어온 뒤, 어디를 거치는지</h2>
           <div class="stage-grid" aria-label="제품 단계">
             <div class="stage"><em>STAGE 0</em><strong>계약 온보딩</strong><p>Gemini 추출·충돌 확인·양측 승인</p></div>
             <div class="stage"><em>STAGE 1</em><strong>티켓 결제</strong><p>Phantom 서명·Escrow deposit</p></div>
@@ -347,7 +356,7 @@
             <div class="stage"><em>STAGE 5</em><strong>온체인 실행</strong><p>settle_batch·mark_disputed</p></div>
             <div class="stage"><em>STAGE 6</em><strong>공개·인출</strong><p>근거·잔액·Explorer·claim</p></div>
           </div>
-          <h3>정산 판단 원칙</h3>
+          <h3>AI가 돈을 마음대로 나누지는 않습니다</h3>
           <table>
             <thead><tr><th>책임 주체</th><th>수행 내용</th><th>수행하지 않는 일</th></tr></thead>
             <tbody>
@@ -361,7 +370,7 @@
 
         <section id="architecture">
           <div class="section-no">04 · SYSTEM ARCHITECTURE</div>
-          <h2>배포·데이터 아키텍처</h2>
+          <h2>화면에서 체인까지, 실제 연결 구조</h2>
           <div class="architecture" role="img" aria-label="ChainCrew 시스템 아키텍처">
             <svg viewBox="0 0 1000 590" xmlns="http://www.w3.org/2000/svg">
               <defs>
@@ -414,7 +423,7 @@
 
         <section id="modules">
           <div class="section-no">05 · MODULE MAP</div>
-          <h2>모듈 단위 구조와 책임</h2>
+          <h2>누가 어디를 고치면 되는지</h2>
           <div class="tree">blockchain-hackathon/
 ├── apps/web/                 React 화면 + Express API + IAM Agent 프록시
 ├── apps/agent/               위험 검증 + 정산 판단 + Anchor 트랜잭션 실행
@@ -448,7 +457,7 @@
 
         <section id="demo">
           <div class="section-no">06 · DEMO & USAGE</div>
-          <h2>발표·사용 순서</h2>
+          <h2>발표에서는 이 순서로 보면 됩니다</h2>
           <ol>
             <li><strong>S0 충돌 계약서:</strong> PDF 업로드 → Gemini 추출 → 충돌 때문에 양측 승인 차단 확인</li>
             <li><strong>S0 정상 계약서:</strong> 무충돌 PDF 업로드 → 배급·상영 승인 → 규칙 해시 확정 확인</li>
@@ -456,10 +465,11 @@
             <li><strong>S6 결과:</strong> 기존 성공 트랜잭션·판정 근거·권리자별 상태를 대시보드와 Explorer로 설명</li>
           </ol>
           <div class="callout warning">
-            <strong>발표 안전 규칙:</strong> 현재 Escrow는 정산을 마쳐 pending이 0입니다.
-            새 Escrow를 시딩하지 않았다면 “정산일 도래” 버튼을 다시 누르지 않고 기존
-            성공 결과를 조회합니다. 실제 <span class="mono">init_escrow</span> UI 연동과
-            일부 대시보드 잔액은 구현 범위를 정확히 고지합니다.
+            <strong>발표 전에 이것만 확인:</strong> 현재 Escrow는 정산을 끝내서
+            pending이 0입니다. 새 Escrow를 준비하지 않았다면 “정산일 도래” 버튼을
+            다시 누르면 안 됩니다. 기존 성공 결과를 보여주면 됩니다. 실제
+            <span class="mono">init_escrow</span> UI 연동과 일부 대시보드 잔액은
+            아직 섞여 있으니 이 부분은 그냥 정확히 말하는 편이 낫습니다.
           </div>
           <h3>개발 환경 실행</h3>
           <table>
@@ -492,12 +502,12 @@
 
         <section id="matrix">
           <div class="section-no">08 · RESULT MATRIX</div>
-          <h2>시나리오별 결과</h2>
+          <h2>된 것과 아직 확인할 것</h2>
           <div class="callout">
-            <strong>표 읽는 법:</strong> PASS는 실제 Devnet 또는 라이브 API 증거가
-            남은 항목입니다. “수동 리허설 예정”은 보안상 사람의 지갑 승인이 필요한
-            단계이고, “실데이터·데모 혼합”은 화면 안에 두 종류의 데이터가 함께
-            있다는 뜻입니다. 코드 빌드 실패를 의미하지 않습니다.
+            <strong>표 읽는 법:</strong> PASS는 실제 Devnet 기록이나 라이브 API
+            응답을 확인한 항목입니다. “수동 리허설 예정”은 지갑에서 사람이 직접
+            눌러야 하는 단계입니다. “실데이터·데모 혼합”은 화면 안에 실제 응답과
+            고정된 데모 숫자가 같이 있다는 뜻이고요. 빌드가 실패했다는 얘기는 아닙니다.
           </div>
           <table>
             <thead><tr><th>ID</th><th>시나리오</th><th>결과</th><th>근거</th></tr></thead>
@@ -556,10 +566,11 @@
 
         <section id="chain">
           <div class="section-no">11 · ON-CHAIN EVIDENCE</div>
-          <h2>실제 Devnet 정산 증거</h2>
+          <h2>결국 체인에 뭐가 남았나</h2>
           <p>
-            아래 링크는 화면 목업이 아니라 Solana Devnet에 기록된 트랜잭션입니다.
-            기존 Escrow는 총 270 USDC 정산을 마쳐 현재 <span class="mono">pending=0</span>입니다.
+            아래 링크는 화면용 숫자가 아니라 Solana Devnet에 남은 트랜잭션입니다.
+            270 USDC를 넣었고 정상·이상 회차를 각각 처리했습니다. 기존 Escrow는
+            정산을 끝내서 지금은 <span class="mono">pending=0</span>입니다.
           </p>
           <ul class="tx-list">
             <li><strong>Escrow 생성</strong> — <a href="https://explorer.solana.com/tx/3rFNeWVUBv2iVNggDEgQuUh4mGiDhVBiM6hTfzTpGGs9ZckmERp4k71CAdV7tXhjyJBEKhN6Yb7U21dHg31wTt2x?cluster=devnet">Explorer에서 확인</a></li>
@@ -604,7 +615,7 @@
 
         <section id="limits">
           <div class="section-no">13 · LIMITS & NEXT ACTIONS</div>
-          <h2>완료 전 확인할 항목</h2>
+          <h2>이제 남은 건 많지 않습니다</h2>
           <table>
             <thead><tr><th>우선순위</th><th>조치</th><th>완료 기준</th></tr></thead>
             <tbody>
