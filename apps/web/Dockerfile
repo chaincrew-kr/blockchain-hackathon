@@ -14,6 +14,18 @@ RUN npm ci
 
 COPY apps/web apps/web
 COPY packages/schema packages/schema
+
+# Vite는 VITE_* 값을 런타임이 아니라 빌드 타임에 번들에 박아넣는다 — Cloud Run
+# 배포 시엔 반드시 devnet 값을 --build-arg로 넘겨야 한다 (cloudbuild.web.yaml
+# 참고). 안 넘기면 apps/web/src/lib/chain.ts의 기본값(localnet,
+# 127.0.0.1:8899)이 그대로 굳어서, Phantom을 설치해도 실제 결제가 실패한다.
+ARG VITE_SOLANA_RPC_URL=http://127.0.0.1:8899
+ARG VITE_SOLANA_CLUSTER=localnet
+ARG VITE_MOVIE_ID=indie-2026-001
+ENV VITE_SOLANA_RPC_URL=$VITE_SOLANA_RPC_URL
+ENV VITE_SOLANA_CLUSTER=$VITE_SOLANA_CLUSTER
+ENV VITE_MOVIE_ID=$VITE_MOVIE_ID
+
 RUN npm run build --workspace=@chaincrew/web
 
 FROM node:22-alpine AS server-deps
