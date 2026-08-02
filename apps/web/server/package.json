@@ -8,7 +8,13 @@
     "start": "tsx index.js"
   },
   "dependencies": {
-    "@chaincrew/ai-data": "*"
+    "@chaincrew/ai-data": "file:../../../packages/ai-data",
+    "@google/genai": "^2.14.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "google-auth-library": "^11.0.0",
+    "multer": "^2.2.0"
   },
   "devDependencies": {
     "tsx": "*"
