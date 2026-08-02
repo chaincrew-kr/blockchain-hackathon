@@ -317,7 +317,7 @@ gcloud scheduler jobs pause chaincrew-settlement-batch \
 - Cloud Run 서비스: `chaincrew-web`
 - URL: `https://chaincrew-web-612802760361.asia-northeast3.run.app`
 - 런타임 계정: `chaincrew-web@chaincrew-movie-escrow.iam.gserviceaccount.com`
-- 현재 접근 정책: **IAM 인증 필요**
+- 현재 접근 정책: **공개 URL + 애플리케이션 Basic Auth**
 
 `apps/web/Dockerfile`은 먼저 Vite로 React를 빌드한 뒤, 생성된 `dist`와 Express
 서버를 하나의 이미지에 넣는다. Express가 `/api/*`를 처리하고 그 밖의 GET 요청은
@@ -354,10 +354,10 @@ gcloud secrets versions list kobis-api-key \
   --project=chaincrew-movie-escrow
 ```
 
-현재 웹은 IAM 비공개 상태에서 `/health`와 React HTML 응답까지 검증했다. 일반
-심사 브라우저에 공개할 때는 `DEMO_AUTH_USER`와 `DEMO_AUTH_PASSWORD`를 함께
-설정한 뒤 Cloud Run의 비인증 접근을 허용한다. Basic Auth 없이 웹 전체를 공개하면
-누구나 Gemini·KOBIS 호출과 정산 프록시를 사용할 수 있으므로 금지한다.
+웹은 `DEMO_AUTH_USER`와 `DEMO_AUTH_PASSWORD`를 설정한 뒤 Cloud Run의 비인증
+접근을 허용했다. 무인증 요청은 `401`, Basic Auth 로그인 요청은 `200`을 반환한다.
+KOBIS 영화 정보 조회와 Gemini 데모 계약서 추출도 라이브 환경에서 각각 1회
+검증했다. Agent는 별도 서비스이며 계속 IAM 비공개다.
 
 ## 10. 앞으로 배포할 때의 체크리스트
 
@@ -388,15 +388,16 @@ gcloud secrets versions list kobis-api-key \
 - [ ] Scheduler 활성화 여부
 - [ ] 실패 시 확인할 Cloud Logging 위치
 
-## 11. 현재 남은 작업
+## 11. 현재 상태와 남은 작업
 
-Agent 배포와 웹의 IAM 프록시 연결은 완료됐다. 남은 작업은 다음과 같다.
+Agent 배포, 웹의 IAM 프록시 연결, API Secret 연결과 웹 공개 전환까지 완료됐다.
 
-- [ ] `gemini-api-key`, `kobis-api-key`에 실제 값 버전 추가
-- [ ] 두 Secret을 `chaincrew-web` 리비전에 연결
-- [ ] 데모용 Basic Auth 비밀번호를 Secret Manager에 등록
-- [ ] 인증이 설정된 것을 확인한 뒤 웹 서비스만 공개 전환
-- [ ] React 화면에서 Gemini·KOBIS 조회를 각각 1회 검증
+- [x] `gemini-api-key`, `kobis-api-key`에 실제 값 버전 추가
+- [x] 두 Secret을 `chaincrew-web` 리비전에 연결
+- [x] 데모용 Basic Auth 비밀번호를 Secret Manager에 등록
+- [x] 인증이 설정된 것을 확인한 뒤 웹 서비스만 공개 전환
+- [x] 라이브 서버에서 Gemini·KOBIS 조회를 각각 1회 검증
+- [ ] 팀 브라우저에서 화면 흐름과 데모 대본을 최종 리허설
 
 Agent 서비스는 계속 IAM 비공개로 유지한다. 공개되는 것은 Basic Auth가 적용된
 웹 서비스뿐이며, 웹 런타임 계정에만 Agent 호출 권한을 준다.
