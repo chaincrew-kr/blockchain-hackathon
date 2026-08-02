@@ -238,10 +238,47 @@
         nav { position: static; }
       }
       @media print {
-        body { background: white; }
-        .page { width: 100%; margin: 0; border: 0; box-shadow: none; }
+        @page { size: A4; margin: 14mm 12mm 16mm; }
+        html, body { background: white; font-size: 10pt; line-height: 1.48; }
+        body {
+          margin: 0;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .page { width: auto; margin: 0; border: 0; box-shadow: none; }
         nav { display: none; }
-        section, figure, table { break-inside: avoid; }
+        header {
+          min-height: 0;
+          padding: 13mm 12mm 12mm;
+          break-after: page;
+        }
+        header .lead { font-size: 12pt; }
+        .hero-cover { max-height: 128mm; object-fit: contain; }
+        main { padding: 0; }
+        section {
+          padding-top: 4mm;
+          break-before: page;
+          break-inside: auto;
+        }
+        section:first-child { break-before: auto; }
+        h1, h2, h3, .section-no { break-after: avoid-page; }
+        h2 { font-size: 25pt; }
+        h3 { margin-top: 7mm; font-size: 15pt; }
+        p, li { orphans: 3; widows: 3; }
+        .grid, .evidence-grid, .stage-grid { overflow: visible; }
+        .grid { gap: 3mm; }
+        .evidence-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3mm; }
+        .stage-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2mm; }
+        .stage { min-width: 0; }
+        .architecture { overflow: visible; }
+        .architecture svg { min-width: 0; }
+        .card, .callout, .step, figure, tr { break-inside: avoid-page; }
+        table { break-inside: auto; }
+        thead { display: table-header-group; }
+        tfoot { display: table-footer-group; }
+        .shot { box-shadow: none; }
+        .shot img { max-height: 235mm; object-fit: contain; }
+        footer { padding: 8mm 0 0; break-before: avoid-page; }
         a { color: inherit; }
       }
     </style>
