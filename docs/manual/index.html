@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChainCrew 사용자 매뉴얼</title>
+    <style>
+      :root {
+        --bg: #08090d;
+        --panel: #11131a;
+        --line: #292d39;
+        --ink: #f4f2ec;
+        --muted: #a6a8b3;
+        --accent: #9381ff;
+        --red: #e61e2d;
+        --ok: #5ad29a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 85% 0, #211b43 0, transparent 28%),
+          var(--bg);
+        font-family: Pretendard, "Apple SD Gothic Neo", system-ui, sans-serif;
+        line-height: 1.65;
+      }
+      a {
+        color: #b6aaff;
+      }
+      header,
+      main,
+      footer {
+        width: min(1120px, calc(100% - 40px));
+        margin: auto;
+      }
+      header {
+        padding: 76px 0 42px;
+      }
+      .eyebrow {
+        color: var(--accent);
+        letter-spacing: 0.12em;
+        font-weight: 800;
+      }
+      h1 {
+        margin: 8px 0 14px;
+        font-size: clamp(36px, 6vw, 68px);
+        line-height: 1.08;
+      }
+      h2 {
+        margin-top: 0;
+        font-size: 28px;
+      }
+      h3 {
+        margin-bottom: 6px;
+      }
+      .lead {
+        color: var(--muted);
+        font-size: 19px;
+        max-width: 820px;
+      }
+      .meta,
+      .notice,
+      .step,
+      .limits {
+        border: 1px solid var(--line);
+        background: rgba(17, 19, 26, 0.92);
+        border-radius: 18px;
+      }
+      .meta {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        overflow: hidden;
+      }
+      .meta div {
+        padding: 18px;
+        background: var(--panel);
+      }
+      .meta b {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+      nav {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 28px 0 42px;
+      }
+      nav a {
+        text-decoration: none;
+        border: 1px solid var(--line);
+        padding: 8px 12px;
+        border-radius: 999px;
+      }
+      .notice,
+      .limits {
+        padding: 20px 24px;
+        margin: 24px 0;
+      }
+      .notice strong {
+        color: #ffbdc3;
+      }
+      .limits strong {
+        color: #ffd38d;
+      }
+      .step {
+        padding: 28px;
+        margin: 28px 0 52px;
+      }
+      .step-no {
+        color: var(--accent);
+        font-weight: 900;
+        letter-spacing: 0.08em;
+      }
+      figure {
+        margin: 22px 0 0;
+      }
+      figure img {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid #3a3e4d;
+        display: block;
+      }
+      figcaption {
+        color: var(--muted);
+        margin-top: 12px;
+      }
+      ol {
+        padding-left: 24px;
+      }
+      li {
+        margin: 8px 0;
+      }
+      .badge {
+        display: inline-block;
+        min-width: 25px;
+        text-align: center;
+        color: white;
+        background: var(--red);
+        border-radius: 6px;
+        font-weight: 900;
+        margin-right: 6px;
+      }
+      .ok {
+        color: var(--ok);
+      }
+      code {
+        color: #c9c0ff;
+        background: #1a1d27;
+        padding: 2px 6px;
+        border-radius: 5px;
+      }
+      footer {
+        color: var(--muted);
+        padding: 20px 0 70px;
+        border-top: 1px solid var(--line);
+      }
+      @media (max-width: 760px) {
+        .meta {
+          grid-template-columns: 1fr 1fr;
+        }
+        .step {
+          padding: 18px;
+        }
+      }
+      @media print {
+        body {
+          background: white;
+          color: #111;
+        }
+        .step,
+        .meta,
+        .notice,
+        .limits {
+          break-inside: avoid;
+          background: white;
+        }
+        nav {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="eyebrow">CHAINCREW · MOVIE ESCROW</div>
+      <h1>독립영화 정산 데모<br />사용자 매뉴얼</h1>
+      <p class="lead">
+        예매 자금이 영화별 에스크로에 들어가고, 계약 규칙·정산 판정·부분 보류
+        근거가 공개되는 흐름을 실제 배포 화면으로 설명합니다.
+      </p>
+      <div class="meta">
+        <div><b>실행일</b>2026-08-02 KST</div>
+        <div><b>환경</b>Cloud Run · Solana Devnet</div>
+        <div><b>화면</b>Chrome 1440×1000</div>
+        <div><b>캡처</b>Selenium + Pillow</div>
+      </div>
+      <nav>
+        <a href="#purchase">1. 예매</a><a href="#wallet">2. 지갑</a
+        ><a href="#contract">3. 계약</a><a href="#dashboard">4. 정산</a
+        ><a href="#limits">현재 제한</a>
+      </nav>
+      <div class="notice">
+        <strong>빨간 표시의 의미:</strong> 캡처 후 눈대중으로 그린 것이
+        아닙니다. 자동화 스크립트가 실제 브라우저 요소의 좌표를 측정해 번호
+        순서대로 합성했습니다.
+      </div>
+    </header>
+    <main>
+      <section class="step" id="purchase">
+        <div class="step-no">STEP 01 · 관객</div>
+        <h2>상영 회차와 인원을 고릅니다</h2>
+        <ol>
+          <li><span class="badge">1</span>관람할 회차를 선택합니다.</li>
+          <li>
+            <span class="badge">2</span>인원을 조정하면 결제 금액이 자동으로
+            바뀝니다.
+          </li>
+          <li>
+            <span class="badge">3</span><b>Phantom 연결</b>을 눌러 지갑 연결을
+            요청합니다.
+          </li>
+          <li>
+            <span class="badge">4</span>연결 후 <b>결제하기</b>를 누르면 지갑
+            서명을 거쳐 <code>deposit</code> 트랜잭션을 만듭니다.
+          </li>
+        </ol>
+        <figure>
+          <img
+            src="shots/01-purchase.png"
+            alt="예매 화면의 회차, 인원, Phantom 연결, 결제 버튼 표시"
+          />
+          <figcaption>
+            결제 전에는 ‘지갑 미연결’ 상태이며 결제 버튼이 비활성화됩니다.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="step" id="wallet">
+        <div class="step-no">STEP 02 · 관객</div>
+        <h2>Phantom 지갑을 준비합니다</h2>
+        <ol>
+          <li>
+            <span class="badge">1</span>같은 브라우저에 Phantom 확장 프로그램을
+            설치하고 잠금을 해제합니다.
+          </li>
+          <li>
+            <span class="badge">2</span>확장 프로그램이 없으면 설치 안내가
+            표시됩니다. 모바일은 Phantom 앱 내부 브라우저를 사용합니다.
+          </li>
+        </ol>
+        <figure>
+          <img
+            src="shots/02-wallet-required.png"
+            alt="Phantom 미설치 오류 안내"
+          />
+          <figcaption>
+            자동 캡처용 Chrome에는 개인키를 주입하지 않았기 때문에 미설치 안내가
+            실제로 발생합니다.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="step" id="contract">
+        <div class="step-no">STEP 03 · 배급·상영 담당자</div>
+        <h2>상영계약서에서 정산 규칙을 추출합니다</h2>
+        <ol>
+          <li>
+            <span class="badge">1</span>상단 진행 단계에서 현재 위치를
+            확인합니다.
+          </li>
+          <li>
+            <span class="badge">2</span>PDF 상영계약서를 선택합니다. 원문은
+            온체인에 올리지 않습니다.
+          </li>
+          <li>
+            <span class="badge">3</span><b>Gemini로 추출</b>을 눌러
+            부율·수수료·무료 발권 한도와 근거 조항을 구조화합니다.
+          </li>
+        </ol>
+        <figure>
+          <img
+            src="shots/03-contract-upload.png"
+            alt="계약서 파일 선택과 Gemini 추출 버튼 표시"
+          />
+          <figcaption>파일을 선택해야 추출 버튼이 활성화됩니다.</figcaption>
+        </figure>
+      </section>
+
+      <section class="step">
+        <div class="step-no">STEP 04 · 배급·상영 담당자</div>
+        <h2>추출 근거와 충돌을 확인합니다</h2>
+        <ol>
+          <li>
+            <span class="badge">1</span>항목별 추출 값·근거 문장·신뢰도를 함께
+            확인합니다.
+          </li>
+          <li>
+            <span class="badge">2</span>충돌이 남아 있으면 양측 승인 버튼이
+            잠깁니다. 사람이 해결하기 전에는 규칙을 확정하지 않습니다.
+          </li>
+        </ol>
+        <figure>
+          <img
+            src="shots/04-contract-result.png"
+            alt="Gemini 계약 규칙 추출 결과와 충돌 안내"
+          />
+          <figcaption>
+            데모 계약서의 실제 Gemini Structured Output 결과입니다. 이 캡처를
+            만들 때 API 호출 1회가 발생했습니다.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="step" id="dashboard">
+        <div class="step-no">STEP 05 · 전 권리자</div>
+        <h2>정산 상태와 자금 불변식을 확인합니다</h2>
+        <ol>
+          <li>
+            <span class="badge">1</span>Pending → Verified → Allocated → Paid
+            상태와 Disputed 분기를 확인합니다. <b>정산일 도래</b>는 실제 Agent
+            호출 버튼입니다.
+          </li>
+          <li>
+            <span class="badge">2</span>총 유입·귀속·보류·지급·환불 금액을
+            확인합니다.
+          </li>
+          <li>
+            <span class="badge">3</span>각 자금 구획의 합이 총 유입과 같은지
+            불변식을 확인합니다.
+          </li>
+        </ol>
+        <figure>
+          <img
+            src="shots/05-dashboard-overview.png"
+            alt="대시보드 상태 흐름과 금액 요약"
+          />
+          <figcaption>
+            현재 잔액 스냅샷은 화면 목업입니다. 실제 Agent 판정 응답과 온체인
+            스냅샷 API의 완전한 통합은 별도 작업입니다.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="step">
+        <div class="step-no">STEP 06 · 전 권리자</div>
+        <h2>AI 판정 근거와 권리자별 잔액을 대조합니다</h2>
+        <ol>
+          <li>
+            <span class="badge">1</span>부분 보류 여부, 적용 임계값과 판정
+            근거를 확인합니다.
+          </li>
+          <li>
+            <span class="badge">2</span>극장·배급·제작·투자자의 지급 완료액과
+            인출 가능액, 트랜잭션 타임라인을 확인합니다.
+          </li>
+        </ol>
+        <figure>
+          <img
+            src="shots/06-dashboard-evidence.png"
+            alt="AI 판정 근거와 권리자별 잔액"
+          />
+          <figcaption>
+            배치 실행 전에는 ‘미리보기·목업’이라고 화면에 명시됩니다. 실제 실행
+            뒤에는 Agent 응답으로 교체됩니다.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="step">
+        <div class="step-no">STEP 07 · 데이터 검증</div>
+        <h2>데모 발권 데이터와 KOBIS 실데이터를 함께 봅니다</h2>
+        <ol>
+          <li>
+            <span class="badge">1</span>우리 데모의 일별 발권 건수를 확인합니다.
+          </li>
+          <li>
+            <span class="badge">2</span>KOBIS 오픈API에서 가져온 실존 독립영화
+            관객 수와 나란히 비교합니다.
+          </li>
+        </ol>
+        <figure>
+          <img
+            src="shots/07-dashboard-kobis.png"
+            alt="데모 발권과 KOBIS 관객 데이터 차트"
+          />
+          <figcaption>
+            KOBIS API 키는 브라우저에 노출되지 않고 Express 서버의 Secret
+            Manager 연결을 통해 사용됩니다.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="limits" id="limits">
+        <h2>현재 자동화하지 않은 단계</h2>
+        <ul>
+          <li>
+            <b>Phantom 서명·실제 결제:</b> 자동화 브라우저에 개인키를 넣지
+            않았습니다. 또한 현재 배포 번들은 Solana RPC가 localnet 기본값이어서
+            Devnet 재빌드가 먼저 필요합니다.
+          </li>
+          <li>
+            <b>정산 배치 재실행:</b> 기존 <code>indie-2026-001</code> Escrow는
+            이미 정산됐습니다. 신규 Escrow 없이 버튼을 누르지 않습니다.
+          </li>
+          <li>
+            <b>온체인 등록 버튼:</b> 백오피스 화면에서도 ‘B 연동 대기’로
+            비활성화되어 있습니다.
+          </li>
+          <li>
+            <b>대시보드 잔액:</b> 현재 일부는 목업이며 화면에 그 사실을
+            표시합니다.
+          </li>
+        </ul>
+        <p class="ok">
+          이 제한은 실패를 숨긴 것이 아니라, 실제 화면과 코드 상태를 기준으로
+          기록한 것입니다.
+        </p>
+      </section>
+    </main>
+    <footer>
+      ChainCrew — 박세령 · 정서윤 · 진규빈 · 최상아 · 자동 캡처 스크립트는
+      <code>docs/manual/tools/capture.py</code>
+    </footer>
+  </body>
+</html>
