@@ -315,9 +315,33 @@ gcloud scheduler jobs pause chaincrew-settlement-batch \
 웹 서비스 정보:
 
 - Cloud Run 서비스: `chaincrew-web`
+- Revision: `chaincrew-web-00006-kc8` (2026-08-02, Devnet 빌드 인자 반영)
 - URL: `https://chaincrew-web-612802760361.asia-northeast3.run.app`
 - 런타임 계정: `chaincrew-web@chaincrew-movie-escrow.iam.gserviceaccount.com`
 - 현재 접근 정책: **공개 URL + 애플리케이션 Basic Auth**
+
+### 프론트가 바라보는 클러스터
+
+Vite는 `VITE_*` 값을 런타임이 아니라 **빌드 타임**에 번들에 박는다. 따라서 Cloud
+Run 환경변수로는 클러스터를 바꿀 수 없고, `cloudbuild.web.yaml`의 `--build-arg`가
+유일한 설정 지점이다. 이 값이 비면 `apps/web/src/lib/chain.ts`의 기본값인
+localnet(`127.0.0.1:8899`)으로 굳어 Phantom 결제가 항상 실패한다.
+
+```text
+VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
+VITE_SOLANA_CLUSTER=devnet
+VITE_MOVIE_ID=indie-2026-001
+```
+
+재배포 후에는 라이브 번들을 직접 확인한다.
+
+```bash
+PW=$(gcloud secrets versions access 2 --secret=web-demo-password \
+  --project=chaincrew-movie-escrow)
+BASE=https://chaincrew-web-612802760361.asia-northeast3.run.app
+ASSET=$(curl -s -u "chaincrew:$PW" $BASE/ | grep -o '/assets/index-[^"]*\.js')
+curl -s -u "chaincrew:$PW" "$BASE$ASSET" | grep -c '127.0.0.1:8899'   # 0 이어야 한다
+```
 
 `apps/web/Dockerfile`은 먼저 Vite로 React를 빌드한 뒤, 생성된 `dist`와 Express
 서버를 하나의 이미지에 넣는다. Express가 `/api/*`를 처리하고 그 밖의 GET 요청은
@@ -397,7 +421,30 @@ Agent 배포, 웹의 IAM 프록시 연결, API Secret 연결과 웹 공개 전�
 - [x] 데모용 Basic Auth 비밀번호를 Secret Manager에 등록
 - [x] 인증이 설정된 것을 확인한 뒤 웹 서비스만 공개 전환
 - [x] 라이브 서버에서 Gemini·KOBIS 조회를 각각 1회 검증
+- [x] Devnet 빌드 인자를 넣어 재빌드·재배포하고 라이브 번들에서 확인
+      (`chaincrew-web-00006-kc8`, localnet 문자열 0건)
 - [ ] 팀 브라우저에서 화면 흐름과 데모 대본을 최종 리허설
+
+### 결제 시연에 남은 차단 사항
+
+Devnet 설정은 끝났지만, 실제 구매 트랜잭션에는 두 가지가 더 필요하다.
+
+1. **시연 브라우저에 Phantom 확장 설치·잠금 해제.** 없으면 `chain.ts`의
+   `WalletNotFoundError`가 바로 발생한다. 모바일은 Phantom 인앱 브라우저로 연다.
+2. **시연 지갑에 Devnet SOL과 테스트 USDC 지급.** SOL은 faucet으로 되지만,
+   USDC는 escrow가 쓰는 mint의 authority 서명이 필요하다.
+
+```text
+usdc mint      4SbQ9rufUJ9xKx4Xvjwo97pmzqn1rigyEYwaiJ5xKCrn
+mint authority cRHewAqaimXM1VPHJn3icCk7JGzRYJJGT1yT2PFeWDX
+escrow PDA     6dBxfuds5za9ekG7156Ryu61jyppgpe2XmH5Vv8rowm3
+escrow vault   3JHN5vyYYGADRXq4CC4hQ2WfKSWDeD9a1NGT42iec5Eq
+```
+
+이 mint authority 키페어는 D의 `.secrets/`에도, Secret Manager에도 없다.
+`tools/devnet-seed`를 만든 **B 정서윤**에게 시연 지갑 주소를 전달해 민팅을
+요청하거나, 키페어를 안전한 경로로 전달받아야 한다. escrow 자체의 `authority`는
+Agent 지갑(`28jf5Zvid…`)이라 정산 호출은 D가 그대로 할 수 있다.
 
 Agent 서비스는 계속 IAM 비공개로 유지한다. 공개되는 것은 Basic Auth가 적용된
 웹 서비스뿐이며, 웹 런타임 계정에만 Agent 호출 권한을 준다.
