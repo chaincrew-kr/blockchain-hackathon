@@ -1,0 +1,11 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file
+      - apps/agent/Dockerfile
+      - --tag
+      - asia-northeast3-docker.pkg.dev/$PROJECT_ID/chaincrew/agent:devnet-e2e
+      - .
+images:
+  - asia-northeast3-docker.pkg.dev/$PROJECT_ID/chaincrew/agent:devnet-e2e

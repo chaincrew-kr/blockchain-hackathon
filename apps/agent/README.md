@@ -22,6 +22,20 @@ npm run dev:agent   # 루트에서 실행 → http://localhost:4030/health
 npm run chain:inspect --workspace @chaincrew/agent
 ```
 
+## Cloud Run 빌드
+
+모노레포 루트를 빌드 컨텍스트로 사용합니다. Agent 키는 이미지에 넣지 않고
+Secret Manager에서 런타임 파일로 마운트합니다.
+
+```bash
+gcloud builds submit --config=cloudbuild.agent.yaml . \
+  --project=chaincrew-movie-escrow
+```
+
+현재 서비스 `chaincrew-agent`는 Agent 서명 엔드포인트를 보호하기 위해 IAM 인증
+전용입니다. 공개 웹에서 직접 호출하려면 배치 엔드포인트 인증을 먼저 추가해야
+합니다.
+
 ## 규칙
 
 - 입출력 타입은 전부 [`@chaincrew/schema`](../../packages/schema/src/index.ts)에서
