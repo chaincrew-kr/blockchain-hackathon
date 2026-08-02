@@ -150,6 +150,8 @@
       .shot img { display: block; width: 100%; height: auto; background: #ddd; }
       .shot figcaption { padding: 14px 18px 16px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
       .shot figcaption strong { color: var(--ink); }
+      .evidence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+      .evidence-grid .shot { margin: 10px 0 24px; }
       .status-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
       .tx-list { list-style: none; margin: 14px 0; padding: 0; }
       .tx-list li { padding: 12px 0; border-bottom: 1px dashed var(--line); }
@@ -231,6 +233,7 @@
         header, main, footer { padding-left: 20px; padding-right: 20px; }
         header { padding-top: 46px; }
         .grid { grid-template-columns: 1fr; }
+        .evidence-grid { grid-template-columns: 1fr; }
         th, td { padding: 10px 8px; font-size: 12px; }
         nav { position: static; }
       }
@@ -329,6 +332,16 @@
             참고: <a href="https://kifv.org/725">영화인연대 입장문</a> ·
             <a href="https://www.yna.co.kr/view/AKR20260717054700005">연합뉴스 보도</a>
           </p>
+          <div class="evidence-grid" aria-label="미지급 정산 문제 보도 근거">
+            <figure class="shot">
+              <a href="https://kifv.org/725"><img src="{{IMG_KIFV_ARTICLE}}" alt="영화인연대 미지급 정산금 입장문 화면" /></a>
+              <figcaption><strong>영화인연대 입장문.</strong> 미지급 정산금을 개별 채권 문제가 아니라 제작·배급·상영의 순환 구조 문제로 규정했습니다. 2026-07-09 확인.</figcaption>
+            </figure>
+            <figure class="shot">
+              <a href="https://www.yna.co.kr/view/AKR20260717054700005"><img src="{{IMG_YONHAP_ARTICLE}}" alt="메가박스 미지급 정산금 연합뉴스 기사 화면" /></a>
+              <figcaption><strong>연합뉴스 보도.</strong> 배급사 미지급금 약 150억 원과 위탁상영관 피해 규모를 보도했습니다. 2026-07-19 송고.</figcaption>
+            </figure>
+          </div>
           <div class="grid">
             <div class="card">
               <h3>기존에는</h3>
@@ -363,13 +376,29 @@
           </p>
           <h3>현장에서는 데이터가 어떻게 움직이나</h3>
           <p>
-            씨네큐브 실무 답변도 확인했습니다. 영화·상영일·회차별 관객 수와 매출,
-            개별 거래의 유료·무료·할인·환불 여부는 발권 시스템에서 구분해 볼 수
-            있었습니다. 극장은 Excel로 뽑을 수 있고, 발권 솔루션 업체는 API 제공도
-            가능한 구조였습니다. 다만 KOBIS 전송은 상영일 다음 날 새벽 일괄
-            처리였고, 할인·쿠폰을 반영한 유효매출 기준은 극장마다 달라질 수
-            있었습니다.
+            검색 자료만으로 설계를 확정하지 않기 위해 독립·예술영화관 3곳을 대상으로
+            같은 질문지로 서면 인터뷰를 진행했습니다. 발권 데이터의 단위, 유료·무료·
+            할인·환불 구분, Excel·API 추출, KOBIS 전송 주기와 실제 정산 기준을 물었습니다.
+            아래에는 공개 가능한 범위에서 질문서와 씨네큐브 실무 회신을 대표 사례로
+            실었습니다.
           </p>
+          <p>
+            회신에서는 영화·상영일·회차별 관객 수와 매출, 개별 거래의 유료·무료·
+            할인·환불 여부를 발권 시스템에서 구분해 볼 수 있었습니다. 극장은 Excel로
+            뽑을 수 있고 발권 솔루션 업체는 API 제공도 가능한 구조였습니다. 다만 KOBIS
+            전송은 상영일 다음 날 새벽 일괄 처리였고, 할인·쿠폰을 반영한 유효매출 기준은
+            극장마다 달라질 수 있었습니다.
+          </p>
+          <div class="evidence-grid" aria-label="독립영화관 서면 인터뷰 자료">
+            <figure class="shot">
+              <img src="{{IMG_CINEMA_QUESTIONNAIRE}}" alt="독립영화관에 전달한 발권·정산 질문서" />
+              <figcaption><strong>현장 질문서.</strong> 민감한 매출 원본이 아니라, 실제로 어떤 항목을 수집하고 어떤 절차로 처리하는지 물었습니다.</figcaption>
+            </figure>
+            <figure class="shot">
+              <img src="{{IMG_CINECUBE_RESPONSE}}" alt="씨네큐브 발권·KOBIS·정산 방식 회신" />
+              <figcaption><strong>씨네큐브 회신.</strong> 회차별 저장, 거래별 상태 구분, Excel 추출, 익일 KOBIS 전송과 영화별 계약 가능성을 확인했습니다.</figcaption>
+            </figure>
+          </div>
           <table>
             <thead><tr><th>확인한 사실</th><th>제품 설계에 반영한 방식</th></tr></thead>
             <tbody>
@@ -813,6 +842,21 @@
               <tr><td>제도·정책</td><td>표준상영계약의 핵심 워터폴을 코드로 구현</td><td>전자금융, 세무, 개인정보, KYC·AML와 신탁 구조 검토</td></tr>
             </tbody>
           </table>
+          <h3>3개 영화관 서면 인터뷰 이후 개발 우선순위</h3>
+          <p>
+            현장 질의에서 가장 크게 바뀐 가정은 두 가지였습니다. KOBIS가 결제 직후의
+            실시간 원장은 아닐 수 있다는 점, 그리고 “유효매출” 산식이 모든 극장에서
+            같지 않다는 점입니다. 따라서 다음 개발은 체인 기능을 더 늘리기보다 실제
+            발권 데이터를 안정적으로 받아 영화별 계약에 맞추는 작업부터 진행합니다.
+          </p>
+          <div class="steps" aria-label="현장 인터뷰 반영 개발 순서">
+            <div class="step"><strong>익명 발권 Excel 샘플 확보</strong><p>3개 영화관의 실제 컬럼 차이를 비교하고 개인정보 없이 회차·거래·환불을 연결할 수 있는 최소 필드를 확정합니다.</p></div>
+            <div class="step"><strong>Excel 업로드 어댑터부터 파일럿</strong><p>별도 시스템 교체 없이 현장 담당자가 내보낸 파일을 공통 TicketEvent로 정규화합니다. 실패 행과 누락 필드도 화면에서 확인하게 합니다.</p></div>
+            <div class="step"><strong>발권 솔루션 API 확인</strong><p>업체별 인증, 호출 주기, 원거래·환불 연결 방식과 비용을 확인하고 Excel과 같은 결과가 나오는 계약 테스트를 만듭니다.</p></div>
+            <div class="step"><strong>KOBIS 익일 대조 작업 분리</strong><p>회차 정산의 유일한 입력으로 쓰지 않고, 다음 날 집계가 들어오면 원장과 차이를 확인하는 재검증 단계로 둡니다.</p></div>
+            <div class="step"><strong>영화별 유효매출 정책 버전화</strong><p>할인·쿠폰·무료표를 어떤 금액으로 정산할지 계약 특약에 넣고, 변경 전후 규칙과 적용 회차를 구분합니다.</p></div>
+            <div class="step"><strong>한 극장·한 영화 실무 파일럿</strong><p>실제 정산 담당자가 계약 승인부터 대조, 부분 보류와 권리자 확인까지 수행하고 소요 시간과 오탐을 측정합니다.</p></div>
+          </div>
           <div class="callout warning">
             이번 결과물은 Devnet 기반 기술 MVP입니다. 메인넷 자금과 실제 관객의
             개인정보를 다루지 않았고 법률·세무 처리를 대신하지 않습니다. 대신 계약
