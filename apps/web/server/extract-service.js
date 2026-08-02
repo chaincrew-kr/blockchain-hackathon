@@ -16,7 +16,16 @@ const schema = JSON.parse(
   ),
 );
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let ai;
+
+function getAi() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey?.trim()) {
+    throw new Error("GEMINI_API_KEY가 설정되지 않았습니다.");
+  }
+  ai ??= new GoogleGenAI({ apiKey });
+  return ai;
+}
 
 /**
  * @param {Buffer} pdfBuffer - 업로드된 계약서 PDF의 바이너리
@@ -25,7 +34,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 export async function extractContractRules(pdfBuffer) {
   const pdfBase64 = pdfBuffer.toString("base64");
 
-  const response = await ai.models.generateContent({
+  const response = await getAi().models.generateContent({
     model: "gemini-3.5-flash",
     contents: [
       {

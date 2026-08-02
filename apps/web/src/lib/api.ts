@@ -67,7 +67,13 @@ export interface ExtractionApiResponse {
 
 // ── 계약서 추출 ────────────────────────────────────────────────────────
 
-const API_BASE = "http://localhost:8787"; // TODO: 배포 시 환경변수(VITE_API_URL)로 교체
+// 통합 Cloud Run에서는 빈 문자열(동일 Origin), 분리 배포·로컬 Vite에서는
+// VITE_API_URL로 Express 서버 주소를 지정한다.
+const API_BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
+
+function apiUrl(path: string): URL {
+  return new URL(`${API_BASE}${path}`, window.location.origin);
+}
 
 /** 계약서 PDF 파일을 서버에 올려 정산 규칙을 추출한다. */
 export async function extractContract(
@@ -110,7 +116,7 @@ export interface KobisDailyPoint {
 export async function fetchKobisMovieInfo(
   movieCd?: string,
 ): Promise<KobisMovieInfo> {
-  const url = new URL(`${API_BASE}/api/kobis/movie-info`);
+  const url = apiUrl("/api/kobis/movie-info");
   if (movieCd) url.searchParams.set("movieCd", movieCd);
 
   const res = await fetch(url.toString());
@@ -126,7 +132,7 @@ export async function fetchKobisDaily(
   movieCd?: string,
   days = 7,
 ): Promise<KobisDailyPoint[]> {
-  const url = new URL(`${API_BASE}/api/kobis/daily`);
+  const url = apiUrl("/api/kobis/daily");
   if (movieCd) url.searchParams.set("movieCd", movieCd);
   url.searchParams.set("days", String(days));
 

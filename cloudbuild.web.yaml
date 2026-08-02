@@ -1,0 +1,11 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file
+      - apps/web/Dockerfile
+      - --tag
+      - asia-northeast3-docker.pkg.dev/$PROJECT_ID/chaincrew/web:demo
+      - .
+images:
+  - asia-northeast3-docker.pkg.dev/$PROJECT_ID/chaincrew/web:demo
