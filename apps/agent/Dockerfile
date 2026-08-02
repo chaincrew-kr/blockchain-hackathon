@@ -18,6 +18,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY apps/agent/package.json apps/agent/
 COPY apps/web/package.json apps/web/
+COPY packages/ai-data/package.json packages/ai-data/
 COPY packages/schema/package.json packages/schema/
 COPY tools/wallet/package.json tools/wallet/
 
@@ -33,6 +34,7 @@ ENV PORT=4030
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
+COPY packages/ai-data packages/ai-data
 COPY packages/schema packages/schema
 COPY apps/agent/package.json apps/agent/
 COPY apps/agent/src apps/agent/src
