@@ -2,21 +2,21 @@
 // 브라우저가 정산 Agent(Cloud Run, IAM 인증 필요)를 직접 못 부르게 하고
 // 이 서버가 대신 인증해서 호출한다 (docs/ponyo_work/GCP_DEPLOYMENT_GUIDE.md §7).
 //
-// WEB_PROXY_KEY_PATH가 없으면(로컬 개발) 인증 없이 로컬 agent에 그냥 fetch —
-// 로컬 agent는 IAM 보호가 없으므로 이걸로 충분하고, Cloud Run 배포본에서만
-// 서비스 계정 키로 ID 토큰을 붙인다.
+// 로컬 agent는 인증 없이 fetch하고, Cloud Run 배포본은 연결된 런타임 서비스
+// 계정(ADC)으로 ID 토큰을 발급한다. 로컬에서 원격 Agent를 시험할 때만 선택적으로
+// WEB_PROXY_KEY_PATH를 쓸 수 있으며, 운영에서는 JSON 키 파일을 만들지 않는다.
 import { GoogleAuth } from "google-auth-library";
 
 const AGENT_BASE_URL = process.env.AGENT_BASE_URL || "http://localhost:4030";
 const keyFile = process.env.WEB_PROXY_KEY_PATH;
+const useIamAuth = process.env.AGENT_USE_IAM_AUTH === "true";
 
 let idTokenClientPromise;
 
 function getIdTokenClient() {
-  if (!keyFile) return null;
-  idTokenClientPromise ??= new GoogleAuth({ keyFile }).getIdTokenClient(
-    AGENT_BASE_URL,
-  );
+  if (!useIamAuth) return null;
+  const auth = keyFile ? new GoogleAuth({ keyFile }) : new GoogleAuth();
+  idTokenClientPromise ??= auth.getIdTokenClient(AGENT_BASE_URL);
   return idTokenClientPromise;
 }
 
