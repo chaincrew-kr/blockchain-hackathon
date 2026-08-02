@@ -26,6 +26,9 @@
 결과와 근거는 A의 대시보드에 전달하고, 최종 서비스는 Cloud Run 라이브 URL에서
 실행한다.
 
+GCP 서비스의 의미, 실제 배포 순서, Secret과 IAM 보안, A 웹 연결 방식은
+[GCP 배포 이해 가이드](GCP_DEPLOYMENT_GUIDE.md)에 정리되어 있다.
+
 ```text
 배치 트리거
   → 온체인 이력 조회
