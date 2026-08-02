@@ -244,7 +244,111 @@ async function main() {
   console.log(`극장 지갑 잔고     ${usdc(balFinal.amount)} USDC (변화 없음)\n`);
 
   const escrowFinal = await program.account.movieEscrow.fetch(escrowPda);
+
+  // ── 분쟁 시나리오 ───────────────────────────────────────
   line();
+  console.log("분쟁 발생 — 제작사 몫 일부 보류");
+  line();
+
+  const producerAta = await getOrCreateAssociatedTokenAccount(
+    provider.connection,
+    wallet.payer,
+    usdcMint,
+    producer.publicKey,
+  );
+
+  const prodAlloc = await program.account.allocation.fetch(allocPda(2));
+  const DISPUTE = new BN(20_000_000); // 20 USDC 보류
+
+  console.log(`제작사 확정 몫     ${usdc(prodAlloc.claimable)} USDC`);
+  console.log(`보류 금액          ${usdc(DISPUTE)} USDC`);
+
+  await program.methods
+    .markDisputed(DISPUTE)
+    .accounts({
+      authority: wallet.publicKey,
+      escrow: escrowPda,
+      allocation: allocPda(2),
+    })
+    .rpc();
+
+  const prodMarked = await program.account.allocation.fetch(allocPda(2));
+  const escrowMarked = await program.account.movieEscrow.fetch(escrowPda);
+  const available =
+    Number(prodMarked.claimable) - Number(prodMarked.claimed) - Number(prodMarked.disputed);
+
+  console.log(`제작사 claimable   ${usdc(prodMarked.claimable)} USDC`);
+  console.log(`제작사 disputed    0 → ${usdc(prodMarked.disputed)} USDC`);
+  console.log(`지금 찾을 수 있는  ${usdc(available)} USDC`);
+  console.log(`금고 disputed      ${usdc(escrowMarked.disputed)} USDC`);
+
+  line();
+  console.log("보류 중 전액 인출 시도");
+  line();
+
+  try {
+    await program.methods
+      .claim(prodAlloc.claimable)
+      .accounts({
+        beneficiary: producer.publicKey,
+        escrow: escrowPda,
+        allocation: allocPda(2),
+        beneficiaryTokenAccount: producerAta.address,
+        vault: escrowMarked.vault,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .signers([producer])
+      .rpc();
+    console.log("문제 — 거부됐어야 함");
+  } catch (e: any) {
+    const msg = String(e?.error?.errorMessage ?? e?.message ?? e);
+    console.log(`거부됨 — ${msg.split("\n")[0]}`);
+    console.log();
+  }
+
+  line();
+  console.log("분쟁 해결 — 승인");
+  line();
+
+  const rSig = await program.methods
+    .resolveDispute(true)
+    .accounts({
+      authority: wallet.publicKey,
+      escrow: escrowPda,
+      allocation: allocPda(2),
+    })
+    .rpc();
+
+  const prodResolved = await program.account.allocation.fetch(allocPda(2));
+  const escrowResolved = await program.account.movieEscrow.fetch(escrowPda);
+
+  console.log(`제작사 disputed    ${usdc(prodMarked.disputed)} → ${usdc(prodResolved.disputed)}`);
+  console.log(`금고 disputed      ${usdc(escrowMarked.disputed)} → ${usdc(escrowResolved.disputed)}`);
+  console.log(`금고 allocated     ${usdc(escrowMarked.allocated)} → ${usdc(escrowResolved.allocated)}`);
+  console.log(`\n${explorer(rSig)}`);
+
+  line();
+  console.log("해제 후 전액 인출");
+  line();
+
+  await program.methods
+    .claim(prodResolved.claimable)
+    .accounts({
+      beneficiary: producer.publicKey,
+      escrow: escrowPda,
+      allocation: allocPda(2),
+      beneficiaryTokenAccount: producerAta.address,
+      vault: escrowResolved.vault,
+      tokenProgram: TOKEN_PROGRAM_ID,
+    })
+    .signers([producer])
+    .rpc();
+
+  const prodBal = await getAccount(provider.connection, producerAta.address);
+  console.log(`제작사 지갑 잔고   0 → ${usdc(prodBal.amount)} USDC`);
+
+  // ──────────────────────────────────────────────────────────
+
   console.log(`검산  ${usdc(inv(escrowFinal))} = 입금 ${usdc(escrowFinal.grossIn)}`);
 }
 
