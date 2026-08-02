@@ -4,6 +4,15 @@ steps:
       - build
       - --file
       - apps/web/Dockerfile
+      # Vite가 빌드 타임에 박아넣는 값들 — 여기가 비면 앱이 localnet(127.0.0.1)을
+      # 바라보게 굳어서, 배포된 사이트에서 Phantom 결제가 항상 실패한다.
+      # 팀 전용 RPC(Helius 등)가 있으면 아래 devnet 공개 RPC 대신 그걸 쓴다.
+      - --build-arg
+      - VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
+      - --build-arg
+      - VITE_SOLANA_CLUSTER=devnet
+      - --build-arg
+      - VITE_MOVIE_ID=indie-2026-001
       - --tag
       - asia-northeast3-docker.pkg.dev/$PROJECT_ID/chaincrew/web:demo
       - .
