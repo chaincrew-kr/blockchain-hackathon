@@ -17,10 +17,10 @@ COPY packages/schema packages/schema
 
 # Vite는 VITE_* 값을 런타임이 아니라 빌드 타임에 번들에 박아넣는다 — Cloud Run
 # 배포 시엔 반드시 devnet 값을 --build-arg로 넘겨야 한다 (cloudbuild.web.yaml
-# 참고). 안 넘기면 apps/web/src/lib/chain.ts의 기본값(localnet,
-# 127.0.0.1:8899)이 그대로 굳어서, Phantom을 설치해도 실제 결제가 실패한다.
-ARG VITE_SOLANA_RPC_URL=http://127.0.0.1:8899
-ARG VITE_SOLANA_CLUSTER=localnet
+# 참고). 직접 Docker 이미지를 빌드해도 데모가 localnet으로 굳지 않도록
+# 기본값 역시 Devnet으로 둔다.
+ARG VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
+ARG VITE_SOLANA_CLUSTER=devnet
 ARG VITE_MOVIE_ID=indie-2026-001
 ENV VITE_SOLANA_RPC_URL=$VITE_SOLANA_RPC_URL
 ENV VITE_SOLANA_CLUSTER=$VITE_SOLANA_CLUSTER
