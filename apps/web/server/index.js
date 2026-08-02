@@ -11,6 +11,7 @@ import multer from "multer";
 import cors from "cors";
 import { extractContractRules } from "./extract-service.js";
 import { fetchMovieInfo, fetchDailyAudience } from "./kobis-service.js";
+import { proxyToAgent } from "./agent-proxy.js";
 
 // KOBIS 대조 대상 — 「어떻게 해야 했을까?」(2026-07-29 개봉)
 const DEFAULT_MOVIE_CD = "20264148";
@@ -82,6 +83,44 @@ app.get("/api/kobis/daily", async (req, res) => {
     res
       .status(500)
       .json({ error: "KOBIS 일별 데이터 조회 실패", detail: String(err) });
+  }
+});
+
+// 정산 배치 — IAM 인증이 필요한 Cloud Run Agent를 이 서버가 대신 호출한다
+// (agent-proxy.js). 브라우저에는 Agent 키·GCP 키가 절대 노출되지 않는다.
+app.post("/api/batch/trigger", async (req, res) => {
+  try {
+    const { status, body } = await proxyToAgent("/api/batch/trigger", {
+      method: "POST",
+    });
+    res.status(status).json(body);
+  } catch (err) {
+    console.error("[batch/trigger] 프록시 실패:", err);
+    res.status(502).json({
+      error: {
+        code: "chain_call_failed",
+        message: "정산 에이전트에 연결하지 못했습니다.",
+        requestId: crypto.randomUUID(),
+      },
+    });
+  }
+});
+
+app.post("/api/batch/reset", async (req, res) => {
+  try {
+    const { status, body } = await proxyToAgent("/api/batch/reset", {
+      method: "POST",
+    });
+    res.status(status).json(body);
+  } catch (err) {
+    console.error("[batch/reset] 프록시 실패:", err);
+    res.status(502).json({
+      error: {
+        code: "chain_call_failed",
+        message: "정산 에이전트에 연결하지 못했습니다.",
+        requestId: crypto.randomUUID(),
+      },
+    });
   }
 });
 

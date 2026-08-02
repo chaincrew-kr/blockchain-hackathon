@@ -140,11 +140,13 @@ export async function fetchKobisDaily(
   return res.json();
 }
 
-// ── 정산 배치 (apps/agent) ────────────────────────────────────────────
+// ── 정산 배치 (apps/agent, apps/web/server를 거쳐 호출) ─────────────────
 //
-// 상대 경로("/api/...")로 부른다 — vite.config.ts의 dev proxy가
-// "/api" 요청을 apps/agent(4030)로 넘긴다. 프로덕션 빌드에서는 이 프록시가
-// 없으므로 별도 리버스 프록시나 절대 URL 설정이 필요하다 (배포 시 TODO).
+// apps/agent를 직접 부르지 않고 apps/web/server(API_BASE)를 거친다 —
+// 배포된 Agent(Cloud Run)는 IAM 인증이 필요해서 브라우저가 직접 못 부르고,
+// 이 서버가 서비스 계정으로 대신 인증한다 (agent-proxy.js,
+// docs/ponyo_work/GCP_DEPLOYMENT_GUIDE.md §7). 로컬 개발 중엔 web/server가
+// 인증 없이 로컬 agent(4030)로 그대로 넘겨준다.
 
 export class AgentApiError extends Error {
   constructor(
@@ -158,7 +160,7 @@ export class AgentApiError extends Error {
 }
 
 async function agentFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init);
+  const res = await fetch(`${API_BASE}${path}`, init);
   if (!res.ok) {
     const body: Partial<ApiErrorResponse> = await res.json().catch(() => ({}));
     if (body.error) {
