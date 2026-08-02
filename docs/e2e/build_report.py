@@ -16,12 +16,11 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
 DOCS = HERE.parent
 TEMPLATE = HERE / "report.template.html"
-OUTPUT = HERE / "ChainCrew_E2E_Report.html"
+OUTPUT = HERE / "ChainCrew_Hackathon_Submission.html"
 
 IMAGES = {
     "IMG_COVER": REPO / "assets/readme/repository-cover.png",
     "IMG_PURCHASE": DOCS / "manual/shots/01-purchase.png",
-    "IMG_WALLET": DOCS / "manual/shots/02-wallet-required.png",
     "IMG_CONTRACT_UPLOAD": DOCS / "manual/shots/03-contract-upload.png",
     "IMG_CONTRACT_RESULT": DOCS / "manual/shots/04-contract-result.png",
     "IMG_DASHBOARD": DOCS / "manual/shots/05-dashboard-overview.png",
