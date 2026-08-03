@@ -402,15 +402,48 @@ blockchain-hackathon/
 
 ## Tech Stack
 
-| Area          | Technology                                              |
-| ------------- | ------------------------------------------------------- |
-| Frontend      | React 19 · TypeScript · Vite                            |
-| Agent Backend | Node.js · Express 5 · TypeScript                        |
-| AI            | Gemini Structured Output                                |
-| Blockchain    | Solana · Anchor 0.31 · Rust · PDA                       |
-| Payment       | Phantom Wallet Adapter · Solana Devnet USDC             |
-| Cloud         | Google Cloud Run · Secret Manager · Scheduler · Logging |
-| Testing       | Vitest · TypeScript · ESLint · Prettier                 |
+<div align="center">
+
+<strong>Frontend &amp; Wallet</strong><br />
+<img src="https://img.shields.io/badge/React_19-20232A?style=for-the-badge&amp;logo=react&amp;logoColor=61DAFB" alt="React 19" />
+<img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&amp;logo=typescript&amp;logoColor=white" alt="TypeScript" />
+<img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&amp;logo=vite&amp;logoColor=white" alt="Vite" />
+<img src="https://img.shields.io/badge/Phantom-AB9FF2?style=for-the-badge&amp;logo=phantom&amp;logoColor=white" alt="Phantom Wallet" />
+
+<br /><br />
+
+<strong>Agent &amp; AI</strong><br />
+<img src="https://img.shields.io/badge/Node.js-5FA04E?style=for-the-badge&amp;logo=nodedotjs&amp;logoColor=white" alt="Node.js" />
+<img src="https://img.shields.io/badge/Express_5-111111?style=for-the-badge&amp;logo=express&amp;logoColor=white" alt="Express 5" />
+<img src="https://img.shields.io/badge/Gemini-8E75B2?style=for-the-badge&amp;logo=googlegemini&amp;logoColor=white" alt="Gemini" />
+<img src="https://img.shields.io/badge/Structured_Output-6C5CE7?style=for-the-badge" alt="Gemini Structured Output" />
+
+<br /><br />
+
+<strong>On-chain Settlement</strong><br />
+<img src="https://img.shields.io/badge/Solana_Devnet-14F195?style=for-the-badge&amp;logo=solana&amp;logoColor=111111" alt="Solana Devnet" />
+<img src="https://img.shields.io/badge/Anchor_0.31-5965E8?style=for-the-badge&amp;logo=anchor&amp;logoColor=white" alt="Anchor 0.31" />
+<img src="https://img.shields.io/badge/Rust-CE422B?style=for-the-badge&amp;logo=rust&amp;logoColor=white" alt="Rust" />
+<img src="https://img.shields.io/badge/PDA_Escrow-9945FF?style=for-the-badge" alt="PDA Escrow" />
+<img src="https://img.shields.io/badge/Devnet_USDC-2775CA?style=for-the-badge&amp;logo=usdcoin&amp;logoColor=white" alt="Devnet USDC" />
+
+<br /><br />
+
+<strong>Google Cloud</strong><br />
+<img src="https://img.shields.io/badge/Cloud_Run-4285F4?style=for-the-badge&amp;logo=googlecloud&amp;logoColor=white" alt="Google Cloud Run" />
+<img src="https://img.shields.io/badge/Secret_Manager-EA4335?style=for-the-badge&amp;logo=googlecloud&amp;logoColor=white" alt="Secret Manager" />
+<img src="https://img.shields.io/badge/Scheduler-F9AB00?style=for-the-badge&amp;logo=googlecloud&amp;logoColor=white" alt="Cloud Scheduler" />
+<img src="https://img.shields.io/badge/Logging-34A853?style=for-the-badge&amp;logo=googlecloud&amp;logoColor=white" alt="Cloud Logging" />
+
+<br /><br />
+
+<strong>Quality</strong><br />
+<img src="https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&amp;logo=vitest&amp;logoColor=white" alt="Vitest" />
+<img src="https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&amp;logo=eslint&amp;logoColor=white" alt="ESLint" />
+<img src="https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&amp;logo=prettier&amp;logoColor=111111" alt="Prettier" />
+<img src="https://img.shields.io/badge/49_Tests-Passing-FF6B6B?style=for-the-badge&amp;logo=checkmarx&amp;logoColor=white" alt="49 tests passing" />
+
+</div>
 
 ---
 
