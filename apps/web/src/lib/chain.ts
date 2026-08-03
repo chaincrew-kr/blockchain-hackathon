@@ -16,18 +16,25 @@ import {
 } from "@coral-xyz/anchor";
 import {
   Connection,
+  Keypair,
   PublicKey,
+  SystemProgram,
   Transaction,
   type TransactionInstruction,
 } from "@solana/web3.js";
 import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountIdempotentInstruction,
+  createInitializeMint2Instruction,
   getAssociatedTokenAddressSync,
+  getMinimumBalanceForRentExemptMint,
+  MINT_SIZE,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 
 import idl from "@chaincrew/schema/idl/movie_escrow.json";
 import type { MovieEscrow } from "@chaincrew/schema/idl/movie_escrow";
+import { hexToBytes32 } from "./hash";
 
 const RPC_URL = import.meta.env.VITE_SOLANA_RPC_URL ?? "http://127.0.0.1:8899";
 const CLUSTER = import.meta.env.VITE_SOLANA_CLUSTER ?? "localnet";
@@ -221,6 +228,98 @@ export async function refundPendingTickets(
 
   const tx = new Transaction().add(...(refundIxs as TransactionInstruction[]));
   return anchorProvider.sendAndConfirm(tx);
+}
+
+export interface InitEscrowParams {
+  movieId: string;
+  /** 상영관 지갑 주소 — D의 상영관별 이력 조회(getProgramAccounts theater memcmp)에 쓰인다. */
+  theater: PublicKey;
+  /** BackofficePage에서 이미 계산해둔 hex 문자열 (lib/hash.ts) */
+  contractHash: string;
+  ruleHash: string;
+  ruleVersion: number;
+  /** USDC 최소 단위. 계약서에 MG·투자 조항이 없으면 0. */
+  mgAmountSmallestUnit: number;
+  investmentAmountSmallestUnit: number;
+}
+
+/**
+ * STAGE 0 마무리 — 양측 승인된 규칙 해시를 init_escrow로 온체인에 등록한다.
+ *
+ * usdc_mint는 기존에 존재하는 계정이어야 하는 program 제약(init_escrow.rs)이라,
+ * 데모에서는 이 호출 안에서 새 테스트 민트를 만들어(devnet-seed의
+ * build-init-escrow.ts와 동일한 방식) 같은 트랜잭션에 담아 보낸다.
+ *
+ * authority는 원래 정산 에이전트(D)의 별도 서명이 필요하지만(devnet-seed가
+ * partial-sign으로 나누는 이유), 이 화면은 연결된 지갑 하나로 완결하는 데모
+ * 경로라 payer와 authority를 같은 지갑으로 둔다 — 실제 운영에서는 에이전트
+ * 지갑의 별도 서명을 받는 흐름으로 바꿔야 한다.
+ */
+export async function initEscrow(
+  wallet: PhantomProvider,
+  params: InitEscrowParams,
+): Promise<{ signature: string; usdcMint: PublicKey }> {
+  const payer = wallet.publicKey;
+  if (!payer) throw new WalletNotFoundError();
+
+  const anchorProvider = toAnchorProvider(wallet);
+  const program = getProgram(anchorProvider);
+  const connection = anchorProvider.connection;
+
+  const mintKeypair = Keypair.generate();
+  const mintRent = await getMinimumBalanceForRentExemptMint(connection);
+  const createMintAccountIx = SystemProgram.createAccount({
+    fromPubkey: payer,
+    newAccountPubkey: mintKeypair.publicKey,
+    space: MINT_SIZE,
+    lamports: mintRent,
+    programId: TOKEN_PROGRAM_ID,
+  });
+  const initMintIx = createInitializeMint2Instruction(
+    mintKeypair.publicKey,
+    6,
+    payer,
+    null,
+  );
+
+  const escrowPda = findEscrowPda(params.movieId);
+  const vault = getAssociatedTokenAddressSync(
+    mintKeypair.publicKey,
+    escrowPda,
+    true, // owner가 PDA라 curve 밖 주소 — allowOwnerOffCurve
+  );
+
+  const initEscrowIx = await program.methods
+    .initEscrow(
+      params.movieId,
+      params.theater,
+      Array.from(hexToBytes32(params.contractHash)),
+      Array.from(hexToBytes32(params.ruleHash)),
+      params.ruleVersion,
+      new BN(params.mgAmountSmallestUnit),
+      new BN(params.investmentAmountSmallestUnit),
+    )
+    // escrow.movie_id를 시드로 쓰는 PDA라 Anchor의 자동 해석이 되지 않는다 —
+    // deposit/refundPending과 같은 이유로 accountsPartial을 쓴다.
+    .accountsPartial({
+      payer,
+      escrow: escrowPda,
+      usdcMint: mintKeypair.publicKey,
+      vault,
+      authority: payer,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      systemProgram: SystemProgram.programId,
+    })
+    .instruction();
+
+  const tx = new Transaction().add(
+    createMintAccountIx,
+    initMintIx,
+    initEscrowIx,
+  );
+  const signature = await anchorProvider.sendAndConfirm(tx, [mintKeypair]);
+  return { signature, usdcMint: mintKeypair.publicKey };
 }
 
 /** programs/movie_escrow/src/error.rs의 EscrowError를 사람이 읽을 문장으로 (D의 anchor-gateway.ts ESCROW_ERROR_HINTS와 같은 취지). */
