@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import type { SettlementRule } from "@chaincrew/schema";
 
+import { PhantomIcon } from "../../components/PhantomIcon";
 import { extractContract } from "../../lib/api";
 import { adaptExtraction, type PartyNames } from "../../lib/adaptExtraction";
 import { computeRuleHash, sha256Hex, toBps } from "../../lib/hash";
@@ -235,6 +236,7 @@ export function BackofficePage() {
             onClick={handleExtract}
             disabled={!file || loading}
           >
+            {loading && <span className="spinner" />}
             {loading ? "추출 중…" : "Gemini로 추출"}
           </button>
         </div>
@@ -243,8 +245,8 @@ export function BackofficePage() {
             className="chart-caption"
             style={{ color: "var(--stamp, #BE3A28)", marginTop: 10 }}
           >
-            추출 실패: {error} — 서버(apps/web/server)가 localhost:8787에서 실행
-            중인지 확인하세요.
+            추출 실패: {error} — 서버(apps/web/server)의 상태를 확인하세요 (로컬
+            개발 중이면 localhost:8787에서 떠 있는지 확인).
           </p>
         )}
         {rule && (
@@ -482,6 +484,11 @@ export function BackofficePage() {
                   onClick={connectWallet}
                   disabled={chainState === "connecting" || !!walletAddress}
                 >
+                  {chainState === "connecting" ? (
+                    <span className="spinner" />
+                  ) : (
+                    <PhantomIcon />
+                  )}
                   {walletAddress
                     ? `${walletAddress.slice(0, 4)}…${walletAddress.slice(-4)} 연결됨`
                     : chainState === "connecting"
@@ -506,6 +513,7 @@ export function BackofficePage() {
                         : undefined
                   }
                 >
+                  {chainState === "submitting" && <span className="spinner" />}
                   {chainState === "submitting"
                     ? "온체인 등록 중…"
                     : chainState === "done"

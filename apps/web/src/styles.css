@@ -950,3 +950,23 @@ footer {
     animation: none !important;
   }
 }
+
+/* Gemini 추출·결제 서명·온체인 등록처럼 응답까지 시간이 걸리는 동작 중
+   버튼에 붙이는 스피너 — reduced-motion 사용자는 위 규칙으로 회전이 꺼지고
+   정적 원으로만 보인다. */
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  vertical-align: -1px;
+  border: 2px solid var(--frost);
+  border-top-color: var(--violet-mark);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
