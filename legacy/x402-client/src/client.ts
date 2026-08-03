@@ -13,7 +13,7 @@
  *
  * ⚠️ 지금 이 코드에 "AI"는 없다 — 402를 받으면 무조건 결제하는 규칙 기반 봇이다.
  *    "살지 말지 판단"(예산·정책·AI)은 아직 없으며 나중 단계에서 얹는다.
- *    온보딩 문서: docs/onboarding/CONCEPTS.md 10번(뭐가 AI인가).
+ *    온보딩 문서: docs/archive/onboarding/CONCEPTS.md 10번(뭐가 AI인가).
  */
 import { base58 } from "@scure/base";
 import { createKeyPairSignerFromBytes } from "@solana/kit";
