@@ -14,6 +14,7 @@ RUN npm ci
 
 COPY apps/web apps/web
 COPY packages/schema packages/schema
+COPY assets/brand assets/brand
 
 # Vite는 VITE_* 값을 런타임이 아니라 빌드 타임에 번들에 박아넣는다 — Cloud Run
 # 배포 시엔 반드시 devnet 값을 --build-arg로 넘겨야 한다 (cloudbuild.web.yaml
