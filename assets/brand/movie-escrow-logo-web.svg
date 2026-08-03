@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="1400"
+  height="460"
+  viewBox="0 0 1400 460"
+  fill="none"
+  role="img"
+  aria-labelledby="web-logo-title web-logo-desc"
+>
+  <title id="web-logo-title">MOVIE ESCROW web lockup</title>
+  <desc id="web-logo-desc">
+    The cinematic film-reel and black-hole emblem appears small on the left, with a large stacked MOVIE ESCROW wordmark on the right.
+  </desc>
+
+  <defs>
+    <clipPath id="emblem-crop">
+      <!-- Crops the original wordmark from image 1 and keeps only its emblem. -->
+      <rect x="18" y="14" width="420" height="394" rx="8" />
+    </clipPath>
+  </defs>
+
+  <!-- Delete or hide this layer when a transparent canvas is preferred. -->
+  <rect id="background" width="1400" height="460" fill="#000000" />
+
+  <!-- Linked raster emblem from image 1. Keep both files in the same folder. -->
+  <g id="cinematic-emblem" clip-path="url(#emblem-crop)">
+    <image
+      id="image-1-emblem"
+      x="-28"
+      y="-12"
+      width="510"
+      height="510"
+      preserveAspectRatio="xMidYMid meet"
+      href="movie-escrow-logo-v2.png"
+      xlink:href="movie-escrow-logo-v2.png"
+    />
+  </g>
+
+  <!-- Native SVG text: editable in Figma and Illustrator. -->
+  <g id="wordmark" font-family="Space Grotesk, Inter, Segoe UI, Arial, sans-serif">
+    <text
+      id="movie-title"
+      x="490"
+      y="211"
+      fill="#FFFFFF"
+      font-size="132"
+      font-weight="600"
+      letter-spacing="9"
+      textLength="820"
+      lengthAdjust="spacingAndGlyphs"
+    >MOVIE</text>
+    <text
+      id="escrow-title"
+      x="490"
+      y="351"
+      fill="#C6C6C6"
+      font-size="114"
+      font-weight="500"
+      letter-spacing="9"
+      textLength="820"
+      lengthAdjust="spacingAndGlyphs"
+    >ESCROW</text>
+  </g>
+</svg>

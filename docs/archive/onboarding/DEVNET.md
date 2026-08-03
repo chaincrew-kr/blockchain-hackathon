@@ -3,7 +3,7 @@
 > **⚠️ 레거시 x402 PoC 지갑 안내:** 아래 `merchant-devnet`·`buyer-devnet` 구성과
 > `npm run dev`·`npm run client` 명령은 `legacy/x402-*` 실험 기준입니다. 현재
 > 영화 정산 제품은 극장·배급·제작·투자·에이전트 지갑과 영화별 에스크로 PDA를
-> 사용합니다. 현재 지갑 도구는 [`tools/wallet/README.md`](../../tools/wallet/README.md),
+> 사용합니다. 현재 지갑 도구는 [`tools/wallet/README.md`](../../../tools/wallet/README.md),
 > 전체 구조는 [Product Brief](../PRODUCT_BRIEF.md)를 참고하세요.
 
 Devnet은 별도 체인을 “발급”받는 방식이 아니라 Solana가 운영하는 공용 테스트

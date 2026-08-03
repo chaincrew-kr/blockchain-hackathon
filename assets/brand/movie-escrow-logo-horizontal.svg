@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="1280"
+  height="480"
+  viewBox="0 0 1280 480"
+  fill="none"
+  role="img"
+  aria-labelledby="movie-escrow-title movie-escrow-desc"
+>
+  <title id="movie-escrow-title">MOVIE ESCROW horizontal logo</title>
+  <desc id="movie-escrow-desc">
+    A compact film reel and black-hole escrow emblem to the left of the MOVIE ESCROW wordmark.
+  </desc>
+
+  <defs>
+    <radialGradient id="coreGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(230 240) rotate(90) scale(80)">
+      <stop offset="0.28" stop-color="#000000" />
+      <stop offset="0.58" stop-color="#111326" />
+      <stop offset="0.78" stop-color="#6B74C0" />
+      <stop offset="0.9" stop-color="#343755" />
+      <stop offset="1" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+
+    <linearGradient id="metal" x1="82" y1="80" x2="364" y2="396" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" />
+      <stop offset="0.18" stop-color="#808080" />
+      <stop offset="0.48" stop-color="#242532" />
+      <stop offset="0.78" stop-color="#C6C6C6" />
+      <stop offset="1" stop-color="#4D4D4D" />
+    </linearGradient>
+
+    <linearGradient id="filmSurface" x1="92" y1="393" x2="241" y2="240" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14151E" />
+      <stop offset="0.5" stop-color="#343755" />
+      <stop offset="1" stop-color="#11121B" />
+    </linearGradient>
+
+    <filter id="violetGlow" x="-80%" y="-80%" width="260%" height="260%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feColorMatrix
+        in="blur"
+        type="matrix"
+        values="0.42 0 0 0 0.10  0 0.46 0 0 0.12  0 0 0.75 0 0.18  0 0 0 0.8 0"
+        result="violetBlur"
+      />
+      <feMerge>
+        <feMergeNode in="violetBlur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <filter id="softTextGlow" x="-10%" y="-40%" width="120%" height="180%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur" />
+      <feFlood flood-color="#6B74C0" flood-opacity="0.28" />
+      <feComposite in2="blur" operator="in" />
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Transparent canvas: designed for the project's #000000 background. -->
+  <g id="mark" transform="translate(14 36) scale(0.85)">
+    <g id="reel" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="230" cy="240" r="167" fill="#050508" stroke="url(#metal)" stroke-width="5" />
+      <circle cx="230" cy="240" r="151" stroke="#6B74C0" stroke-opacity="0.62" stroke-width="2" />
+      <circle
+        id="film-perforations"
+        cx="230"
+        cy="240"
+        r="158"
+        stroke="#C6C6C6"
+        stroke-opacity="0.72"
+        stroke-width="8"
+        stroke-dasharray="3 11"
+      />
+
+      <g id="reel-holes" fill="#000000" stroke="#4D4D4D" stroke-width="3">
+        <ellipse cx="230" cy="133" rx="42" ry="58" />
+        <ellipse cx="230" cy="133" rx="42" ry="58" transform="rotate(72 230 240)" />
+        <ellipse cx="230" cy="133" rx="42" ry="58" transform="rotate(144 230 240)" />
+        <ellipse cx="230" cy="133" rx="42" ry="58" transform="rotate(216 230 240)" />
+        <ellipse cx="230" cy="133" rx="42" ry="58" transform="rotate(288 230 240)" />
+      </g>
+
+      <circle cx="230" cy="240" r="77" fill="#08080D" stroke="url(#metal)" stroke-width="4" />
+    </g>
+
+    <g id="escrow-core" filter="url(#violetGlow)">
+      <circle cx="230" cy="240" r="71" fill="url(#coreGlow)" />
+      <circle cx="230" cy="240" r="46" stroke="#6B74C0" stroke-width="3" />
+      <circle cx="230" cy="240" r="31" fill="#000000" stroke="#FFFFFF" stroke-opacity="0.88" stroke-width="2" />
+      <circle cx="230" cy="240" r="21" fill="#000000" />
+      <path d="M194 236C208 215 227 204 251 205" stroke="#FFFFFF" stroke-opacity="0.65" stroke-width="2" />
+      <path d="M207 271C226 278 245 271 258 255" stroke="#6B74C0" stroke-opacity="0.82" stroke-width="2" />
+    </g>
+
+    <g id="film-strip" stroke-linecap="round" stroke-linejoin="round">
+      <path
+        d="M83 395C91 352 122 329 166 308C202 291 222 268 228 240L254 244C249 288 223 318 184 337C146 356 127 374 124 407Z"
+        fill="url(#filmSurface)"
+        stroke="#C6C6C6"
+        stroke-width="3"
+      />
+      <path d="M101 394C109 360 133 341 175 320C212 301 236 273 241 243" stroke="#FFFFFF" stroke-opacity="0.72" stroke-width="2" />
+      <path d="M116 402C120 372 143 354 180 336C225 314 246 283 249 245" stroke="#6B74C0" stroke-opacity="0.72" stroke-width="2" />
+      <path
+        id="film-strip-perforations-left"
+        d="M92 388C103 354 129 335 170 315C207 297 229 270 236 243"
+        stroke="#000000"
+        stroke-width="7"
+        stroke-dasharray="2 10"
+      />
+      <path
+        id="film-strip-perforations-right"
+        d="M120 398C127 368 149 350 184 332C224 312 245 282 248 247"
+        stroke="#000000"
+        stroke-width="7"
+        stroke-dasharray="2 10"
+      />
+    </g>
+
+    <g id="chain-nodes" filter="url(#violetGlow)">
+      <g id="node-top">
+        <circle cx="230" cy="81" r="13" fill="#08080D" stroke="#6B74C0" stroke-width="2" />
+        <circle cx="230" cy="81" r="4" fill="#FFFFFF" />
+      </g>
+      <g id="node-right">
+        <circle cx="389" cy="240" r="13" fill="#08080D" stroke="#6B74C0" stroke-width="2" />
+        <circle cx="389" cy="240" r="4" fill="#FFFFFF" />
+      </g>
+      <g id="node-bottom">
+        <circle cx="230" cy="399" r="13" fill="#08080D" stroke="#6B74C0" stroke-width="2" />
+        <circle cx="230" cy="399" r="4" fill="#FFFFFF" />
+      </g>
+      <g id="node-left">
+        <circle cx="71" cy="240" r="13" fill="#08080D" stroke="#6B74C0" stroke-width="2" />
+        <circle cx="71" cy="240" r="4" fill="#FFFFFF" />
+      </g>
+    </g>
+  </g>
+
+  <g id="wordmark" transform="translate(448 0)" fill="#FFFFFF">
+    <text
+      id="brand-name-movie"
+      x="0"
+      y="222"
+      font-family="Space Grotesk, Inter, Segoe UI, Arial, sans-serif"
+      font-size="136"
+      font-weight="600"
+      letter-spacing="8"
+      textLength="720"
+      lengthAdjust="spacingAndGlyphs"
+      filter="url(#softTextGlow)"
+    >MOVIE</text>
+    <text
+      id="brand-name-escrow"
+      x="0"
+      y="356"
+      fill="#C6C6C6"
+      font-family="Space Grotesk, Inter, Segoe UI, Arial, sans-serif"
+      font-size="116"
+      font-weight="500"
+      letter-spacing="8"
+      textLength="720"
+      lengthAdjust="spacingAndGlyphs"
+      filter="url(#softTextGlow)"
+    >ESCROW</text>
+    <line x1="4" y1="389" x2="700" y2="389" stroke="#4D4D4D" stroke-width="1" />
+    <circle cx="717" cy="389" r="3" fill="#6B74C0" />
+  </g>
+</svg>

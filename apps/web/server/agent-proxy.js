@@ -1,6 +1,6 @@
 // agent-proxy.js
 // 브라우저가 정산 Agent(Cloud Run, IAM 인증 필요)를 직접 못 부르게 하고
-// 이 서버가 대신 인증해서 호출한다 (docs/ponyo_work/GCP_DEPLOYMENT_GUIDE.md §7).
+// 이 서버가 대신 인증해서 호출한다 (docs/archive/ponyo_work/GCP_DEPLOYMENT_GUIDE.md §7).
 //
 // 로컬 agent는 인증 없이 fetch하고, Cloud Run 배포본은 연결된 런타임 서비스
 // 계정(ADC)으로 ID 토큰을 발급한다. 로컬에서 원격 Agent를 시험할 때만 선택적으로

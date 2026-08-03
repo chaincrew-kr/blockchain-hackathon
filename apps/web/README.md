@@ -20,7 +20,7 @@ apps/web/
 │   ├── App.tsx           # 화면 셸 — 탭 전환
 │   ├── main.tsx          # 엔트리 — polyfills를 가장 먼저 import
 │   ├── polyfills.ts      # Buffer/global 폴리필 (Anchor·web3.js가 Node 전역 기대)
-│   ├── styles.css        # 디자인 토큰 + 전체 스타일 (docs/DESIGN.md 기준)
+│   ├── styles.css        # 디자인 토큰 + 전체 스타일 (docs/archive/DESIGN.md 기준)
 │   ├── pages/
 │   │   ├── purchase/     # STAGE 1: Phantom 연결 → deposit/refund_pending 직접 호출
 │   │   ├── backoffice/   # STAGE 0: 업로드 → Gemini 추출 → 충돌·양측 승인 → init_escrow
@@ -31,7 +31,7 @@ apps/web/
 │   │   ├── adaptExtraction.ts  # Gemini 응답 → SettlementRule 변환, 충돌 근거 매핑
 │   │   ├── hash.ts       # 계약 원문/규칙 해시 계산 (브라우저에서 직접, FR-06)
 │   │   └── usdc.ts       # USDC 표시단위 ↔ 최소단위 변환
-│   ├── components/       # BarChart (호버 툴팁 + 표로 보기)
+│   ├── components/       # BarChart · PhantomIcon · ClockIcon
 │   └── mocks/demo.ts     # 대시보드 mock 모드 폴백 데이터 (전부 @chaincrew/schema 타입)
 └── server/                # Express — 브라우저가 IAM/API 키를 직접 갖지 않도록 하는 프록시
     ├── index.js           # 라우트: /api/extract, /api/kobis/*, /api/batch/trigger|reset
@@ -87,11 +87,11 @@ Cloud Run에 두 서비스가 따로 떠 있습니다:
 빌드타임 Vite 변수(`VITE_SOLANA_RPC_URL` 등)를 안 넘기면 조용히
 localnet/기본값으로 굳어버리니, 재배포 전엔 `cloudbuild.web.yaml`의
 `--build-arg` 목록이 최신인지 꼭 확인할 것. 자세한 절차·시크릿 목록은
-`docs/ponyo_work/GCP_DEPLOYMENT_GUIDE.md` 참고.
+`docs/archive/ponyo_work/GCP_DEPLOYMENT_GUIDE.md` 참고.
 
 ## 디자인
 
-[docs/DESIGN.md](../../docs/DESIGN.md) — void black 캔버스, 고스트
+[디자인 참고 문서](../../docs/archive/DESIGN.md) — void black 캔버스, 고스트
 카드(헤어라인 보더), 단일 액센트 Dusk Violet `#343755`, 필 버튼. 토큰은
 `src/styles.css`의 `:root`에 정의. 차트 마크 색 `#6B74C0`은 Dusk Violet 계열
 밝은 스텝으로 접근성(대비·CVD) 검증을 통과한 값이니 유지할 것.

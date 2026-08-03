@@ -9,7 +9,7 @@
  * 입력:  HTTP 요청 (결제 증명은 요청 헤더에 실려 옴)
  * 출력:  402(챌린지) 또는 200(JSON 데이터 + payment-response 정산 헤더)
  * 참고:  이 서버에는 개인키가 없다. merchant "공개 주소"만 알고 있음 (보안 설계).
- *        온보딩 문서: docs/onboarding/CONCEPTS.md 3번(등장인물), README 아키텍처.
+ *        온보딩 문서: docs/archive/onboarding/CONCEPTS.md 3번(등장인물), README 아키텍처.
  */
 import express, { type Express } from "express";
 import { HTTPFacilitatorClient } from "@x402/core/server";

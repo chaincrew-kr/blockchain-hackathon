@@ -16,4 +16,4 @@ npm run wallet:address -- .secrets/theater-devnet.json
 ```
 
 키파일은 `.secrets/`에 저장되며 git에 올라가지 않습니다. faucet 충전 등은
-[팀 Devnet 셋업](../../docs/onboarding/TEAM_DEVNET_SETUP.md) 참고.
+[팀 Devnet 셋업](../../docs/archive/onboarding/TEAM_DEVNET_SETUP.md) 참고.

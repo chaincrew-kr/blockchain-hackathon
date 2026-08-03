@@ -8,6 +8,11 @@ import { BackofficePage } from "./pages/backoffice/BackofficePage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
 import { PurchasePage } from "./pages/purchase/PurchasePage";
 
+const BRAND_EMBLEM_URL = new URL(
+  "../../../assets/brand/movie-escrow-logo-v2.png",
+  import.meta.url,
+).href;
+
 const SCREENS = [
   { id: "s1", stage: "S1", label: "예매", page: <PurchasePage /> },
   { id: "s0", stage: "S0", label: "백오피스", page: <BackofficePage /> },
@@ -24,8 +29,14 @@ export function App() {
     <>
       <header>
         <div className="topbar">
-          <div className="wordmark">
-            Movie Escrow<small>영화 정산 에이전트</small>
+          <div className="brand-lockup" aria-label="MOVIE ESCROW">
+            <span className="brand-mark" aria-hidden="true">
+              <img className="brand-mark-image" src={BRAND_EMBLEM_URL} alt="" />
+            </span>
+            <span className="wordmark" aria-hidden="true">
+              <span>MOVIE</span>
+              <span>ESCROW</span>
+            </span>
           </div>
           <span className="nav-dot" aria-hidden="true" />
           <span className="net">DEVNET · DEMO</span>

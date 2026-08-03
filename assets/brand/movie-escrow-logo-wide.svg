@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 320" role="img" aria-label="MOVIE ESCROW horizontal logo — black hole emblem with wordmark">
+  <!-- Remove this rect for a transparent background (logo is designed for void black only) -->
+  <rect width="1000" height="320" fill="#000000"/>
+  <defs>
+    <linearGradient id="rim" x1="0%" y1="10%" x2="100%" y2="90%">
+      <stop offset="0%" stop-color="#63F0E4"/>
+      <stop offset="48%" stop-color="#8B7BFF"/>
+      <stop offset="100%" stop-color="#FF5FC9"/>
+    </linearGradient>
+    <radialGradient id="sphere" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="78%" stop-color="#000000"/>
+      <stop offset="93%" stop-color="#0D0A18"/>
+      <stop offset="100%" stop-color="#221540"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#7A5CFF" stop-opacity="0.30"/>
+      <stop offset="45%" stop-color="#7A5CFF" stop-opacity="0.12"/>
+      <stop offset="78%" stop-color="#7A5CFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+    <clipPath id="back"><rect x="-240" y="-260" width="960" height="500"/></clipPath>
+    <clipPath id="front"><rect x="-240" y="240" width="960" height="500"/></clipPath>
+  </defs>
+
+  <!-- ═ Emblem ═ -->
+  <g transform="translate(4,14) scale(0.58)">
+    <circle cx="240" cy="240" r="200" fill="url(#glow)"/>
+
+    <g transform="rotate(-16 240 240)" clip-path="url(#back)" opacity="0.4">
+      <ellipse cx="240" cy="240" rx="150" ry="38" fill="none" stroke="url(#rim)" stroke-width="1.6"/>
+      <ellipse cx="240" cy="240" rx="166" ry="45" fill="none" stroke="url(#rim)" stroke-width="7" stroke-linecap="round" stroke-dasharray="13 11"/>
+      <ellipse cx="240" cy="240" rx="183" ry="52" fill="none" stroke="url(#rim)" stroke-width="1.6"/>
+    </g>
+
+    <circle cx="240" cy="240" r="96" fill="none" stroke="url(#rim)" stroke-width="7" opacity="0.55" filter="url(#soft)"/>
+    <circle cx="240" cy="240" r="96" fill="none" stroke="url(#rim)" stroke-width="2.4" opacity="0.95"/>
+    <path d="M169,169 A100,100 0 0 1 311,169" fill="none" stroke="url(#rim)" stroke-width="3" opacity="0.5" filter="url(#soft)"/>
+
+    <circle cx="240" cy="240" r="85" fill="url(#sphere)"/>
+    <path d="M166,198 A85,85 0 0 1 314,198" fill="none" stroke="#9FE8FF" stroke-width="2.5" opacity="0.25" filter="url(#soft)"/>
+
+    <g transform="rotate(-16 240 240)" clip-path="url(#front)">
+      <ellipse cx="240" cy="240" rx="150" ry="38" fill="none" stroke="url(#rim)" stroke-width="1.6" opacity="0.9"/>
+      <ellipse cx="240" cy="240" rx="166" ry="45" fill="none" stroke="url(#rim)" stroke-width="7" stroke-linecap="round" stroke-dasharray="13 11"/>
+      <ellipse cx="240" cy="240" rx="183" ry="52" fill="none" stroke="url(#rim)" stroke-width="1.6" opacity="0.9"/>
+    </g>
+
+    <path d="M150,118 Q190,150 208,186" fill="none" stroke="#63F0E4" stroke-width="1" opacity="0.25"/>
+    <path d="M366,152 Q330,170 314,196" fill="none" stroke="#F0C987" stroke-width="1" opacity="0.2"/>
+    <g>
+      <circle cx="150" cy="118" r="2" fill="#63F0E4" opacity="0.85"/>
+      <circle cx="331" cy="104" r="1.5" fill="#FFFFFF" opacity="0.5"/>
+      <circle cx="366" cy="152" r="2.4" fill="#F0C987" opacity="0.7"/>
+      <circle cx="118" cy="302" r="2" fill="#8FE8B8" opacity="0.55"/>
+      <circle cx="95" cy="212" r="1.4" fill="#FFFFFF" opacity="0.4"/>
+      <circle cx="352" cy="322" r="2" fill="#63F0E4" opacity="0.5"/>
+      <circle cx="296" cy="88" r="1.8" fill="#CFA9FF" opacity="0.6"/>
+      <circle cx="404" cy="238" r="1.4" fill="#FFFFFF" opacity="0.35"/>
+      <circle cx="78" cy="150" r="1.2" fill="#F0C987" opacity="0.5"/>
+      <circle cx="186" cy="372" r="1.6" fill="#FFFFFF" opacity="0.45"/>
+      <circle cx="302" cy="388" r="1.4" fill="#63F0E4" opacity="0.4"/>
+      <circle cx="412" cy="304" r="1.8" fill="#8FE8B8" opacity="0.4"/>
+      <circle cx="68" cy="332" r="1.3" fill="#CFA9FF" opacity="0.35"/>
+      <circle cx="242" cy="58" r="1.5" fill="#F0C987" opacity="0.5"/>
+    </g>
+  </g>
+
+  <!-- ═ Wordmark: custom monoline letterforms ═ -->
+  <g transform="translate(322,126) scale(0.6837)" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3,98 L3,3 L33,47 L63,3 L63,98"/>
+    <ellipse cx="127" cy="50" rx="32" ry="47"/>
+    <path d="M191,3 L221,97 L251,3"/>
+    <path d="M283,3 L283,97"/>
+    <path d="M361,3 L315,3 L315,97 L361,97 M315,50 L353,50"/>
+    <path d="M471,3 L425,3 L425,97 L471,97 M425,50 L463,50"/>
+    <path d="M550,14 C544,5 536,2 528,2 C514,2 505,10 505,23 C505,36 515,42 528,47 C541,52 551,59 551,73 C551,87 541,98 527,98 C516,98 507,94 503,86"/>
+    <path d="M626,11 A28,48 0 1 0 626,89"/>
+    <path d="M667,98 L667,3 L697,3 C713,3 719,13 719,27 C719,41 713,51 697,51 L667,51 M695,51 L719,98"/>
+    <ellipse cx="783" cy="50" rx="32" ry="47"/>
+    <path d="M847,3 L865,97 L887,32 L909,97 L927,3"/>
+  </g>
+</svg>

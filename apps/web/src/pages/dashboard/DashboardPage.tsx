@@ -18,6 +18,7 @@ import type {
 } from "@chaincrew/schema";
 
 import { BarChart } from "../../components/BarChart";
+import { ClockIcon } from "../../components/ClockIcon";
 import {
   describeAgentError,
   fetchKobisDaily,
@@ -27,6 +28,7 @@ import {
   type KobisDailyPoint,
   type KobisMovieInfo,
 } from "../../lib/api";
+import { explorerTxUrl } from "../../lib/chain";
 import { checks, decision, demoDaily, snapshot } from "../../mocks/demo";
 import { formatUsdc } from "../../lib/usdc";
 
@@ -69,6 +71,19 @@ const checkValue = (c: CheckResult) =>
   c.check === "hash-chain"
     ? `${c.observed} ${c.threshold}`
     : `${c.observed} ${c.passed ? "≤" : ">"} ${c.threshold}`;
+
+/** KOBIS가 감독·배급사 정보를 안 주는 영화도 있다 — 없는 항목은 "?" 대신 통째로 뺀다. */
+function kobisCaption(info: KobisMovieInfo): string {
+  const openDate = `${info.openDate.slice(0, 4)}-${info.openDate.slice(4, 6)}-${info.openDate.slice(6, 8)} 개봉`;
+  const director = info.directors[0] ? `${info.directors[0]} 감독` : null;
+  const distributor = info.companies.find((c) => c.role === "배급사")?.name;
+  const parts = [
+    openDate,
+    director,
+    distributor ? `${distributor} 배급` : null,
+  ].filter((p): p is string => p !== null);
+  return `「${info.movieName}」 (${parts.join(", ")}) — `;
+}
 
 export function DashboardPage() {
   const [kobisDaily, setKobisDaily] = useState<KobisDailyPoint[] | null>(null);
@@ -139,9 +154,11 @@ export function DashboardPage() {
     <section className="screen">
       <p className="eyebrow">STAGE 6 — 투명 대시보드 · 전 권리자 공개</p>
       <h1>“붉은 노을 아래” 정산 현황</h1>
-      <p className="sub">
-        모든 숫자는 온체인 계정에서 직접 읽습니다. 판정은 에이전트가 내리지만,
-        근거는 전부 여기 공개됩니다.
+      <p className="sub" style={{ maxWidth: "none", whiteSpace: "nowrap" }}>
+        숫자는 전부 온체인 계정에서 그대로 가져옵니다.
+        <br />
+        보류할지 말지는 에이전트가 판단하지만, 그렇게 판단한 이유를 함께
+        제시합니다.
       </p>
 
       <div className="flow" aria-label="에스크로 상태머신">
@@ -170,9 +187,12 @@ export function DashboardPage() {
           disabled={batchState === "running"}
           onClick={handleTrigger}
         >
-          {batchState === "running"
-            ? "정산 배치 실행 중…"
-            : "정산일 도래 — 시간 압축 ▸"}
+          {batchState === "running" ? (
+            <span className="spinner" />
+          ) : (
+            <ClockIcon />
+          )}
+          {batchState === "running" ? "정산 배치 실행 중…" : "정산일 도래"}
         </button>
         {batchResult?.replayed && (
           <span className="chip state-dim">재생됨 — 기존 결과</span>
@@ -276,8 +296,10 @@ export function DashboardPage() {
             </div>
           )}
           <p className="chart-caption">
-            임계값은 상영관 온체인 이력으로 조정됩니다 — 신규 상영관이라
-            기본값보다 30% 엄격하게 적용 중.
+            이 상영관은 온체인에 정산 이력이 아직 없는 신규 상영관입니다 — 믿을
+            만한 이력이 쌓이기 전까지는 환불률 허용 기준을 평소보다 30% 낮춰(더
+            엄격하게) 적용해서, 이상 징후를 더 예민하게 잡아냅니다. 정상 정산
+            이력이 쌓이면 기준이 점차 완화됩니다.
           </p>
         </div>
 
@@ -340,14 +362,23 @@ export function DashboardPage() {
                   {t.label}
                   <small>{t.txSignature}</small>
                 </span>
-                <a
-                  className="ex"
-                  href="https://explorer.solana.com/?cluster=devnet"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Explorer ↗
-                </a>
+                {usingRealDecisions ? (
+                  <a
+                    className="ex"
+                    href={explorerTxUrl(t.txSignature)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Explorer ↗
+                  </a>
+                ) : (
+                  <span
+                    className="ex muted"
+                    title="미리보기 · 목업 서명이라 실제 트랜잭션이 없습니다"
+                  >
+                    Explorer ↗
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -378,8 +409,9 @@ export function DashboardPage() {
               className="chart-caption"
               style={{ color: "var(--stamp, #BE3A28)" }}
             >
-              KOBIS 조회 실패: {kobisError} — 서버(apps/web/server)의
-              KOBIS_API_KEY 설정과 localhost:8787 실행 상태를 확인하세요.
+              KOBIS 조회 실패: {kobisError} — 서버의 KOBIS_API_KEY 설정을
+              확인하세요 (로컬 개발 중이면 apps/web/server가 localhost:8787에서
+              떠 있는지도 함께 확인).
             </p>
           )}
 
@@ -397,9 +429,7 @@ export function DashboardPage() {
           )}
 
           <p className="chart-caption">
-            {kobisInfo
-              ? `「${kobisInfo.movieName}」 (${kobisInfo.openDate.slice(0, 4)}-${kobisInfo.openDate.slice(4, 6)}-${kobisInfo.openDate.slice(6, 8)} 개봉, ${kobisInfo.directors[0] ?? "?"} 감독, ${kobisInfo.companies.find((c) => c.role === "배급사")?.name ?? "?"} 배급) — `
-              : ""}
+            {kobisInfo ? kobisCaption(kobisInfo) : ""}
             일별 박스오피스 상위권 밖인 날은 0으로 표시됩니다. 단위가 다르므로
             축을 공유하지 않습니다 — 같은 기간의 실데이터를 나란히 보여 “실제
             시장과 연결된 파이프라인”임을 증명하는 패널.

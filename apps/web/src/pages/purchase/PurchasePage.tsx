@@ -6,6 +6,7 @@
  */
 import { useState } from "react";
 
+import { PhantomIcon } from "../../components/PhantomIcon";
 import {
   DEMO_MOVIE_ID,
   depositTickets,
@@ -121,9 +122,11 @@ export function PurchasePage() {
     <section className="screen">
       <p className="eyebrow">STAGE 1 — 자금 유입 · 관객 화면</p>
       <h1>티켓 예매</h1>
-      <p className="sub">
-        결제 수취 주소가 곧 영화별 에스크로 PDA입니다. 경유 계좌 없이, 결제
-        순간부터 정산 규칙이 자금을 격리합니다.
+      <p className="sub" style={{ maxWidth: "none", whiteSpace: "nowrap" }}>
+        이 결제는 중간에 아무 계좌도 거치지 않습니다.
+        <br />
+        결제 버튼을 누르는 순간 티켓 값은 곧장 이 영화의 전용 에스크로로 들어가,
+        극장도 배급사도, 그 돈을 먼저 만질 수 없습니다.
       </p>
 
       <div className="grid purchase-grid">
@@ -194,9 +197,16 @@ export function PurchasePage() {
                 disabled={pay === "connecting" || pay === "signing"}
                 onClick={connectWallet}
               >
+                {pay === "connecting" ? (
+                  <span className="spinner" />
+                ) : (
+                  <PhantomIcon />
+                )}
                 {walletAddress
                   ? `${walletAddress.slice(0, 4)}…${walletAddress.slice(-4)} 연결됨`
-                  : "Phantom 연결"}
+                  : pay === "connecting"
+                    ? "연결 중…"
+                    : "Phantom 연결"}
               </button>
               <button
                 className="pill"
@@ -208,7 +218,8 @@ export function PurchasePage() {
                 }
                 onClick={startPayment}
               >
-                결제하기
+                {pay === "signing" && <span className="spinner" />}
+                {pay === "signing" ? "결제 처리 중…" : "결제하기"}
               </button>
               {pay === "idle" && !walletAddress && (
                 <span className="chip state-dim">지갑 미연결</span>
@@ -297,6 +308,7 @@ export function PurchasePage() {
                         disabled={pay === "refunding"}
                         onClick={requestRefund}
                       >
+                        {pay === "refunding" && <span className="spinner" />}
                         {pay === "refunding" ? "환불 처리 중…" : "환불 요청"}
                       </button>
                     </div>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="512"
+  height="512"
+  viewBox="0 0 512 512"
+  fill="none"
+  role="img"
+  aria-labelledby="mark-title mark-desc"
+>
+  <title id="mark-title">MOVIE ESCROW symbol</title>
+  <desc id="mark-desc">Circular geometric escrow symbol with an interlocked six-point frame and violet hexagonal core.</desc>
+
+  <!-- Transparent canvas. Every shape remains individually editable. -->
+  <g id="movie-escrow-mark" stroke-linecap="round" stroke-linejoin="round">
+    <circle id="outer-orbit" cx="256" cy="256" r="218" stroke="#FFFFFF" stroke-width="10" />
+
+    <g id="escrow-frame" stroke="#FFFFFF" stroke-width="13">
+      <path id="triangle-up" d="M256 98L394 338H118L256 98Z" />
+      <path id="triangle-down" d="M256 414L118 174H394L256 414Z" />
+    </g>
+
+    <path
+      id="onchain-core"
+      d="M256 219L288 237.5V274.5L256 293L224 274.5V237.5L256 219Z"
+      fill="#6B74C0"
+    />
+  </g>
+</svg>

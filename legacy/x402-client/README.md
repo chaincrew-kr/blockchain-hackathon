@@ -14,7 +14,7 @@ npm run client        # 실제 결제 실행 후 정산 결과 출력
 
 `npm run client`에는 자금이 있는 **구매자** 키가 필요합니다. `.env`의
 `SVM_KEYPAIR_PATH`(Solana CLI JSON 키파일, 기본값) 또는 `SVM_PRIVATE_KEY`(base58)로
-설정합니다. 준비 방법은 [팀 Devnet 셋업](../../docs/onboarding/TEAM_DEVNET_SETUP.md)을
+설정합니다. 준비 방법은 [팀 Devnet 셋업](../../docs/archive/onboarding/TEAM_DEVNET_SETUP.md)을
 참고하세요.
 
 ## 입력 → 출력 흐름
@@ -35,7 +35,7 @@ RESOURCE_SERVER_URL             → fetchWithPayment로 요청:
 - 출력의 `Settlement.transaction` 서명을
   `https://explorer.solana.com/tx/<서명>?cluster=devnet` 에 넣으면 온체인 기록 확인.
 - ⚠️ 이 코드에 AI는 없다 — 402를 받으면 무조건 결제하는 규칙 기반 봇이다. 예산
-  한도·구매 판단(AI)은 추후 단계. [CONCEPTS 10번](../../docs/onboarding/CONCEPTS.md#10-그래서-뭐가-ai인가--ai-에이전트-빌드업) 참고.
+  한도·구매 판단(AI)은 추후 단계. [CONCEPTS 10번](../../docs/archive/onboarding/CONCEPTS.md#10-그래서-뭐가-ai인가--ai-에이전트-빌드업) 참고.
 
 ## 주요 파일
 

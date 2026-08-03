@@ -30,7 +30,7 @@
 //!   `distribution_fee_bps`/`investor_profit_bps`는 인자로 받아 여기서 직접
 //!   나눗셈·반올림을 수행하고, `escrow.rule_hash`와 대조해 "코드가 규칙을
 //!   강제한다"를 실제로 검증한다(이슈 #6 후속, 2026-08-01 인코딩 확정 —
-//!   `docs/SCHEMA_CONTRACT.md` §11). `mg_remaining`/`investment_remaining`의
+//!   `docs/archive/SCHEMA_CONTRACT.md` §11). `mg_remaining`/`investment_remaining`의
 //!   초기값(계약 총액)은 `init_escrow`에서 한 번만 설정되고 재검증 대상이
 //!   아니다 — 매 호출마다 다시 넘어오는 값이 아니라 계정에 고정 저장되는
 //!   값이라 `contract_hash`와 같은 신뢰 경계를 쓴다.
