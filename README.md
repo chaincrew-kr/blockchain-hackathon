@@ -20,6 +20,13 @@
 
 <br />
 
+![Solana Devnet](https://img.shields.io/badge/SOLANA-DEVNET-14F195?style=flat-square&logo=solana&logoColor=111111)
+![Gemini](https://img.shields.io/badge/GEMINI-STRUCTURED_OUTPUT-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)
+![Google Cloud](https://img.shields.io/badge/GOOGLE_CLOUD-LIVE-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
+![Tests](https://img.shields.io/badge/AUTOMATED_TESTS-49_PASS-FF6B6B?style=flat-square)
+
+<br />
+
 <em>AI는 돈을 임의로 나누지 않습니다. 사람이 승인한 결정론적 규칙이 분배를
 실행하고, AI는 계약 해석과 집행 전 검증·이상 탐지를 담당합니다.</em>
 
@@ -29,12 +36,11 @@
 
 ## Demo & Submission
 
-| 제출물           | 링크·상태                                                                                                               |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Live Demo        | [Google Cloud Run에서 실행](https://chaincrew-web-612802760361.asia-northeast3.run.app)                                 |
-| Demo Video       | YouTube 업로드 후 공개 영상 URL 연결 예정                                                                               |
-| Project Deck     | Canva 작업 완료 후 **보기 전용** 소개서 URL 연결 예정                                                                   |
-| Technical Report | [HTML 보고서](docs/e2e/ChainCrew_Hackathon_Submission.html) · [PDF 보고서](docs/e2e/ChainCrew_Hackathon_Submission.pdf) |
+| 제출물       | 링크·상태                                                                               |
+| ------------ | --------------------------------------------------------------------------------------- |
+| Live Demo    | [Google Cloud Run에서 실행](https://chaincrew-web-612802760361.asia-northeast3.run.app) |
+| Demo Video   | YouTube 업로드 후 공개 영상 URL 연결 예정                                               |
+| Project Deck | Canva 작업 완료 후 **보기 전용** 소개서 URL 연결 예정                                   |
 
 심사용 Live Demo 접속정보는 제출 채널을 통해 별도로 전달합니다.
 
@@ -137,7 +143,16 @@ MovieEscrow
 
 ---
 
-## Solution
+## Solution — 계약대로 흐르고, 문제 금액만 멈춥니다
+
+| Problem                             | MovieEscrow의 설계 응답                                                |
+| ----------------------------------- | ---------------------------------------------------------------------- |
+| 권리자 몫이 중간 사업자의 돈과 섞임 | 결제 순간 영화별 PDA Vault로 보내 운영자금과 분리                      |
+| 계약 해석과 계산 근거가 불투명함    | Gemini 추출 → 양측 승인 → 규칙 해시·버전을 온체인에 고정               |
+| 이상 한 건이 전체 정산을 멈춤       | 정상 금액은 계속 귀속하고 영향받은 회차·금액만 `Disputed`로 격리       |
+| 계산·지급·증빙이 서로 분리됨        | Agent 판단, Anchor 실행과 Explorer 트랜잭션을 하나의 대시보드에서 연결 |
+
+### 실행 흐름
 
 1. Gemini가 계약서에서 부율·수수료·MG·공제·정산일을 근거 조항과 함께
    구조화합니다.
@@ -153,6 +168,32 @@ MovieEscrow
 
 > **핵심 차별점 — 부분 보류:** 1,000 중 50에만 이상이 있다면 950의 정상 정산은
 > 계속 진행하고 50만 격리합니다. 문제 하나로 전체 정산을 멈추지 않습니다.
+
+---
+
+## Why Solana?
+
+MovieEscrow가 Solana를 선택한 이유는 관객에게 암호화폐 사용을 강요하기 위해서가
+아닙니다. **영화별 계약 규칙, 격리된 돈과 실행 결과를 하나의 검증 가능한 상태로
+묶기 위해서**입니다.
+
+<p align="center">
+  <img src="assets/readme/why-solana.svg" width="100%" alt="MovieEscrow가 Solana를 사용하는 네 가지 이유: PDA 에스크로, 원자적 실행, 회차 단위 처리와 공개 검증" />
+</p>
+
+| Solana 특성        | MovieEscrow 구현                                                                       | 정산에서 생기는 효과                                                       |
+| ------------------ | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| 개인키 없는 PDA    | `movie_id`로 영화별 Escrow PDA와 역할별 Allocation PDA를 결정론적으로 파생합니다.      | 극장·배급사 어느 한쪽도 Vault의 돈을 임의로 꺼낼 수 없습니다.              |
+| 프로그램 규칙 집행 | `deposit`, `settle_batch`, `mark_disputed`, `claim`이 Anchor 프로그램 검사를 거칩니다. | 사람이 승인한 규칙과 계정 제약을 통과한 상태 변경만 실행됩니다.            |
+| 원자적 트랜잭션    | 한 배치의 권리자별 귀속과 에스크로 상태 갱신이 같은 실행 단위에서 처리됩니다.          | 일부만 기록된 중간 상태를 남기지 않고 전체가 성공하거나 전체가 취소됩니다. |
+| 낮은 실행 오버헤드 | 정상 회차 정산과 이상 금액 보류를 회차·권리자 단위 instruction으로 분리했습니다.       | 작은 금액을 자주 처리하고 문제 금액만 정밀하게 멈추는 구조에 맞습니다.     |
+| 공개 검증 가능성   | 트랜잭션 서명, slot, 이벤트와 계정 상태를 대시보드·Explorer에서 연결합니다.            | 정산 당사자가 같은 실행 기록과 현재 잔액을 직접 확인할 수 있습니다.        |
+
+즉 Solana는 MovieEscrow의 결제 장식이 아니라 **중립적인 정산 실행 레이어**입니다.
+AI가 이상 여부와 근거를 제안하면, Solana 프로그램이 권한·금액·상태 전이를 다시
+검사하고 승인된 범위만 실행합니다.
+
+<sub>기술 근거: [Program Derived Address](https://solana.com/ko/docs/core/pda) · [원자적 트랜잭션 실행](https://solana.com/docs/intro/quick-start/writing-to-network) · [트랜잭션 수수료 구조](https://solana.com/docs/core/fees)</sub>
 
 ---
 
