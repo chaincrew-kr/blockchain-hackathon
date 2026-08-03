@@ -16,7 +16,7 @@
 <br />
 
 [![Live Demo](https://img.shields.io/badge/LIVE-DEMO-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://chaincrew-web-612802760361.asia-northeast3.run.app)
-[![Project Report](https://img.shields.io/badge/PROJECT-REPORT-7867C7?style=for-the-badge&logo=readthedocs&logoColor=white)](docs/e2e/ChainCrew_Hackathon_Submission.html)
+[![Project Deck](https://img.shields.io/badge/PROJECT-DECK-7867C7?style=for-the-badge&logo=canva&logoColor=white)](#demo--submission)
 
 <br />
 
@@ -29,12 +29,12 @@
 
 ## Demo & Submission
 
-| 제출물         | 링크·상태                                                                                                               |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Live Demo      | [Google Cloud Run에서 실행](https://chaincrew-web-612802760361.asia-northeast3.run.app)                                 |
-| Demo Video     | YouTube 업로드 후 공개 영상 URL 연결 예정                                                                               |
-| Presentation   | Canva 작업 완료 후 **보기 전용** 발표자료 URL 연결 예정                                                                 |
-| Project Report | [HTML 보고서](docs/e2e/ChainCrew_Hackathon_Submission.html) · [PDF 보고서](docs/e2e/ChainCrew_Hackathon_Submission.pdf) |
+| 제출물           | 링크·상태                                                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Live Demo        | [Google Cloud Run에서 실행](https://chaincrew-web-612802760361.asia-northeast3.run.app)                                 |
+| Demo Video       | YouTube 업로드 후 공개 영상 URL 연결 예정                                                                               |
+| Project Deck     | Canva 작업 완료 후 **보기 전용** 소개서 URL 연결 예정                                                                   |
+| Technical Report | [HTML 보고서](docs/e2e/ChainCrew_Hackathon_Submission.html) · [PDF 보고서](docs/e2e/ChainCrew_Hackathon_Submission.pdf) |
 
 심사용 Live Demo 접속정보는 제출 채널을 통해 별도로 전달합니다.
 
@@ -269,32 +269,48 @@ flowchart TB
 
 ---
 
-## Quick Start
+## Live Demo
+
+제출 빌드는 Google Cloud Run에서 바로 확인할 수 있습니다.
+
+> **[MovieEscrow Live Demo 열기](https://chaincrew-web-612802760361.asia-northeast3.run.app)**
+
+심사용 로그인 정보는 제출 채널을 통해 별도로 전달합니다.
+
+<details>
+<summary><strong>Local Development · Docker</strong></summary>
 
 ### Prerequisites
 
-| 영역        | 필요 환경                     |
-| ----------- | ----------------------------- |
-| Web · Agent | Node.js 22.10+, npm 10+       |
-| Blockchain  | Rust, Anchor 0.31, Solana CLI |
-| AI          | Gemini API Key                |
-| Network     | Solana Localnet 또는 Devnet   |
+Docker Desktop 또는 Docker Engine과 Compose 플러그인이 필요합니다. Gemini·KOBIS 기능을
+직접 호출하려면 `.env`에 각 API 키를 입력합니다.
 
 ```bash
 git clone https://github.com/chaincrew-kr/blockchain-hackathon.git
 cd blockchain-hackathon
-npm install
 cp .env.example .env
+docker compose up --build
 ```
 
-| 서비스           | 실행 명령           | 기본 주소                        |
-| ---------------- | ------------------- | -------------------------------- |
-| Web              | `npm run dev:web`   | `http://localhost:4020`          |
-| Settlement Agent | `npm run dev:agent` | `http://localhost:4030/health`   |
-| 전체 검사        | `npm run check`     | lint · typecheck · test · format |
+| 서비스           | 주소                           |
+| ---------------- | ------------------------------ |
+| MovieEscrow Web  | `http://localhost:4020`        |
+| Settlement Agent | `http://localhost:4030/health` |
 
-로컬에서는 `CHAIN_MODE=stub`으로 외부 체인 호출 없이 개발할 수 있고, 제출용 Cloud
-Run Agent는 `anchor` 모드로 Solana Devnet에 연결됩니다.
+종료할 때는 `docker compose down`을 실행합니다. 기본 구성은 별도 서명키 없이 제품
+흐름을 확인하는 로컬 개발 환경입니다.
+
+#### Docker 없이 실행
+
+```bash
+npm install
+npm run dev:agent
+npm run dev:web
+```
+
+전체 검사는 `npm run check`로 실행합니다.
+
+</details>
 
 ---
 
@@ -303,13 +319,13 @@ Run Agent는 `anchor` 모드로 Solana Devnet에 연결됩니다.
 ```text
 blockchain-hackathon/
 ├── apps/
-│   ├── web/                 # [A] 구매 웹 · 계약 백오피스 · 대시보드
-│   └── agent/               # [D] 위험조정검증 · 정산 판단 · 로그 API
+│   ├── web/                 # 구매 웹 · 계약 백오피스 · 대시보드
+│   └── agent/               # 위험조정검증 · 정산 판단 · 로그 API
 ├── packages/
-│   ├── ai-data/             # [A] Gemini 판정 설명 · KOBIS 클라이언트
+│   ├── ai-data/             # Gemini 판정 설명 · KOBIS 클라이언트
 │   └── schema/              # 팀 공용 TypeScript 인터페이스 · IDL
 ├── programs/
-│   └── movie_escrow/        # [B·C] Anchor 에스크로 프로그램
+│   └── movie_escrow/        # Anchor 에스크로 프로그램
 ├── tools/
 │   ├── devnet-seed/         # 공동 서명 init · 테스트 민트 · Escrow 시딩
 │   └── wallet/              # Localnet·Devnet 지갑 도구

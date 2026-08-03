@@ -1,0 +1,44 @@
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: apps/agent/Dockerfile
+    environment:
+      PORT: 4030
+      AGENT_CORS_ORIGINS: http://localhost:4020
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    ports:
+      - "4030:4030"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4030/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    init: true
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_SOLANA_RPC_URL: ${VITE_SOLANA_RPC_URL:-https://api.devnet.solana.com}
+        VITE_SOLANA_CLUSTER: ${VITE_SOLANA_CLUSTER:-devnet}
+        VITE_MOVIE_ID: ${VITE_MOVIE_ID:-indie-2026-001}
+    environment:
+      PORT: 4020
+      AGENT_BASE_URL: http://agent:4030
+      AGENT_USE_IAM_AUTH: "false"
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      KOBIS_API_KEY: ${KOBIS_API_KEY:-}
+    ports:
+      - "4020:4020"
+    depends_on:
+      agent:
+        condition: service_healthy
+    init: true
