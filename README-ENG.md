@@ -17,6 +17,7 @@ the amount under review is held separately.
 <br />
 
 [![Live Demo](https://img.shields.io/badge/LIVE-DEMO-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://chaincrew-web-612802760361.asia-northeast3.run.app)
+[![Demo Video](https://img.shields.io/badge/DEMO-VIDEO-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=LfPpaVcJWmo)
 [![Project Deck](https://img.shields.io/badge/PROJECT-DECK-7867C7?style=for-the-badge&logo=canva&logoColor=white)](https://canva.link/xl9hzx1jjj2uyuc)
 
 <br />
@@ -41,7 +42,7 @@ before settlement.</em>
 | Deliverable  | Link / Status                                                                         |
 | ------------ | ------------------------------------------------------------------------------------- |
 | Live Demo    | [Run on Google Cloud Run](https://chaincrew-web-612802760361.asia-northeast3.run.app) |
-| Demo Video   | Public YouTube link will be added after upload                                        |
+| Demo Video   | [Watch the three-minute demo on YouTube](https://www.youtube.com/watch?v=LfPpaVcJWmo) |
 | Project Deck | [Open the project deck in Canva](https://canva.link/xl9hzx1jjj2uyuc)                  |
 
 Live Demo credentials are delivered separately through the hackathon submission channel.
