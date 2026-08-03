@@ -18,6 +18,7 @@ import type {
 } from "@chaincrew/schema";
 
 import { BarChart } from "../../components/BarChart";
+import { ClockIcon } from "../../components/ClockIcon";
 import {
   describeAgentError,
   fetchKobisDaily,
@@ -153,9 +154,11 @@ export function DashboardPage() {
     <section className="screen">
       <p className="eyebrow">STAGE 6 — 투명 대시보드 · 전 권리자 공개</p>
       <h1>“붉은 노을 아래” 정산 현황</h1>
-      <p className="sub">
-        모든 숫자는 온체인 계정에서 직접 읽습니다. 판정은 에이전트가 내리지만,
-        근거는 전부 여기 공개됩니다.
+      <p className="sub" style={{ maxWidth: "none", whiteSpace: "nowrap" }}>
+        숫자는 전부 온체인 계정에서 그대로 가져옵니다.
+        <br />
+        보류할지 말지는 에이전트가 판단하지만, 그렇게 판단한 이유를 함께
+        제시합니다.
       </p>
 
       <div className="flow" aria-label="에스크로 상태머신">
@@ -184,10 +187,12 @@ export function DashboardPage() {
           disabled={batchState === "running"}
           onClick={handleTrigger}
         >
-          {batchState === "running" && <span className="spinner" />}
-          {batchState === "running"
-            ? "정산 배치 실행 중…"
-            : "정산일 도래 — 시간 압축 ▸"}
+          {batchState === "running" ? (
+            <span className="spinner" />
+          ) : (
+            <ClockIcon />
+          )}
+          {batchState === "running" ? "정산 배치 실행 중…" : "정산일 도래"}
         </button>
         {batchResult?.replayed && (
           <span className="chip state-dim">재생됨 — 기존 결과</span>

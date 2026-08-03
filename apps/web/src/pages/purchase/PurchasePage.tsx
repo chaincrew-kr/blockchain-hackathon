@@ -123,8 +123,10 @@ export function PurchasePage() {
       <p className="eyebrow">STAGE 1 — 자금 유입 · 관객 화면</p>
       <h1>티켓 예매</h1>
       <p className="sub" style={{ maxWidth: "none", whiteSpace: "nowrap" }}>
-        결제 수취 주소가 곧 영화별 에스크로 PDA입니다. 경유 계좌 없이, 결제
-        순간부터 정산 규칙이 자금을 격리합니다.
+        이 결제는 중간에 아무 계좌도 거치지 않습니다.
+        <br />
+        결제 버튼을 누르는 순간 티켓 값은 곧장 이 영화의 전용 에스크로로 들어가,
+        극장도 배급사도, 그 돈을 먼저 만질 수 없습니다.
       </p>
 
       <div className="grid purchase-grid">
