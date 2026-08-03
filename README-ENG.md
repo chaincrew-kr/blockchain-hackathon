@@ -17,7 +17,7 @@ the amount under review is held separately.
 <br />
 
 [![Live Demo](https://img.shields.io/badge/LIVE-DEMO-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://chaincrew-web-612802760361.asia-northeast3.run.app)
-[![Project Report](https://img.shields.io/badge/PROJECT-REPORT-7867C7?style=for-the-badge&logo=readthedocs&logoColor=white)](docs/e2e/ChainCrew_Hackathon_Submission.html)
+[![Project Deck](https://img.shields.io/badge/PROJECT-DECK-7867C7?style=for-the-badge&logo=canva&logoColor=white)](#demo--submission)
 
 <br />
 
@@ -31,12 +31,12 @@ before settlement.</em>
 
 ## Demo & Submission
 
-| Deliverable    | Link / Status                                                                                                           |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Live Demo      | [Run on Google Cloud Run](https://chaincrew-web-612802760361.asia-northeast3.run.app)                                   |
-| Demo Video     | Public YouTube link will be added after upload                                                                          |
-| Presentation   | View-only Canva link will be added after finalization                                                                   |
-| Project Report | [HTML report](docs/e2e/ChainCrew_Hackathon_Submission.html) · [PDF report](docs/e2e/ChainCrew_Hackathon_Submission.pdf) |
+| Deliverable      | Link / Status                                                                                                           |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Live Demo        | [Run on Google Cloud Run](https://chaincrew-web-612802760361.asia-northeast3.run.app)                                   |
+| Demo Video       | Public YouTube link will be added after upload                                                                          |
+| Project Deck     | View-only Canva project deck URL will be added after finalization                                                       |
+| Technical Report | [HTML report](docs/e2e/ChainCrew_Hackathon_Submission.html) · [PDF report](docs/e2e/ChainCrew_Hackathon_Submission.pdf) |
 
 Live Demo credentials are delivered separately through the hackathon submission channel.
 
@@ -279,32 +279,48 @@ flowchart TB
 
 ---
 
-## Quick Start
+## Live Demo
+
+The submission build is available directly on Google Cloud Run.
+
+> **[Open the MovieEscrow Live Demo](https://chaincrew-web-612802760361.asia-northeast3.run.app)**
+
+Judge credentials are delivered separately through the hackathon submission channel.
+
+<details>
+<summary><strong>Local Development · Docker</strong></summary>
 
 ### Prerequisites
 
-| Area        | Requirement                   |
-| ----------- | ----------------------------- |
-| Web · Agent | Node.js 22.10+, npm 10+       |
-| Blockchain  | Rust, Anchor 0.31, Solana CLI |
-| AI          | Gemini API key                |
-| Network     | Solana Localnet or Devnet     |
+Docker Desktop or Docker Engine with the Compose plugin is required. Add the Gemini and
+KOBIS API keys to `.env` when testing those integrations directly.
 
 ```bash
 git clone https://github.com/chaincrew-kr/blockchain-hackathon.git
 cd blockchain-hackathon
-npm install
 cp .env.example .env
+docker compose up --build
 ```
 
-| Service          | Command             | Default address / result             |
-| ---------------- | ------------------- | ------------------------------------ |
-| Web              | `npm run dev:web`   | `http://localhost:4020`              |
-| Settlement Agent | `npm run dev:agent` | `http://localhost:4030/health`       |
-| Full check       | `npm run check`     | lint · typecheck · test · formatting |
+| Service          | Address                        |
+| ---------------- | ------------------------------ |
+| MovieEscrow Web  | `http://localhost:4020`        |
+| Settlement Agent | `http://localhost:4030/health` |
 
-Local development can use `CHAIN_MODE=stub` without an external chain call. The submitted
-Cloud Run Agent uses `anchor` mode and connects to Solana Devnet.
+Run `docker compose down` to stop the stack. The default configuration is a local
+development environment that demonstrates the product flow without a signing key.
+
+#### Run without Docker
+
+```bash
+npm install
+npm run dev:agent
+npm run dev:web
+```
+
+Run the complete validation suite with `npm run check`.
+
+</details>
 
 ---
 
@@ -313,13 +329,13 @@ Cloud Run Agent uses `anchor` mode and connects to Solana Devnet.
 ```text
 blockchain-hackathon/
 ├── apps/
-│   ├── web/                 # [A] Purchase · contract back office · dashboard
-│   └── agent/               # [D] Risk checks · settlement decisions · log API
+│   ├── web/                 # Purchase · contract back office · dashboard
+│   └── agent/               # Risk checks · settlement decisions · log API
 ├── packages/
-│   ├── ai-data/             # [A] Gemini explanations · KOBIS client
+│   ├── ai-data/             # Gemini explanations · KOBIS client
 │   └── schema/              # Shared TypeScript interfaces · Anchor IDL
 ├── programs/
-│   └── movie_escrow/        # [B·C] Anchor escrow program
+│   └── movie_escrow/        # Anchor escrow program
 ├── tools/
 │   ├── devnet-seed/         # Co-signed init · test mint · Escrow seeding
 │   └── wallet/              # Localnet · Devnet wallet tools
