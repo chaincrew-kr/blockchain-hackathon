@@ -182,10 +182,11 @@ export function BackofficePage() {
     <section className="screen">
       <p className="eyebrow">STAGE 0 — 계약 온보딩</p>
       <h1>계약 온보딩</h1>
-      <p className="sub">
-        상영계약서 PDF에서 Gemini가 정산 규칙을 추출합니다. 배급·상영 양측이
-        승인해야 규칙 vN이 확정되고, 해시가 온체인에 등록된 뒤에는 AI도 변경할
-        수 없습니다.
+      <p className="sub" style={{ maxWidth: "none", whiteSpace: "nowrap" }}>
+        상영계약서 PDF에서 Gemini가 정산 규칙을 추출하고, 이 규칙은 배급사와
+        극장, 둘 다 승인해야 확정됩니다.
+        <br />
+        그리고 한 번 온체인에 새겨지면, 그 뒤로는 AI도 손댈 수 없습니다.
       </p>
 
       <div className="steps" role="list">
