@@ -1,33 +1,18 @@
 <div align="center">
 
-<img src="assets/readme/repository-cover.png" width="100%" alt="AI 영화 정산 에이전트 — 온체인 에스크로와 정산 흐름을 표현한 커버" />
+<img src="assets/brand/movie-escrow-logo-web-final.png" width="720" alt="MovieEscrow 로고" />
 
-<h1>AI Movie Settlement</h1>
+<h1>MovieEscrow</h1>
 
-**AI-Powered On-Chain Settlement Infrastructure for Independent Cinema**
+**독립영화 티켓 매출을 계약대로 분리하고 지급하는 AI 온체인 정산 인프라**
 
-_독립영화 티켓 매출을 결제 순간부터 에스크로에 격리하고, AI 에이전트가 계약
-규칙과 발권 기록을 검증해 정상 금액은 자동 정산하며 이상 금액만 보류합니다._
+계약서를 실행 가능한 규칙으로 바꾸고, 결제금을 영화별 Escrow에 격리합니다.
+정상 금액은 권리자별로 귀속하고 문제가 있는 금액만 분리해 보류합니다.
 
 <br />
 
-[![Product Brief](https://img.shields.io/badge/PRODUCT-BRIEF-343755?style=for-the-badge&logo=readthedocs&logoColor=white)](docs/PRODUCT_BRIEF.md)
-[![Requirements](https://img.shields.io/badge/DOCS-REQUIREMENTS-4d4d4d?style=for-the-badge&logo=readthedocs&logoColor=white)](docs/indie_cinema_requirements.html)
-[![Product Spec](https://img.shields.io/badge/DOCS-PRODUCT_SPEC-4d4d4d?style=for-the-badge&logo=readthedocs&logoColor=white)](docs/indie_cinema_product_spec.html)
-[![Execution Plan](https://img.shields.io/badge/DOCS-EXECUTION_PLAN-4d4d4d?style=for-the-badge&logo=readthedocs&logoColor=white)](docs/최종%20실행계획서.html)
-[![Submission Report](https://img.shields.io/badge/SUBMISSION-HTML-E95D3C?style=for-the-badge&logo=html5&logoColor=white)](docs/e2e/ChainCrew_Hackathon_Submission.html)
-[![Submission PDF](https://img.shields.io/badge/SUBMISSION-PDF-B83232?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)](docs/e2e/ChainCrew_Hackathon_Submission.pdf)
 [![Live Demo](https://img.shields.io/badge/LIVE-DEMO-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://chaincrew-web-612802760361.asia-northeast3.run.app)
-
-<br />
-
-![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![Express](https://img.shields.io/badge/Express_5-000000?style=flat-square&logo=express&logoColor=white)
-![Solana](https://img.shields.io/badge/Solana-000000?style=flat-square&logo=solana&logoColor=14F195)
-![Rust](https://img.shields.io/badge/Rust-000000?style=flat-square&logo=rust&logoColor=white)
-![Google Cloud](https://img.shields.io/badge/Google_Cloud-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
-![Gemini](https://img.shields.io/badge/Gemini-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)
+[![Project Report](https://img.shields.io/badge/PROJECT-REPORT-7867C7?style=for-the-badge&logo=readthedocs&logoColor=white)](docs/e2e/ChainCrew_Hackathon_Submission.html)
 
 <br />
 
@@ -47,9 +32,7 @@ _독립영화 티켓 매출을 결제 순간부터 에스크로에 격리하고,
 | Presentation   | Canva 작업 완료 후 **보기 전용** 발표자료 URL 연결 예정                                                                 |
 | Project Report | [HTML 보고서](docs/e2e/ChainCrew_Hackathon_Submission.html) · [PDF 보고서](docs/e2e/ChainCrew_Hackathon_Submission.pdf) |
 
-Live Demo는 정산 실행 API 보호를 위해 로그인이 필요합니다. 심사용 접속정보는 공개
-저장소에 기록하지 않고 제출 채널을 통해 별도로 전달합니다. Canva 공동편집 링크 역시
-공개하지 않고, 최종 제출에는 보기 전용 링크만 사용합니다.
+심사용 Live Demo 접속정보는 제출 채널을 통해 별도로 전달합니다.
 
 ---
 
@@ -59,7 +42,7 @@ Live Demo는 정산 실행 API 보호를 위해 로그인이 필요합니다. �
 제작사와 투자자에게 사후 정산됩니다. 중간 사업자에게 유동성 문제나 회생·파산이
 발생하면 이미 판매된 표의 권리자 몫까지 운영자금과 함께 묶일 수 있습니다.
 
-**AI Movie Settlement**는 티켓 결제금을 영화별 Solana 에스크로 PDA로 직접
+**MovieEscrow**는 티켓 결제금을 영화별 Solana 에스크로 PDA로 직접
 유입시켜 사업자의 자금과 분리합니다. AI 에이전트는 사람이 승인한 계약 규칙과
 회차별 발권·환불 입력, 과거 상영관 이력과 온체인 계정 상태를 검증합니다. 정상
 금액은 권리자별로 귀속하고, 문제가 있는 회차·금액만 `Disputed` 상태로 격리한 뒤
@@ -104,7 +87,7 @@ Live Demo는 정산 실행 API 보호를 위해 로그인이 필요합니다. �
 KOBIS
 → 얼마가 판매됐는지 저장·집계
 
-AI Movie Settlement
+MovieEscrow
 → 어떤 계약 규칙을 적용할지 확정
 → 공제와 권리자별 몫 계산
 → 자금 격리
@@ -112,17 +95,9 @@ AI Movie Settlement
 → 이상 금액만 보류
 ```
 
-> **KOBIS가 영화별 매출의 발생 사실을 보여주는 데이터 인프라라면, AI Movie
-> Settlement는 그 데이터를 승인된 계약 규칙과 실제 자금 흐름에 연결해 권리자의
+> **KOBIS가 영화별 매출의 발생 사실을 보여주는 데이터 인프라라면,
+> MovieEscrow는 그 데이터를 승인된 계약 규칙과 실제 자금 흐름에 연결해 권리자의
 > 몫을 확정·격리·지급하는 실행 인프라입니다.**
-
-### 현재 데모와 현실 적용의 경계
-
-해커톤에서는 관객 역할 지갑이 Devnet USDC를 영화별 PDA로 직접 보내 자금 격리
-메커니즘을 증명합니다. 실제 서비스에서는 관객에게 암호화폐 결제를 요구하는 대신,
-기존 원화 결제를 PG·신탁·에스크로 계좌와 연결해 수납 단계부터 정산 대상 자금을
-분리해야 합니다. 이 법정화폐 연동과 규제·회계 검토는 현재 MVP 범위 밖이며
-상용화 로드맵에 해당합니다.
 
 ---
 
@@ -195,12 +170,6 @@ flowchart LR
   Dashboard --> Claim["권리자 Claim·Explorer"]
 ```
 
-현재 MVP는 **별도의 유료 증빙 API 구매 없이** 승인 계약, 정규화한 발권·환불
-데이터, Solana 계정 상태와 KOBIS 사후 대조로 실행합니다. x402/pay.sh는 현재 실행
-경로가 아니라 Phase 2 확장안입니다. 신규 상영관이나 환불 불일치처럼 외부 검증이
-필요한 경우에만 정책과 예산을 확인한 뒤 신뢰도·증빙 데이터를 조건부 구매하는
-구조로 설계했습니다.
-
 ---
 
 ## System Architecture
@@ -220,7 +189,7 @@ flowchart TB
   end
 
   subgraph Solana["Solana Devnet"]
-    Program["Movie Escrow · Anchor"]
+    Program["MovieEscrow · Anchor"]
     PDA["영화별 Escrow PDA"]
   end
 
@@ -243,7 +212,7 @@ flowchart TB
 | ---------------- | -------------------------------------------------- | --------------------------------------------- |
 | React Web        | 계약 승인, 구매 시연, 정산 결과 시각화             | Gemini, Agent API, Solana                     |
 | Settlement Agent | 이력 조회, 정합성 검증, 정산 판단, 체인 호출       | Solana RPC, Gemini, Dashboard                 |
-| Movie Escrow     | 자금 격리, 귀속, 부분 보류, 인출 제한과 분쟁 해결  | Solana Devnet                                 |
+| MovieEscrow      | 자금 격리, 귀속, 부분 보류, 인출 제한과 분쟁 해결  | Solana Devnet                                 |
 | Google Cloud     | Web·Agent 배포, 인증 배치 트리거, 로그·비밀값 관리 | Cloud Run, Secret Manager, Scheduler, Logging |
 
 ---
@@ -295,16 +264,11 @@ blockchain-hackathon/
 ├── scripts/
 │   └── demo-claim.ts        # Claim · 초과 인출 · 분쟁 해제 리허설
 ├── docs/                    # 요구사항 · 스펙 · 실행계획 · 작업 문서
-├── assets/readme/           # README 커버 · 소셜 이미지
-├── legacy/                  # Phase 2용 x402 결제 PoC
+├── assets/                  # 브랜드 · README · 보고서 이미지
 ├── Anchor.toml
 ├── Cargo.toml
 └── package.json
 ```
-
-Anchor instruction별 B·C 담당은
-[`programs/movie_escrow/README.md`](programs/movie_escrow/README.md)의 역할표를
-기준으로 합니다.
 
 ---
 
@@ -319,72 +283,22 @@ Anchor instruction별 B·C 담당은
 | Payment       | Phantom Wallet Adapter · Solana Devnet USDC             |
 | Cloud         | Google Cloud Run · Secret Manager · Scheduler · Logging |
 | Testing       | Vitest · TypeScript · ESLint · Prettier                 |
-| Roadmap       | x402 · pay.sh · 원화 PG/신탁 연동                       |
 
 ---
 
-## Development Status
+## Verified on Devnet
 
-2026년 8월 3일 제출 빌드 기준입니다.
+2026년 8월 3일 제출 빌드에서 아래 흐름을 검증했습니다.
 
-| 영역        | 현재 상태                                                                                             |
-| ----------- | ----------------------------------------------------------------------------------------------------- |
-| 계약 온보딩 | Cloud Run 웹에서 PDF → Gemini 규칙 추출, 충돌 탐지, 양측 승인 → Phantom `init_escrow` 연결 완료       |
-| 관객 결제   | Phantom Wallet Adapter와 Devnet USDC `deposit` 경로 배포; 발표 지갑의 최종 수동 서명 리허설만 남음    |
-| 온체인 정산 | Devnet 프로그램 배포, 실제 `settle_batch` 2건과 `mark_disputed` 4건 확인                              |
-| 분쟁·인출   | 별도 연습 Escrow에서 정상 Claim, 초과 인출 거부, 분쟁 중 인출 거부와 해제 후 Claim 확인               |
-| Agent       | 위험 검증, 진행·부분 보류 판정, Anchor Gateway와 IAM 보호 Cloud Run 배포 완료                         |
-| Cloud       | Web·Agent Cloud Run Ready, Secret Manager, 인증 Scheduler 구성; 재정산 방지를 위해 Scheduler `PAUSED` |
-| 자동 검사   | Agent 42개, AI Data 4개, Devnet Seed 3개 — 총 49개 통과                                               |
-
-### 현재 한계
-
-- 대시보드의 판정·트랜잭션은 라이브 API와 연결되지만 일부 잔액·상태 표시는 데모
-  스냅샷을 함께 사용합니다.
-- 제출용 `indie-2026-001` Escrow는 이미 정산되어 `pending`이 0입니다. 같은
-  Escrow에서 배치를 다시 실행하지 않고 기존 Devnet 결과를 시연합니다.
-- 백오피스는 계약서 해시에서 새 `movieId`와 Escrow를 만들지만 구매 화면은 아직
-  빌드 설정 `VITE_MOVIE_ID`를 사용합니다. 새 Escrow에서 실제 결제하려면 그 값을
-  맞춰 Web을 재배포하거나 두 화면을 런타임으로 연결해야 합니다
-  ([이슈 #66](https://github.com/chaincrew-kr/blockchain-hackathon/issues/66)).
-- 브라우저 `init_escrow`는 해커톤 시연을 위해 연결된 Phantom 지갑을 payer와
-  authority로 함께 사용합니다. 운영 환경에서는 Agent authority의 별도 승인과 키
-  관리 절차로 분리해야 합니다.
-- 무료 발권은 관객의 결제 버튼이 아니라 극장 발권 원장·회차 데이터의 입력입니다.
-  현재 이상 시나리오는 Agent fixture로 재현하며 극장용 발권 입력 UI는 후속
-  범위입니다.
-- x402/pay.sh, 원화 PG·신탁 연동과 영속 Firestore 저장은 상용화 단계의 범위이며
-  현재 MVP 구현으로 표시하지 않습니다.
-
-구현 근거와 시연 순서는 [제출용 HTML 보고서](docs/e2e/ChainCrew_Hackathon_Submission.html)와
-[PDF 보고서](docs/e2e/ChainCrew_Hackathon_Submission.pdf)에서 확인할 수 있습니다.
-
-자세한 D 파트 진행 상황은 [D 작업 체크리스트](docs/ponyo_work/README.md)에서
-확인할 수 있습니다.
-
-화면·에이전트·Anchor 간 필드, 금액 단위, 상태 전이와 변경 절차는
-[공통 스키마 계약 관리 가이드](docs/SCHEMA_CONTRACT.md)를 기준으로 관리합니다.
-
----
-
-## Collaboration
-
-```text
-feature/* → dev → main
-```
-
-- 모든 기능은 `feature/*` 브랜치에서 개발하고 PR로 `dev`에 통합합니다.
-- `packages/schema` 변경은 전원 리뷰가 필요합니다.
-- `packages/ai-data`는 A가 소유하고, D는 공개 인터페이스만 사용합니다.
-- B·C는 [movie_escrow 역할표](programs/movie_escrow/README.md)에 정의된
-  instruction 파일을 각각 담당하고 `state.rs`, `lib.rs`, `error.rs`, `mod.rs`는
-  공동으로 확인합니다.
-- 지갑·개인키·API 키는 Git에 커밋하지 않습니다.
-- 지갑·정산 코드 PR은 B·C 중 한 명이 추가 확인합니다.
-- D의 판정 파이프라인은 B·C의 Anchor IDL과 A의 대시보드 API 계약을 함께
-  확인합니다.
-
-자세한 내용은 [Git 운영 가이드](docs/team/GIT_WORKFLOW.md)를 참고하세요.
+| 검증 항목        | 결과                                                                     |
+| ---------------- | ------------------------------------------------------------------------ |
+| 계약 온보딩      | PDF 업로드, Gemini 규칙 추출, 충돌 탐지, 양측 승인과 `init_escrow` 연결  |
+| 관객 결제        | Phantom Wallet Adapter를 통한 Devnet USDC `deposit`                      |
+| 온체인 정산      | Devnet 프로그램 배포, 실제 `settle_batch` 2건과 `mark_disputed` 4건 기록 |
+| 분쟁·인출        | 정상 Claim, 초과 인출 거부, 분쟁 중 인출 거부와 해제 후 Claim            |
+| Settlement Agent | 위험 검증, 정상·부분 보류 판정, Anchor 트랜잭션 실행과 판단 로그 API     |
+| Cloud 배포       | Web·Agent Cloud Run, Secret Manager, 인증 Scheduler와 Cloud Logging      |
+| 자동 검사        | Agent 42개, AI Data 4개, Devnet Seed 3개 — 총 49개 통과                  |
 
 ---
 
@@ -407,7 +321,7 @@ feature/* → dev → main
 
 <div align="center">
 
-<img src="assets/readme/repository-square.jpg" width="72" alt="AI Movie Settlement emblem" />
+<img src="assets/brand/movie-escrow-logo-v2.png" width="96" alt="MovieEscrow 엠블럼" />
 
 **Google Cloud × Solana AI Agentic Commerce Hackathon**
 
