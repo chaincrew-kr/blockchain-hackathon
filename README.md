@@ -1,6 +1,10 @@
 <div align="center">
 
-<img src="assets/brand/movie-escrow-logo-web-final.png" width="720" alt="MovieEscrow 로고" />
+**[한국어](README.md) · [English](README-ENG.md)**
+
+<br />
+
+<img src="assets/brand/movie-escrow-logo-web-final.png" width="90%" alt="MovieEscrow 로고" />
 
 <h1>MovieEscrow</h1>
 
@@ -48,6 +52,12 @@
 금액은 권리자별로 귀속하고, 문제가 있는 회차·금액만 `Disputed` 상태로 격리한 뒤
 각 권리자가 자기 몫을 인출합니다.
 
+<p align="center">
+  <img src="assets/readme/movie-escrow-settlement-visual.png" width="100%" alt="티켓 결제금이 영화별 에스크로를 거쳐 권리자별로 분리 정산되는 MovieEscrow 비주얼" />
+</p>
+
+<p align="center"><em>하나의 에스크로에서 정상 금액은 계속 흐르고, 이상 금액만 별도로 격리됩니다.</em></p>
+
 초기 대상은 새로운 결제·정산 레일을 빠르게 적용할 수 있는 **독립·예술영화
 전용관, 영화제와 공동체 상영 조직**입니다. 관객용 암호화폐 서비스가 아니라,
 관객 결제 뒤에서 작동하는 **B2B 정산 인프라**입니다.
@@ -64,6 +74,17 @@
 
 - [영화인연대 — 메가박스중앙 미지급 정산금 문제에 대한 입장문](https://kifv.org/725)
 - [연합뉴스 — 메가박스 악재에 돈줄 막힌 영화계](https://www.yna.co.kr/view/AKR20260717054700005)
+
+<table>
+  <tr>
+    <td width="50%"><a href="https://kifv.org/725"><img src="docs/e2e/evidence/kifv-unpaid-settlement.png" alt="영화인연대 미지급 정산금 입장문 화면" /></a></td>
+    <td width="50%"><a href="https://www.yna.co.kr/view/AKR20260717054700005"><img src="docs/e2e/evidence/yonhap-unpaid-settlement.png" alt="메가박스 미지급 정산금 관련 연합뉴스 보도 화면" /></a></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>영화인연대 입장문 · 2026. 7. 9.</sub></td>
+    <td align="center"><sub>연합뉴스 보도 · 2026. 7. 19.</sub></td>
+  </tr>
+</table>
 
 이 사례가 보여준 문제는 “매출 데이터가 보이지 않는다”는 것만이 아닙니다. 관객이
 이미 낸 돈 가운데 권리자에게 돌아가야 할 몫이 중간 사업자의 운영자금과 분리되지
@@ -146,6 +167,37 @@ MovieEscrow
 | 인출 제한        | 각 권리자는 자기 `Claimable` 잔액까지만 인출할 수 있으며 초과 요청은 온체인에서 거부됩니다.           |
 | 설명 가능한 판단 | Gemini가 적용 정책, 근거 조항과 보류 사유를 자연어 리포트로 생성합니다.                               |
 | 투명 대시보드    | 상태머신, 권리자별 잔액, Explorer 링크와 판단 로그를 공개합니다.                                      |
+
+---
+
+## Product Walkthrough
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/manual/shots/03-contract-upload.png" alt="계약서 업로드와 Gemini 규칙 추출 화면" /></td>
+    <td width="50%"><img src="docs/manual/shots/04-contract-result.png" alt="계약 조건 추출과 충돌 확인 화면" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>1. 계약서 업로드</strong><br /><sub>상영계약서에서 정산 규칙과 근거 조항을 추출합니다.</sub></td>
+    <td align="center"><strong>2. 충돌 검토·승인</strong><br /><sub>충돌이 있으면 승인을 막고, 합의된 규칙만 확정합니다.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/manual/shots/01-purchase.png" alt="Phantom 지갑을 이용한 티켓 구매 화면" /></td>
+    <td width="50%"><img src="docs/manual/shots/05-dashboard-overview.png" alt="MovieEscrow 정산 대시보드 화면" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>3. 티켓 결제·격리</strong><br /><sub>결제금이 영화별 Escrow Vault로 직접 유입됩니다.</sub></td>
+    <td align="center"><strong>4. 부분 보류 정산</strong><br /><sub>정상 금액과 보류 금액, 권리자별 잔액을 함께 확인합니다.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/manual/shots/06-dashboard-evidence.png" alt="AI 판정 근거와 정책 검사 결과 화면" /></td>
+    <td width="50%"><img src="docs/manual/shots/07-dashboard-kobis.png" alt="KOBIS 대조 정보와 온체인 트랜잭션 화면" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>5. 판정 근거 공개</strong><br /><sub>적용 정책과 이상 탐지 근거를 사람이 확인할 수 있습니다.</sub></td>
+    <td align="center"><strong>6. 외부 대조·검증</strong><br /><sub>KOBIS 정보와 Explorer 기록을 한 화면에서 대조합니다.</sub></td>
+  </tr>
+</table>
 
 ---
 
