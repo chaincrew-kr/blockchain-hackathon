@@ -68,7 +68,7 @@ header {
 .topbar {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 14px 28px;
+  padding: 8px 28px;
   display: flex;
   align-items: center;
   gap: 16px;
