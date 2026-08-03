@@ -5,7 +5,7 @@
  * 업로드 전에는 업로드 카드만 보이고, 추출 결과/승인/온체인 등록 블록은
  * 실제 추출이 끝나기 전까진 아예 렌더링하지 않는다 (가짜 데이터로 헷갈리지 않게).
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import type { SettlementRule } from "@chaincrew/schema";
 
@@ -29,6 +29,7 @@ const STEPS = [
 ];
 
 export function BackofficePage() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -204,15 +205,33 @@ export function BackofficePage() {
             gap: 12,
             alignItems: "center",
             marginTop: 12,
+            flexWrap: "wrap",
           }}
         >
           <input
+            ref={fileInputRef}
             type="file"
             accept="application/pdf"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            style={{ display: "none" }}
           />
           <button
+            className="ghost"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {file ? "다른 파일 선택" : "PDF 파일 선택"}
+          </button>
+          {file && (
+            <span
+              className="mono"
+              style={{ fontSize: 12, color: "var(--mist)" }}
+            >
+              {file.name}
+            </span>
+          )}
+          <button
             className="pill"
+            style={{ minWidth: 140 }}
             onClick={handleExtract}
             disabled={!file || loading}
           >
@@ -294,7 +313,13 @@ export function BackofficePage() {
                 </tbody>
               </table>
             </div>
-            <p className="chart-caption" style={{ marginTop: 18 }}>
+            <p
+              className="chart-caption"
+              style={{
+                marginTop: 18,
+                ...(conflictCount === 0 ? { color: "var(--success)" } : {}),
+              }}
+            >
               {conflictCount > 0
                 ? `충돌 ${conflictCount}건이 열려 있습니다. 해결되기 전에는 양측 승인 버튼이 활성화되지 않습니다 — 규칙 생성은 항상 사람의 승인 뒤에 옵니다.`
                 : "충돌 없음. 양측 승인을 진행할 수 있습니다."}
@@ -332,7 +357,10 @@ export function BackofficePage() {
               <ul style={{ marginTop: 12, paddingLeft: 18 }}>
                 {rule.conflicts.map((c, i) => (
                   <li key={i} style={{ marginTop: 8, fontSize: 13.5 }}>
-                    <span className="chip" style={{ marginRight: 8 }}>
+                    <span
+                      className="chip state-danger"
+                      style={{ marginRight: 8 }}
+                    >
                       {c.fields.join(", ")}
                     </span>
                     {c.description}
@@ -365,7 +393,7 @@ export function BackofficePage() {
                     규칙 v1 승인
                   </button>
                   <span
-                    className={`chip ${rule.approvals.distributor ? "state-paid" : "state-dim"}`}
+                    className={`chip ${rule.approvals.distributor ? "state-success" : "state-dim"}`}
                   >
                     {rule.approvals.distributor ? "승인 완료" : "대기"}
                   </span>
@@ -390,7 +418,7 @@ export function BackofficePage() {
                     규칙 v1 승인
                   </button>
                   <span
-                    className={`chip ${rule.approvals.theater ? "state-paid" : "state-dim"}`}
+                    className={`chip ${rule.approvals.theater ? "state-success" : "state-dim"}`}
                   >
                     {rule.approvals.theater ? "승인 완료" : "대기"}
                   </span>
@@ -426,7 +454,6 @@ export function BackofficePage() {
                 </span>{" "}
                 신규 발행으로만 가능합니다.
               </p>
-
               {bothApproved && chainState !== "done" && (
                 <div style={{ marginTop: 14 }}>
                   <div className="label">상영관 지갑 주소 (Solana pubkey)</div>

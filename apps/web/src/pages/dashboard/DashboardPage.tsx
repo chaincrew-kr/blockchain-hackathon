@@ -138,7 +138,7 @@ export function DashboardPage() {
   return (
     <section className="screen">
       <p className="eyebrow">STAGE 6 — 투명 대시보드 · 전 권리자 공개</p>
-      <h1>《붉은 노을 아래》 정산 현황</h1>
+      <h1>“붉은 노을 아래” 정산 현황</h1>
       <p className="sub">
         모든 숫자는 온체인 계정에서 직접 읽습니다. 판정은 에이전트가 내리지만,
         근거는 전부 여기 공개됩니다.
@@ -246,7 +246,7 @@ export function DashboardPage() {
                 </span>
               </div>
               <p
-                className="serif"
+                className="prose"
                 style={{ marginTop: 14, color: "var(--mist)" }}
               >
                 {d.narrative}
@@ -313,7 +313,7 @@ export function DashboardPage() {
           </div>
           <div className="legend">
             <span>
-              <i style={{ background: "var(--white)" }} />
+              <i style={{ background: "var(--success)" }} />
               지급 완료
             </span>
             <span>
@@ -357,7 +357,7 @@ export function DashboardPage() {
       <div className="grid chart-pair">
         <div className="card">
           <h2>
-            《붉은 노을 아래》 일별 발권{" "}
+            “붉은 노을 아래” 일별 발권{" "}
             <span className="muted">— 우리 데모 · 건</span>
           </h2>
           <BarChart
