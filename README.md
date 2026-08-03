@@ -17,6 +17,7 @@ _독립영화 티켓 매출을 결제 순간부터 에스크로에 격리하고,
 [![Execution Plan](https://img.shields.io/badge/DOCS-EXECUTION_PLAN-4d4d4d?style=for-the-badge&logo=readthedocs&logoColor=white)](docs/최종%20실행계획서.html)
 [![Submission Report](https://img.shields.io/badge/SUBMISSION-HTML-E95D3C?style=for-the-badge&logo=html5&logoColor=white)](docs/e2e/ChainCrew_Hackathon_Submission.html)
 [![Submission PDF](https://img.shields.io/badge/SUBMISSION-PDF-B83232?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)](docs/e2e/ChainCrew_Hackathon_Submission.pdf)
+[![Live Demo](https://img.shields.io/badge/LIVE-DEMO-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://chaincrew-web-612802760361.asia-northeast3.run.app)
 
 <br />
 
@@ -45,8 +46,9 @@ _독립영화 티켓 매출을 결제 순간부터 에스크로에 격리하고,
 
 **AI Movie Settlement**는 티켓 결제금을 영화별 Solana 에스크로 PDA로 직접
 유입시켜 사업자의 자금과 분리합니다. AI 에이전트는 사람이 승인한 계약 규칙과
-온체인 발권·환불 기록을 검증하고, 정상 금액은 지급하며 문제가 있는 회차·금액만
-`Disputed` 상태로 격리합니다.
+회차별 발권·환불 입력, 과거 상영관 이력과 온체인 계정 상태를 검증합니다. 정상
+금액은 권리자별로 귀속하고, 문제가 있는 회차·금액만 `Disputed` 상태로 격리한 뒤
+각 권리자가 자기 몫을 인출합니다.
 
 초기 대상은 새로운 결제·정산 레일을 빠르게 적용할 수 있는 **독립·예술영화
 전용관, 영화제와 공동체 상영 조직**입니다. 관객용 암호화폐 서비스가 아니라,
@@ -129,8 +131,10 @@ AI Movie Settlement
 1. Gemini가 계약서에서 부율·수수료·MG·공제·정산일을 근거 조항과 함께
    구조화합니다.
 2. 배급사와 상영자가 추출 결과를 확인하고 승인합니다.
-3. 승인된 규칙의 해시와 버전을 온체인에 고정합니다.
-4. 티켓 결제금이 개인키가 없는 영화별 에스크로 PDA로 직접 들어갑니다.
+3. 양측 승인이 끝나면 Phantom 서명으로 `init_escrow`를 호출해 계약·규칙 해시와
+   버전, 영화별 Vault를 Solana에 등록합니다.
+4. 관객의 티켓 결제금이 개인키가 없는 해당 영화의 에스크로 Vault로 직접
+   들어갑니다.
 5. 정산 에이전트가 회차별 발권·환불 입력, 과거 상영관 이력과 온체인 계정 상태를
    바탕으로 환불률, 무료 발권과 좌석 초과를 검증합니다.
 6. 정상 회차는 승인된 규칙으로 귀속·분배하고 이상 회차의 금액만 보류합니다.
@@ -145,7 +149,7 @@ AI Movie Settlement
 
 | 기능             | 설명                                                                                                  |
 | ---------------- | ----------------------------------------------------------------------------------------------------- |
-| 계약 → 규칙      | Gemini Structured Output으로 정산 조건과 근거 조항을 추출하고 양측 승인 후 버전으로 고정합니다.       |
+| 계약 → 규칙      | Gemini가 정산 조건과 근거 조항을 추출하고, 양측 승인 후 `init_escrow`로 규칙 해시·버전을 등록합니다.  |
 | 결제 순간 격리   | Phantom 서명으로 보낸 Devnet USDC가 영화별 에스크로 Vault에 직접 유입되어 운영자금과 섞이지 않습니다. |
 | 위험조정검증     | 과거 이력에 따라 임계값을 조정하고 환불률·무료 발권·좌석 초과를 검사합니다.                           |
 | 부분 보류        | 문제가 있는 회차·금액만 `Disputed`로 격리하고 정상분 지급은 중단하지 않습니다.                        |
@@ -162,8 +166,9 @@ flowchart LR
   Contract["계약서 업로드"] --> Gemini["Gemini 규칙 추출"]
   Gemini --> Approval["배급사·상영자 승인"]
   Approval --> Rule["규칙 해시·버전 고정"]
-  Payment["Phantom Devnet 서명<br/>USDC 티켓 결제"] --> Escrow["영화별 Escrow PDA·Vault"]
-  Rule --> Escrow
+  Rule --> Init["Phantom init_escrow 서명<br/>테스트 Mint·Vault 생성"]
+  Init --> Escrow["영화별 Escrow PDA·Vault"]
+  Payment["Phantom Devnet 서명<br/>USDC 티켓 결제"] --> Escrow
   Batch["회차별 발권·환불 데이터"] --> Risk["위험조정검증"]
   KOBIS["KOBIS 익일 사후 대조"] -.-> Risk
   Escrow --> Risk["위험조정검증"]
@@ -208,6 +213,7 @@ flowchart TB
   Cloud["Cloud Run · Secret Manager<br/>Scheduler · Cloud Logging"]
 
   Backoffice --> Gemini
+  Backoffice -->|init_escrow| Program
   Ticket --> Program
   Program --> PDA
   PDA --> Verify
@@ -306,15 +312,15 @@ Anchor instruction별 B·C 담당은
 
 2026년 8월 3일 제출 빌드 기준입니다.
 
-| 영역        | 현재 상태                                                                                          |
-| ----------- | -------------------------------------------------------------------------------------------------- |
-| 계약 온보딩 | Cloud Run 웹에서 PDF → Gemini 규칙 추출, 충돌 탐지와 승인 게이트 확인                              |
-| 관객 결제   | Phantom Wallet Adapter와 Devnet USDC `deposit` 경로 배포; 발표 지갑의 최종 수동 서명 리허설만 남음 |
-| 온체인 정산 | Devnet 프로그램 배포, 실제 `settle_batch` 2건과 `mark_disputed` 4건 확인                           |
-| 분쟁·인출   | 별도 연습 Escrow에서 정상 Claim, 초과 인출 거부, 분쟁 중 인출 거부와 해제 후 Claim 확인            |
-| Agent       | 위험 검증, 진행·부분 보류 판정, Anchor Gateway와 IAM 보호 Cloud Run 배포 완료                      |
-| Cloud       | Web·Agent Cloud Run, Secret Manager, 인증 Scheduler 구성; 재정산 방지를 위해 Scheduler는 `PAUSED`  |
-| 자동 검사   | Agent 42개, AI Data 4개, Devnet Seed 3개 — 총 49개 통과                                            |
+| 영역        | 현재 상태                                                                                             |
+| ----------- | ----------------------------------------------------------------------------------------------------- |
+| 계약 온보딩 | Cloud Run 웹에서 PDF → Gemini 규칙 추출, 충돌 탐지, 양측 승인 → Phantom `init_escrow` 연결 완료       |
+| 관객 결제   | Phantom Wallet Adapter와 Devnet USDC `deposit` 경로 배포; 발표 지갑의 최종 수동 서명 리허설만 남음    |
+| 온체인 정산 | Devnet 프로그램 배포, 실제 `settle_batch` 2건과 `mark_disputed` 4건 확인                              |
+| 분쟁·인출   | 별도 연습 Escrow에서 정상 Claim, 초과 인출 거부, 분쟁 중 인출 거부와 해제 후 Claim 확인               |
+| Agent       | 위험 검증, 진행·부분 보류 판정, Anchor Gateway와 IAM 보호 Cloud Run 배포 완료                         |
+| Cloud       | Web·Agent Cloud Run Ready, Secret Manager, 인증 Scheduler 구성; 재정산 방지를 위해 Scheduler `PAUSED` |
+| 자동 검사   | Agent 42개, AI Data 4개, Devnet Seed 3개 — 총 49개 통과                                               |
 
 ### 현재 한계
 
@@ -322,6 +328,16 @@ Anchor instruction별 B·C 담당은
   스냅샷을 함께 사용합니다.
 - 제출용 `indie-2026-001` Escrow는 이미 정산되어 `pending`이 0입니다. 같은
   Escrow에서 배치를 다시 실행하지 않고 기존 Devnet 결과를 시연합니다.
+- 백오피스는 계약서 해시에서 새 `movieId`와 Escrow를 만들지만 구매 화면은 아직
+  빌드 설정 `VITE_MOVIE_ID`를 사용합니다. 새 Escrow에서 실제 결제하려면 그 값을
+  맞춰 Web을 재배포하거나 두 화면을 런타임으로 연결해야 합니다
+  ([이슈 #66](https://github.com/chaincrew-kr/blockchain-hackathon/issues/66)).
+- 브라우저 `init_escrow`는 해커톤 시연을 위해 연결된 Phantom 지갑을 payer와
+  authority로 함께 사용합니다. 운영 환경에서는 Agent authority의 별도 승인과 키
+  관리 절차로 분리해야 합니다.
+- 무료 발권은 관객의 결제 버튼이 아니라 극장 발권 원장·회차 데이터의 입력입니다.
+  현재 이상 시나리오는 Agent fixture로 재현하며 극장용 발권 입력 UI는 후속
+  범위입니다.
 - x402/pay.sh, 원화 PG·신탁 연동과 영속 Firestore 저장은 상용화 단계의 범위이며
   현재 MVP 구현으로 표시하지 않습니다.
 
