@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="620" viewBox="0 0 1440 620" role="img" aria-labelledby="title desc">
+  <title id="title">Why Solana for MovieEscrow</title>
+  <desc id="desc">Four Solana capabilities used by MovieEscrow: program-controlled PDA escrow, atomic settlement, fine-grained execution, and public proof.</desc>
+  <defs>
+    <linearGradient id="canvas" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#100b24"/>
+      <stop offset="0.5" stop-color="#06070d"/>
+      <stop offset="1" stop-color="#071a22"/>
+    </linearGradient>
+    <linearGradient id="solana" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9945ff"/>
+      <stop offset="0.5" stop-color="#14f195"/>
+      <stop offset="1" stop-color="#00d1ff"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff5f6d"/>
+      <stop offset="1" stop-color="#ffc371"/>
+    </linearGradient>
+    <radialGradient id="violetGlow">
+      <stop offset="0" stop-color="#9945ff" stop-opacity=".42"/>
+      <stop offset="1" stop-color="#9945ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cyanGlow">
+      <stop offset="0" stop-color="#00d1ff" stop-opacity=".3"/>
+      <stop offset="1" stop-color="#00d1ff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="24"/></filter>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000" flood-opacity=".45"/>
+    </filter>
+  </defs>
+
+  <rect width="1440" height="620" rx="38" fill="url(#canvas)"/>
+  <circle cx="250" cy="120" r="300" fill="url(#violetGlow)" filter="url(#blur)"/>
+  <circle cx="1230" cy="500" r="300" fill="url(#cyanGlow)" filter="url(#blur)"/>
+  <path d="M0 500 C320 400 400 640 730 500 S1120 380 1440 505" fill="none" stroke="#8c7bff" stroke-opacity=".12" stroke-width="2"/>
+  <path d="M0 530 C300 430 470 660 760 520 S1120 430 1440 540" fill="none" stroke="#14f195" stroke-opacity=".1" stroke-width="2"/>
+
+  <text x="72" y="78" fill="#a89cff" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="5">WHY SOLANA</text>
+  <text x="72" y="128" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="36" font-weight="750">A neutral execution layer for settlement</text>
+  <text x="72" y="164" fill="#b9b8c7" font-family="Inter, Arial, sans-serif" font-size="18">Not crypto for its own sake — infrastructure that keeps rules, funds, and proof together.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="72" y="214" width="296" height="144" rx="24" fill="#151226" stroke="#8c7bff" stroke-opacity=".55"/>
+    <circle cx="116" cy="258" r="22" fill="#8c7bff" fill-opacity=".2" stroke="#a89cff"/>
+    <path d="M106 258h20M116 248v20" stroke="#d9d4ff" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="150" y="253" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">PROGRAM-CONTROLLED</text>
+    <text x="150" y="279" fill="#a89cff" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="650">PDA ESCROW</text>
+    <text x="96" y="321" fill="#c9c7d3" font-family="Inter, Arial, sans-serif" font-size="16">Deterministic vault · no private key</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="392" y="214" width="296" height="144" rx="24" fill="#111827" stroke="#00d1ff" stroke-opacity=".55"/>
+    <circle cx="436" cy="258" r="22" fill="#00d1ff" fill-opacity=".16" stroke="#55ddff"/>
+    <path d="M426 258l7 7 14-16" fill="none" stroke="#a6efff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="470" y="253" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">ALL OR NOTHING</text>
+    <text x="470" y="279" fill="#55ddff" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="650">ATOMIC EXECUTION</text>
+    <text x="416" y="321" fill="#c9c7d3" font-family="Inter, Arial, sans-serif" font-size="16">Allocation state changes together</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="752" y="214" width="296" height="144" rx="24" fill="#10201c" stroke="#14f195" stroke-opacity=".52"/>
+    <circle cx="796" cy="258" r="22" fill="#14f195" fill-opacity=".14" stroke="#62f7bc"/>
+    <path d="M784 262h24M789 254h14M794 246h4" stroke="#a6ffd8" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="830" y="253" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">SCREENING-LEVEL</text>
+    <text x="830" y="279" fill="#62f7bc" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="650">FINE-GRAINED EXECUTION</text>
+    <text x="776" y="321" fill="#c9c7d3" font-family="Inter, Arial, sans-serif" font-size="16">Settle often without heavy overhead</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1072" y="214" width="296" height="144" rx="24" fill="#25151a" stroke="#ff7b78" stroke-opacity=".58"/>
+    <circle cx="1116" cy="258" r="22" fill="#ff7b78" fill-opacity=".15" stroke="#ff9f91"/>
+    <path d="M1104 258c5-8 19-8 24 0-5 8-19 8-24 0Z" fill="none" stroke="#ffd1c9" stroke-width="2.2"/><circle cx="1116" cy="258" r="4" fill="#ffd1c9"/>
+    <text x="1150" y="253" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">VERIFY ANYTIME</text>
+    <text x="1150" y="279" fill="#ff9f91" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="650">PUBLIC PROOF</text>
+    <text x="1096" y="321" fill="#c9c7d3" font-family="Inter, Arial, sans-serif" font-size="16">Signature · slot · account state</text>
+  </g>
+
+  <g transform="translate(72 410)">
+    <rect width="1296" height="132" rx="28" fill="#ffffff" fill-opacity=".035" stroke="#ffffff" stroke-opacity=".12"/>
+    <text x="38" y="48" fill="#9693a5" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2">MOVIEESCROW ON SOLANA</text>
+    <text x="38" y="88" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="650">movie_id</text>
+    <path d="M160 82h70" stroke="url(#solana)" stroke-width="4" stroke-linecap="round"/><path d="m220 74 12 8-12 8" fill="none" stroke="#14f195" stroke-width="3"/>
+    <text x="256" y="88" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="650">Escrow PDA</text>
+    <path d="M390 82h70" stroke="url(#solana)" stroke-width="4" stroke-linecap="round"/><path d="m450 74 12 8-12 8" fill="none" stroke="#14f195" stroke-width="3"/>
+    <text x="486" y="88" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="650">Vault</text>
+    <path d="M558 82h70" stroke="url(#solana)" stroke-width="4" stroke-linecap="round"/><path d="m618 74 12 8-12 8" fill="none" stroke="#14f195" stroke-width="3"/>
+    <text x="654" y="88" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="650">Verify</text>
+    <path d="M735 82h70" stroke="url(#warm)" stroke-width="4" stroke-linecap="round"/><path d="m795 74 12 8-12 8" fill="none" stroke="#ff8f7f" stroke-width="3"/>
+    <text x="831" y="88" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="650">Allocate / Hold</text>
+    <path d="M1008 82h70" stroke="url(#warm)" stroke-width="4" stroke-linecap="round"/><path d="m1068 74 12 8-12 8" fill="none" stroke="#ff8f7f" stroke-width="3"/>
+    <text x="1104" y="88" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="650">Claim</text>
+  </g>
+</svg>
