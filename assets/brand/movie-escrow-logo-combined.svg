@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="1280"
+  height="480"
+  viewBox="0 0 1280 480"
+  fill="none"
+  role="img"
+  aria-labelledby="movie-escrow-combined-title movie-escrow-combined-desc"
+>
+  <title id="movie-escrow-combined-title">MOVIE ESCROW combined horizontal logo</title>
+  <desc id="movie-escrow-combined-desc">
+    The detailed cinematic film-reel and black-hole emblem paired with the horizontal MOVIE ESCROW wordmark.
+  </desc>
+
+  <defs>
+    <clipPath id="detailed-mark-crop">
+      <rect x="0" y="0" width="446" height="446" />
+    </clipPath>
+
+    <filter id="soft-text-glow" x="-10%" y="-40%" width="120%" height="180%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur" />
+      <feFlood flood-color="#6B74C0" flood-opacity="0.28" />
+      <feComposite in2="blur" operator="in" />
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- The detailed source emblem and the wordmark are both designed for void black. -->
+  <rect width="1280" height="480" fill="#000000" />
+
+  <!-- Reuse only the detailed emblem portion of movie-escrow-logo-v2.png. -->
+  <g clip-path="url(#detailed-mark-crop)">
+    <image
+      href="movie-escrow-logo-v2.png"
+      xlink:href="movie-escrow-logo-v2.png"
+      x="-62"
+      y="0"
+      width="576"
+      height="576"
+      preserveAspectRatio="none"
+    />
+  </g>
+
+  <!-- Horizontal wordmark retained from movie-escrow-logo-horizontal.svg. -->
+  <g id="wordmark" transform="translate(468 0)" fill="#FFFFFF">
+    <text
+      id="brand-name-movie"
+      x="0"
+      y="222"
+      font-family="Space Grotesk, Inter, Segoe UI, Arial, sans-serif"
+      font-size="136"
+      font-weight="600"
+      letter-spacing="8"
+      textLength="720"
+      lengthAdjust="spacingAndGlyphs"
+      filter="url(#soft-text-glow)"
+    >MOVIE</text>
+    <text
+      id="brand-name-escrow"
+      x="0"
+      y="356"
+      fill="#C6C6C6"
+      font-family="Space Grotesk, Inter, Segoe UI, Arial, sans-serif"
+      font-size="116"
+      font-weight="500"
+      letter-spacing="8"
+      textLength="720"
+      lengthAdjust="spacingAndGlyphs"
+      filter="url(#soft-text-glow)"
+    >ESCROW</text>
+    <line x1="4" y1="389" x2="700" y2="389" stroke="#4D4D4D" stroke-width="1" />
+    <circle cx="717" cy="389" r="3" fill="#6B74C0" />
+  </g>
+</svg>
