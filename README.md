@@ -16,7 +16,7 @@
 <br />
 
 [![Live Demo](https://img.shields.io/badge/LIVE-DEMO-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://chaincrew-web-612802760361.asia-northeast3.run.app)
-[![Project Deck](https://img.shields.io/badge/PROJECT-DECK-7867C7?style=for-the-badge&logo=canva&logoColor=white)](#demo--submission)
+[![Project Deck](https://img.shields.io/badge/PROJECT-DECK-7867C7?style=for-the-badge&logo=canva&logoColor=white)](https://canva.link/xl9hzx1jjj2uyuc)
 
 <br />
 
@@ -40,7 +40,7 @@
 | ------------ | --------------------------------------------------------------------------------------- |
 | Live Demo    | [Google Cloud Run에서 실행](https://chaincrew-web-612802760361.asia-northeast3.run.app) |
 | Demo Video   | YouTube 업로드 후 공개 영상 URL 연결 예정                                               |
-| Project Deck | Canva 작업 완료 후 **보기 전용** 소개서 URL 연결 예정                                   |
+| Project Deck | [Canva에서 프로젝트 소개서 보기](https://canva.link/xl9hzx1jjj2uyuc)                    |
 
 심사용 Live Demo 접속정보는 제출 채널을 통해 별도로 전달합니다.
 
