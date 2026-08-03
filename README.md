@@ -38,6 +38,21 @@ _독립영화 티켓 매출을 결제 순간부터 에스크로에 격리하고,
 
 ---
 
+## Demo & Submission
+
+| 제출물         | 링크·상태                                                                                                               |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Live Demo      | [Google Cloud Run에서 실행](https://chaincrew-web-612802760361.asia-northeast3.run.app)                                 |
+| Demo Video     | YouTube 업로드 후 공개 영상 URL 연결 예정                                                                               |
+| Presentation   | Canva 작업 완료 후 **보기 전용** 발표자료 URL 연결 예정                                                                 |
+| Project Report | [HTML 보고서](docs/e2e/ChainCrew_Hackathon_Submission.html) · [PDF 보고서](docs/e2e/ChainCrew_Hackathon_Submission.pdf) |
+
+Live Demo는 정산 실행 API 보호를 위해 로그인이 필요합니다. 심사용 접속정보는 공개
+저장소에 기록하지 않고 제출 채널을 통해 별도로 전달합니다. Canva 공동편집 링크 역시
+공개하지 않고, 최종 제출에는 보기 전용 링크만 사용합니다.
+
+---
+
 ## Overview
 
 국내 영화 티켓 매출은 극장 운영사나 예매 사업자에게 먼저 집중된 뒤 배급사,
