@@ -15,7 +15,8 @@
 
 ## Field Research
 
-- [독립영화관 발권·정산 질의응답 정리](research/CINECUBE_FIELD_RESPONSE_2026-07-31.md)
+- [독립·예술영화관 2곳 현장 조사 종합](research/FIELD_RESEARCH_SUMMARY_2026-07.md)
+- [씨네큐브 발권·정산 상세 답변 정리](research/CINECUBE_FIELD_RESPONSE_2026-07-31.md)
 
 ## Archive
 

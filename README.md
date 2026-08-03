@@ -104,11 +104,21 @@
 투명성을 높입니다. 그러나 영화별 계약을 해석하거나 권리자별 금액을 격리하고 실제
 지급을 실행하는 시스템은 아닙니다.
 
-현장 운영의 전송 시점은 극장·발권 솔루션에 따라 다를 수 있습니다. 2026년 7월
-씨네큐브 답변에서는 상영일 다음 날 새벽에 발권 솔루션이 일 1회 일괄 전송한다고
-확인됐습니다. 따라서 제품은 KOBIS를 결제 직후 정산의 유일한 실시간 원천으로
-가정하지 않고, 극장 발권 원장과 솔루션 API를 1차 입력으로 사용하며 KOBIS를 사후
-대조 자료로 활용합니다. [현장 조사 정리](docs/research/CINECUBE_FIELD_RESPONSE_2026-07-31.md)
+2026년 7월 씨네큐브와 서울아트시네마에 같은 항목을 서면으로 물었습니다. 두 곳
+모두 발권 데이터를 Excel로 추출할 수 있었지만 KOBIS 전송은 한 곳이 상영일 다음
+날 새벽 일괄, 다른 한 곳이 실시간 자동 방식이었습니다. 씨네큐브 답변에서는
+할인·쿠폰을 반영한 유효매출 기준이 극장마다 다를 수 있고 영화별 별도계약도
+존재한다고 확인했습니다.
+
+| 현장에서 확인한 차이                         | MovieEscrow 설계 반영                                      |
+| -------------------------------------------- | ---------------------------------------------------------- |
+| KOBIS 전송 시점이 익일 일괄·실시간으로 다름  | 극장 발권 원장·솔루션을 1차 입력, KOBIS는 사후 대조로 사용 |
+| 유효매출 기준이 할인·쿠폰 정책마다 다름      | 영화별 `SettlementRule`과 적용 버전을 양측이 승인          |
+| Excel 추출은 가능하지만 API는 추가 확인 필요 | Excel/API를 공통 `TicketEvent`로 바꾸는 어댑터 구조        |
+
+이 조사는 전체 영화관을 대표하는 통계가 아니라 제품 가설을 점검한 정성 조사입니다.
+응답자 이름·이메일·회신 화면은 공개하지 않았습니다.
+[2개 극장 현장 조사 종합](docs/research/FIELD_RESEARCH_SUMMARY_2026-07.md)
 
 ```text
 KOBIS
@@ -475,6 +485,6 @@ blockchain-hackathon/
 
 **Google Cloud × Solana AI Agentic Commerce Hackathon**
 
-_Team ChainCrew — Kyubin Jin · Seoyoon Jung · Sangah Choi · Seryeong Park_
+_Team ChainCrew — Kyubin Jin · Seoyoon Jung · Sanga Choi · Seryeong Park_
 
 </div>
