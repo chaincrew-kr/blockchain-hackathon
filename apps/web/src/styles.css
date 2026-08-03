@@ -12,10 +12,13 @@
   --mist: #c6c6c6;
   --violet: #343755;
   --violet-mark: #6b74c0;
+  --amber: #d9a441;
+  --danger: #ff8a8a;
+  --success: #7ac9a0;
   --frost: rgba(255, 255, 255, 0.1);
   --overlay: rgba(0, 0, 0, 0.5);
-  --sans: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
-  --serif: "Times New Roman", "Nanum Myeongjo", Batang, serif;
+  --sans: "Noto Sans KR", "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
+  --serif: "Noto Serif KR", "Times New Roman", Batang, serif;
   --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
 * {
@@ -153,9 +156,8 @@ h1 {
   text-wrap: balance;
 }
 .sub {
-  font-family: var(--serif);
   font-size: 16px;
-  line-height: 1.88;
+  line-height: 1.7;
   color: var(--mist);
   max-width: 62ch;
 }
@@ -186,10 +188,9 @@ h1 {
   color: var(--smoke);
   letter-spacing: 0.06em;
 }
-.serif {
-  font-family: var(--serif);
+.prose {
   font-size: 16px;
-  line-height: 1.88;
+  line-height: 1.7;
 }
 .mono {
   font-family: var(--mono);
@@ -225,10 +226,20 @@ h1 {
   color: #000;
   font-weight: 700;
 }
+.chip.state-success {
+  background: var(--success);
+  border-color: var(--success);
+  color: #000;
+  font-weight: 700;
+}
 .chip.state-hold {
   border-style: dashed;
-  border-color: var(--fog);
-  color: var(--white);
+  border-color: var(--amber);
+  color: var(--amber);
+}
+.chip.state-danger {
+  border-color: var(--danger);
+  color: var(--danger);
 }
 .chip.state-dim {
   border-color: var(--ash);
@@ -267,7 +278,8 @@ h1 {
   transition: background 0.2s ease;
 }
 .ghost:hover {
-  background: var(--frost);
+  background: rgba(107, 116, 192, 0.18);
+  border-color: var(--violet-mark);
 }
 
 /* ── S1 예매 ─────────────────────────────────────── */
@@ -301,8 +313,8 @@ h1 {
   text-transform: uppercase;
 }
 .poster .title {
-  font-family: var(--serif);
   font-size: 34px;
+  font-weight: 700;
   line-height: 1.2;
   margin-top: 8px;
 }
@@ -376,7 +388,6 @@ h1 {
   letter-spacing: 0.08em;
 }
 .pay-note {
-  font-family: var(--serif);
   font-size: 14px;
   line-height: 1.7;
   color: var(--fog);
@@ -431,9 +442,10 @@ h1 {
 }
 .error-text {
   font-size: 12px;
-  color: #ff8a8a;
-  border-left: 2px solid #ff8a8a;
+  color: var(--danger);
+  border-left: 2px solid var(--danger);
   padding-left: 10px;
+  margin-top: 14px;
 }
 
 /* ── S0 백오피스 ─────────────────────────────────── */
@@ -529,9 +541,9 @@ th.num {
   border-radius: 2px;
 }
 tr.conflict td {
-  border-top: 1px dashed var(--fog);
-  border-bottom: 1px dashed var(--fog);
-  background: rgba(255, 255, 255, 0.04);
+  border-top: 1px dashed var(--amber);
+  border-bottom: 1px dashed var(--amber);
+  background: rgba(217, 164, 65, 0.06);
 }
 .approve-grid {
   grid-template-columns: 1fr 1fr;
@@ -548,7 +560,6 @@ tr.conflict td {
   color: var(--mist);
 }
 .party .sig {
-  font-family: var(--serif);
   font-style: italic;
   color: var(--fog);
   font-size: 14px;
@@ -598,7 +609,8 @@ tr.conflict td {
 }
 .node.branch {
   border-style: dashed;
-  color: var(--white);
+  border-color: var(--amber);
+  color: var(--amber);
 }
 .arrow {
   color: var(--ash);
@@ -633,6 +645,10 @@ tr.conflict td {
 }
 .stat.hold {
   border-style: dashed;
+  border-color: var(--amber);
+}
+.stat.hold .v {
+  color: var(--amber);
 }
 .invariant {
   font-family: var(--mono);
@@ -669,7 +685,7 @@ tr.conflict td {
   display: flex;
 }
 .track .claimed {
-  background: var(--white);
+  background: var(--success);
   opacity: 0.9;
 }
 .track .claimable {
@@ -735,11 +751,14 @@ tr.conflict td {
   margin-top: 2px;
 }
 .tl.reject {
-  border-top: 1px dashed var(--fog);
-  border-bottom: 1px dashed var(--fog);
-  background: rgba(255, 255, 255, 0.04);
+  border-top: 1px dashed var(--danger);
+  border-bottom: 1px dashed var(--danger);
+  background: rgba(255, 138, 138, 0.06);
   padding-left: 8px;
   padding-right: 8px;
+}
+.tl.reject .what {
+  color: var(--danger);
 }
 .tl .ex {
   font-family: var(--mono);
@@ -772,16 +791,16 @@ tr.conflict td {
   color: var(--mist);
 }
 .check.fail .mono {
-  color: var(--white);
+  color: var(--danger);
 }
 .check .mark {
   font-family: var(--mono);
 }
 .check.fail .mark {
-  color: var(--white);
+  color: var(--danger);
 }
 .check.pass .mark {
-  color: var(--smoke);
+  color: var(--success);
 }
 
 /* 차트 */
@@ -859,7 +878,6 @@ tr.conflict td {
   white-space: nowrap;
 }
 .chart-caption {
-  font-family: var(--serif);
   font-size: 13px;
   line-height: 1.7;
   color: var(--fog);

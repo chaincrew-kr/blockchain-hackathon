@@ -185,8 +185,8 @@ export function PurchasePage() {
             </div>
             <p className="pay-note">
               Phantom 지갑으로 서명하면 온체인 <b>deposit</b>이 즉시 실행됩니다.
-              수취 주소는 <b>《붉은 노을 아래》 에스크로 PDA</b> — 극장도
-              배급사도 이 돈을 먼저 만질 수 없습니다.
+              수취 주소는 <b>“붉은 노을 아래” 에스크로 PDA</b> — 극장도 배급사도
+              이 돈을 먼저 만질 수 없습니다.
             </p>
             <div className="pay-actions">
               <button
