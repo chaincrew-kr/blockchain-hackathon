@@ -5,7 +5,8 @@
   "type": "module",
   "main": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./idl/movie_escrow.json": "./idl/movie_escrow.json"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"

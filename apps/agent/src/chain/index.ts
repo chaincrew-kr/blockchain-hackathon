@@ -7,7 +7,10 @@
  * 것이 가장 위험하다.
  */
 import { logger } from "../logger.js";
-import { AnchorChainGateway } from "./anchor-gateway.js";
+import {
+  AnchorChainGateway,
+  type BeneficiaryWallets,
+} from "./anchor-gateway.js";
 import { StubChainGateway, type ChainGateway } from "./gateway.js";
 
 export type ChainMode = "stub" | "anchor";
@@ -25,6 +28,33 @@ const REQUIRED = [
   "SOLANA_PROGRAM_ID",
   "AGENT_KEYPAIR_PATH",
 ] as const;
+
+/**
+ * settle_batch가 Allocation에 기록할 권리자 지갑 — 선택 사항.
+ * 없어도 anchor 모드로 뜨지만 settle_batch 호출은 명확한 오류로 거부된다.
+ */
+const WALLET_ENV = [
+  "THEATER_WALLET",
+  "DISTRIBUTOR_WALLET",
+  "PRODUCER_WALLET",
+] as const;
+
+function readBeneficiaryWallets(
+  env: NodeJS.ProcessEnv,
+): BeneficiaryWallets | undefined {
+  const missing = WALLET_ENV.filter((key) => !env[key]);
+  if (missing.length === 0) {
+    return {
+      theater: env.THEATER_WALLET as string,
+      distributor: env.DISTRIBUTOR_WALLET as string,
+      producer: env.PRODUCER_WALLET as string,
+    };
+  }
+  logger.warn("beneficiary wallets not fully set — settle_batch will refuse", {
+    missingEnv: missing,
+  });
+  return undefined;
+}
 
 export function createChainGateway(
   env: NodeJS.ProcessEnv = process.env,
@@ -44,6 +74,7 @@ export function createChainGateway(
       rpcUrl: env.SOLANA_RPC_URL as string,
       programId: env.SOLANA_PROGRAM_ID as string,
       keypairPath: env.AGENT_KEYPAIR_PATH as string,
+      beneficiaryWallets: readBeneficiaryWallets(env),
     });
     return { gateway, mode: "anchor", authority: gateway.authority };
   } catch (error) {

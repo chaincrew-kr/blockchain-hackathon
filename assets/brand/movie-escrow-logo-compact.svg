@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="1280"
+  height="320"
+  viewBox="0 0 1280 320"
+  fill="none"
+  role="img"
+  aria-labelledby="compact-title compact-desc"
+>
+  <title id="compact-title">MOVIE ESCROW compact horizontal logo</title>
+  <desc id="compact-desc">A compact circular symbol followed by the MOVIE ESCROW wordmark for website headers.</desc>
+
+  <!-- Transparent canvas. Symbol and wordmark are separate editable groups. -->
+  <g id="compact-mark" transform="translate(28 28) scale(0.515625)" stroke-linecap="round" stroke-linejoin="round">
+    <circle id="outer-orbit" cx="256" cy="256" r="218" stroke="#FFFFFF" stroke-width="10" />
+    <g id="escrow-frame" stroke="#FFFFFF" stroke-width="13">
+      <path id="triangle-up" d="M256 98L394 338H118L256 98Z" />
+      <path id="triangle-down" d="M256 414L118 174H394L256 414Z" />
+    </g>
+    <path
+      id="onchain-core"
+      d="M256 219L288 237.5V274.5L256 293L224 274.5V237.5L256 219Z"
+      fill="#6B74C0"
+    />
+  </g>
+
+  <g id="compact-wordmark" fill="#FFFFFF">
+    <text
+      id="brand-name"
+      x="342"
+      y="194"
+      font-family="Space Grotesk, Inter, Segoe UI, Arial, sans-serif"
+      font-size="94"
+      font-weight="600"
+      letter-spacing="9"
+      textLength="866"
+      lengthAdjust="spacingAndGlyphs"
+    >MOVIE ESCROW</text>
+  </g>
+</svg>

@@ -71,19 +71,48 @@ header {
   gap: 16px;
   flex-wrap: wrap;
 }
-.wordmark {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+  flex: 0 0 auto;
 }
-.wordmark small {
+.brand-mark {
+  position: relative;
   display: block;
-  font-weight: 400;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  color: var(--smoke);
-  text-transform: none;
+  width: 58px;
+  height: 58px;
+  flex: 0 0 58px;
+  overflow: hidden;
+}
+.brand-mark-image {
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  display: block;
+  width: 74px;
+  height: 74px;
+  max-width: none;
+  transform: translateX(-50%);
+}
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 0.92;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.wordmark span:first-child {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0.17em;
+}
+.wordmark span:last-child {
+  color: var(--mist);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
 }
 .nav-dot {
   width: 3px;
@@ -927,6 +956,26 @@ footer {
 }
 
 @media (max-width: 880px) {
+  .brand-lockup {
+    gap: 9px;
+  }
+  .brand-mark {
+    width: 52px;
+    height: 52px;
+    flex-basis: 52px;
+  }
+  .brand-mark-image {
+    width: 66px;
+    height: 66px;
+  }
+  .wordmark span:first-child {
+    font-size: 17px;
+    letter-spacing: 0.14em;
+  }
+  .wordmark span:last-child {
+    font-size: 14px;
+    letter-spacing: 0.12em;
+  }
   .purchase-grid,
   .two-col,
   .approve-grid,

@@ -1,8 +1,9 @@
 /**
  * 체인 게이트웨이 테스트 — 연결 계층과 폴백 동작.
  *
- * IDL이 아직 없으므로 실제 instruction 호출은 검증할 수 없다. 대신 **IDL이
- * 없을 때 어떻게 실패하는지**를 고정한다 — 조용히 성공한 척하는 게 가장 위험하다.
+ * 검증기(validator) 없이 도는 단위 테스트라 트랜잭션 성공은 검증할 수 없다.
+ * 대신 **설정 오류·RPC 장애에서 어떻게 실패하는지**를 고정한다 — 조용히
+ * 성공한 척하는 게 가장 위험하다. 실제 전송은 8/1 E2E(로컬넷)에서 확인한다.
  */
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -102,12 +103,17 @@ describe("createChainGateway — 환경변수에 따른 선택", () => {
   });
 });
 
-describe("AnchorChainGateway — IDL 없을 때의 실패 방식", () => {
-  function gateway() {
+describe("AnchorChainGateway — IDL 연결과 실패 방식", () => {
+  function gateway(wallets?: {
+    theater: string;
+    distributor: string;
+    producer: string;
+  }) {
     return new AnchorChainGateway({
       rpcUrl: "http://127.0.0.1:8899",
       programId: PROGRAM_ID,
       keypairPath,
+      beneficiaryWallets: wallets,
     });
   }
 
@@ -115,16 +121,47 @@ describe("AnchorChainGateway — IDL 없을 때의 실패 방식", () => {
     expect(gateway().authority).toBe(expectedPubkey);
   });
 
-  it("settle_batch는 502 ChainCallError로 실패한다", async () => {
-    await expect(gateway().settleBatch("SCR-1", 1000)).rejects.toMatchObject({
+  it("IDL이 로드된다 — schema exports가 깨지면 여기서 잡힌다", () => {
+    expect(gateway().ready).toBe(true);
+  });
+
+  it("권리자 지갑 미설정 시 settle_batch는 명확한 오류로 거부한다", async () => {
+    await expect(
+      gateway().settleBatch({
+        movieId: "MOV-TEST",
+        theaterBps: 5000,
+        distributorBps: 5000,
+        distributionFeeBps: 1000,
+      }),
+    ).rejects.toMatchObject({
       status: 502,
       code: "chain_call_failed",
       instruction: "settle_batch",
     });
+    await expect(
+      gateway().settleBatch({
+        movieId: "MOV-TEST",
+        theaterBps: 5000,
+        distributorBps: 5000,
+        distributionFeeBps: 1000,
+      }),
+    ).rejects.toThrow(/THEATER_WALLET/);
   });
 
-  it("실패 사유에 IDL 대기 상태가 드러난다 — 조용히 실패하지 않는다", async () => {
-    await expect(gateway().markDisputed("SCR-2", 500)).rejects.toThrow(/IDL/);
+  it("RPC가 닿지 않으면 502 ChainCallError로 분류된다", async () => {
+    // 127.0.0.1:8899에 검증기가 없으므로 연결 거부 — 502로 정규화돼야 한다.
+    await expect(gateway().verifyEscrow("MOV-TEST")).rejects.toMatchObject({
+      status: 502,
+      code: "chain_call_failed",
+      instruction: "verify_escrow",
+    });
+    await expect(
+      gateway().markDisputed("MOV-TEST", "SCR-2", 500),
+    ).rejects.toMatchObject({
+      status: 502,
+      code: "chain_call_failed",
+      instruction: "mark_disputed",
+    });
   });
 });
 
