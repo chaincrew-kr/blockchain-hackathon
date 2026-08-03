@@ -3,12 +3,12 @@
 > **⚠️ 레거시 문서:** 이 문서는 제품 확정 전 제작한 x402 결제 PoC 설명입니다.
 > 현재 제품은 독립영화 온체인 정산 에이전트이며, x402는 Phase 2의 조건부
 > 신뢰도·증빙 조회에만 사용합니다. `apps/api`, `packages/agent` 등 아래 경로는
-> 현재 `legacy/`로 이전되었습니다. 현재 구조는 [README](../../README.md)와
+> 현재 `legacy/`로 이전되었습니다. 현재 구조는 [README](../../../README.md)와
 > [Product Brief](../PRODUCT_BRIEF.md)를 기준으로 보세요.
 >
 > **📝 이 문서의 성격:** Google × Solana AI Agentic Hackathon 준비 중 작성한 **팀
 > 온보딩 노트**입니다(팀원 온보딩용). 아직 팀이 공식 합의한 사양은 아니며,
-> [README의 아키텍처](../../README.md#system-architecture)나 [PRODUCT_BRIEF](../PRODUCT_BRIEF.md)
+> [README의 아키텍처](../../../README.md#system-architecture)나 [PRODUCT_BRIEF](../PRODUCT_BRIEF.md)
 > (제품 요약) 같은 확정 문서와 동급이 아닙니다. 개념 이해용 참고 자료로 봐 주세요.
 
 블록체인·x402가 처음인 팀원을 위한 **개념 설명서**입니다. 실제 셋업 방법은

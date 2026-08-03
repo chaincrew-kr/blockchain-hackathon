@@ -2,8 +2,8 @@
 
 > **⚠️ 레거시 x402 PoC 설정:** 이 문서의 주소·환경변수·명령은 현재 영화 정산
 > 제품이 아니라 `legacy/x402-*` 실험을 재현할 때만 사용합니다. 현재 설정은
-> [`.env.example`](../../.env.example), 지갑 도구는
-> [`tools/wallet/README.md`](../../tools/wallet/README.md)를 기준으로 하세요.
+> [`.env.example`](../../../.env.example), 지갑 도구는
+> [`tools/wallet/README.md`](../../../tools/wallet/README.md)를 기준으로 하세요.
 >
 > **📝 이 문서의 성격:** 온보딩 세션에서 작성한 **팀 온보딩용 셋업 노트**입니다. 아직
 > 팀이 공식 합의한 표준 절차는 아니며, 팀 리뷰(PR)를 거쳐 확정될 예정입니다. 지갑 주소

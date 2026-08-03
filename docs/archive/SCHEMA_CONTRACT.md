@@ -2,7 +2,7 @@
 
 > Owner: D 박세령  
 > Reviewers: A 진규빈 · B 정서윤 · C 최상아  
-> 코드 기준: [`packages/schema/src/index.ts`](../packages/schema/src/index.ts)
+> 코드 기준: [`packages/schema/src/index.ts`](../../packages/schema/src/index.ts)
 
 이 문서는 화면, 정산 에이전트, Anchor 프로그램이 주고받는 데이터의 공통 규칙과
 변경 절차를 정의한다. D는 스키마를 정리하고 통합하는 관리자이며, 각 파트의

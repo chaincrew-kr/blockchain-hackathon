@@ -263,7 +263,7 @@ blockchain-hackathon/
 │   └── wallet/              # Localnet·Devnet 지갑 도구
 ├── scripts/
 │   └── demo-claim.ts        # Claim · 초과 인출 · 분쟁 해제 리허설
-├── docs/                    # 요구사항 · 스펙 · 실행계획 · 작업 문서
+├── docs/                    # 제출 보고서 · 사용자 매뉴얼 · 현장 조사
 ├── assets/                  # 브랜드 · README · 보고서 이미지
 ├── Anchor.toml
 ├── Cargo.toml
