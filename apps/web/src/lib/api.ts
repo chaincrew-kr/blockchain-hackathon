@@ -151,7 +151,7 @@ export async function fetchKobisDaily(
 // apps/agent를 직접 부르지 않고 apps/web/server(API_BASE)를 거친다 —
 // 배포된 Agent(Cloud Run)는 IAM 인증이 필요해서 브라우저가 직접 못 부르고,
 // 이 서버가 서비스 계정으로 대신 인증한다 (agent-proxy.js,
-// docs/ponyo_work/GCP_DEPLOYMENT_GUIDE.md §7). 로컬 개발 중엔 web/server가
+// docs/archive/ponyo_work/GCP_DEPLOYMENT_GUIDE.md §7). 로컬 개발 중엔 web/server가
 // 인증 없이 로컬 agent(4030)로 그대로 넘겨준다.
 
 export class AgentApiError extends Error {

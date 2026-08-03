@@ -18,7 +18,7 @@ npm run wallet:address -- .secrets/theater-devnet.json   # 주소 확인
 ```
 
 `init_escrow`가 실제로 쓰는 건 `theater` 주소뿐이지만, D의 `.env`가
-4개 다 요구하므로([docs/ponyo_work/DEVNET_E2E.md](../../docs/ponyo_work/DEVNET_E2E.md)
+4개 다 요구하므로([Devnet E2E 기록](../../docs/archive/ponyo_work/DEVNET_E2E.md)
 참고) 한 번에 만들어서 D에게 4개 주소 전부 넘긴다.
 
 **1. B — 민트 생성 + init_escrow 트랜잭션 절반 서명**
