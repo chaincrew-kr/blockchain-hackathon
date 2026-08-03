@@ -4,16 +4,21 @@
  *
  * 업로드 전에는 업로드 카드만 보이고, 추출 결과/승인/온체인 등록 블록은
  * 실제 추출이 끝나기 전까진 아예 렌더링하지 않는다 (가짜 데이터로 헷갈리지 않게).
- *
- * 다음 교체 지점(아직 안 됨):
- *   - "규칙 v1 승인" / "온체인 등록" 버튼 → B의 init_escrow(rule_hash, ver) 연결
  */
 import { useEffect, useState } from "react";
+import { PublicKey } from "@solana/web3.js";
 import type { SettlementRule } from "@chaincrew/schema";
 
 import { extractContract } from "../../lib/api";
 import { adaptExtraction, type PartyNames } from "../../lib/adaptExtraction";
 import { computeRuleHash, sha256Hex, toBps } from "../../lib/hash";
+import {
+  describeChainError,
+  explorerTxUrl,
+  getPhantomProvider,
+  initEscrow,
+  type PhantomProvider,
+} from "../../lib/chain";
 
 const STEPS = [
   { n: "01", t: "계약서 업로드", s: "now" },
@@ -29,6 +34,18 @@ export function BackofficePage() {
   const [error, setError] = useState<string | null>(null);
   const [rule, setRule] = useState<SettlementRule | null>(null);
   const [parties, setParties] = useState<PartyNames | null>(null);
+
+  const [wallet, setWallet] = useState<PhantomProvider | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [theaterAddress, setTheaterAddress] = useState("");
+  const [chainState, setChainState] = useState<
+    "idle" | "connecting" | "submitting" | "done"
+  >("idle");
+  const [chainError, setChainError] = useState<string | null>(null);
+  const [chainResult, setChainResult] = useState<{
+    signature: string;
+    usdcMint: string;
+  } | null>(null);
 
   async function handleExtract() {
     if (!file) return;
@@ -61,14 +78,66 @@ export function BackofficePage() {
     });
   }
 
+  async function connectWallet() {
+    setChainError(null);
+    setChainState("connecting");
+    try {
+      const provider = getPhantomProvider();
+      const { publicKey } = await provider.connect();
+      setWallet(provider);
+      setWalletAddress(publicKey.toBase58());
+      // 데모 편의상 연결된 지갑을 상영관 주소 기본값으로 채워둔다 — 실제
+      // 상영관 지갑이 따로 있으면 아래 입력창에서 바꾸면 된다.
+      setTheaterAddress((prev) => prev || publicKey.toBase58());
+      setChainState("idle");
+    } catch (err) {
+      setChainError(describeChainError(err));
+      setChainState("idle");
+    }
+  }
+
+  async function registerOnchain() {
+    if (!wallet || !rule || !rule.ruleHash || !rule.contractHash) return;
+    setChainError(null);
+
+    let theater: PublicKey;
+    try {
+      theater = new PublicKey(theaterAddress.trim());
+    } catch {
+      setChainError("상영관 지갑 주소가 올바른 Solana 공개키 형식이 아닙니다.");
+      return;
+    }
+
+    setChainState("submitting");
+    try {
+      const { signature, usdcMint } = await initEscrow(wallet, {
+        movieId: rule.movieId,
+        theater,
+        contractHash: rule.contractHash,
+        ruleHash: rule.ruleHash,
+        ruleVersion: rule.version,
+        // SettlementRule.minimumGuarantee는 통화 단위가 남아있지 않아
+        // USDC 최소 단위로 안전하게 환산할 수 없다 — 잘못된 금액을 온체인에
+        // 새기는 것보다 0(MG 없음)으로 등록하는 쪽이 안전하다. 추출
+        // 스키마가 정규화된 USDC 금액을 내려주면 그때 연결한다.
+        mgAmountSmallestUnit: 0,
+        investmentAmountSmallestUnit: 0,
+      });
+      setChainResult({ signature, usdcMint: usdcMint.toBase58() });
+      setChainState("done");
+    } catch (err) {
+      setChainError(describeChainError(err));
+      setChainState("idle");
+    }
+  }
+
   const conflictCount = rule ? rule.conflicts.length : 0;
   const bothApproved = rule
     ? rule.approvals.distributor && rule.approvals.theater
     : false;
 
   // 양측 승인이 다 되면, 온체인과 같은 방식(D·B 확정 인코딩)으로 ruleHash를 계산해둔다.
-  // 실제 init_escrow 호출은 D의 에이전트 엔드포인트가 나오면 그때 연결한다 — 아직은
-  // "승인 후 화면에 정확한 해시가 보인다"까지만.
+  // init_escrow 호출은 이 해시가 준비된 뒤 "온체인 등록" 버튼에서 실행한다.
   useEffect(() => {
     if (!rule || !bothApproved || rule.ruleHash) return;
     let cancelled = false;
@@ -94,7 +163,16 @@ export function BackofficePage() {
     if (i === 1) return { ...step, s: rule ? "done" : file ? "now" : "todo" };
     if (i === 2)
       return { ...step, s: rule ? (bothApproved ? "done" : "now") : "todo" };
-    if (i === 3) return { ...step, s: bothApproved ? "now" : "todo" };
+    if (i === 3)
+      return {
+        ...step,
+        s: rule?.ruleHash ? "done" : bothApproved ? "now" : "todo",
+      };
+    if (i === 4)
+      return {
+        ...step,
+        s: chainState === "done" ? "done" : rule?.ruleHash ? "now" : "todo",
+      };
     return step;
   });
 
@@ -348,15 +426,94 @@ export function BackofficePage() {
                 </span>{" "}
                 신규 발행으로만 가능합니다.
               </p>
-              <button
-                className="pill"
-                disabled
-                title="B의 init_escrow 구현 후 연결 예정"
+
+              {bothApproved && chainState !== "done" && (
+                <div style={{ marginTop: 14 }}>
+                  <div className="label">상영관 지갑 주소 (Solana pubkey)</div>
+                  <input
+                    className="mono"
+                    style={{ width: "100%", marginTop: 6 }}
+                    placeholder="예: 7xKX...9pQ"
+                    value={theaterAddress}
+                    onChange={(e) => setTheaterAddress(e.target.value)}
+                    disabled={chainState === "submitting"}
+                  />
+                </div>
+              )}
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  alignItems: "center",
+                  marginTop: 14,
+                  flexWrap: "wrap",
+                }}
               >
-                {bothApproved
-                  ? "온체인 등록 (B 연동 대기)"
-                  : "온체인 등록 (양측 승인 필요)"}
-              </button>
+                <button
+                  className="ghost"
+                  onClick={connectWallet}
+                  disabled={chainState === "connecting" || !!walletAddress}
+                >
+                  {walletAddress
+                    ? `${walletAddress.slice(0, 4)}…${walletAddress.slice(-4)} 연결됨`
+                    : chainState === "connecting"
+                      ? "연결 중…"
+                      : "Phantom 연결"}
+                </button>
+                <button
+                  className="pill"
+                  onClick={registerOnchain}
+                  disabled={
+                    !rule.ruleHash ||
+                    !wallet ||
+                    !theaterAddress.trim() ||
+                    chainState === "submitting" ||
+                    chainState === "done"
+                  }
+                  title={
+                    !bothApproved
+                      ? "양측 승인 필요"
+                      : !wallet
+                        ? "Phantom 지갑 연결 필요"
+                        : undefined
+                  }
+                >
+                  {chainState === "submitting"
+                    ? "온체인 등록 중…"
+                    : chainState === "done"
+                      ? "온체인 등록 완료"
+                      : "온체인 등록"}
+                </button>
+              </div>
+
+              {chainError && (
+                <p
+                  className="chart-caption"
+                  style={{ color: "var(--stamp, #BE3A28)", marginTop: 10 }}
+                >
+                  {chainError}
+                </p>
+              )}
+
+              {chainResult && (
+                <div style={{ marginTop: 14 }}>
+                  <div className="label">init_escrow 트랜잭션</div>
+                  <a
+                    className="hash mono"
+                    href={explorerTxUrl(chainResult.signature)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {chainResult.signature.slice(0, 4)}…
+                    {chainResult.signature.slice(-4)} ↗ Explorer
+                  </a>
+                  <div className="label" style={{ marginTop: 10 }}>
+                    데모용 USDC 민트 (이 등록에서 새로 생성됨)
+                  </div>
+                  <div className="hash-box">{chainResult.usdcMint}</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
