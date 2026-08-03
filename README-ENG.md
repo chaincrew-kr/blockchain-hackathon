@@ -21,6 +21,13 @@ the amount under review is held separately.
 
 <br />
 
+![Solana Devnet](https://img.shields.io/badge/SOLANA-DEVNET-14F195?style=flat-square&logo=solana&logoColor=111111)
+![Gemini](https://img.shields.io/badge/GEMINI-STRUCTURED_OUTPUT-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)
+![Google Cloud](https://img.shields.io/badge/GOOGLE_CLOUD-LIVE-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
+![Tests](https://img.shields.io/badge/AUTOMATED_TESTS-49_PASS-FF6B6B?style=flat-square)
+
+<br />
+
 <em>AI does not decide how money is divided. Human-approved deterministic rules execute
 the allocation, while AI interprets contracts, verifies inputs, and detects anomalies
 before settlement.</em>
@@ -31,12 +38,11 @@ before settlement.</em>
 
 ## Demo & Submission
 
-| Deliverable      | Link / Status                                                                                                           |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Live Demo        | [Run on Google Cloud Run](https://chaincrew-web-612802760361.asia-northeast3.run.app)                                   |
-| Demo Video       | Public YouTube link will be added after upload                                                                          |
-| Project Deck     | View-only Canva project deck URL will be added after finalization                                                       |
-| Technical Report | [HTML report](docs/e2e/ChainCrew_Hackathon_Submission.html) · [PDF report](docs/e2e/ChainCrew_Hackathon_Submission.pdf) |
+| Deliverable  | Link / Status                                                                         |
+| ------------ | ------------------------------------------------------------------------------------- |
+| Live Demo    | [Run on Google Cloud Run](https://chaincrew-web-612802760361.asia-northeast3.run.app) |
+| Demo Video   | Public YouTube link will be added after upload                                        |
+| Project Deck | View-only Canva project deck URL will be added after finalization                     |
 
 Live Demo credentials are delivered separately through the hackathon submission channel.
 
@@ -146,7 +152,16 @@ basis for calculation and execution.
 
 ---
 
-## Solution
+## Solution — Keep Valid Funds Moving
+
+| Problem                                             | MovieEscrow design response                                                           |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Rightsholder funds mix with intermediary capital    | Route payment directly into a film-specific PDA Vault                                 |
+| Contract interpretation and calculations are opaque | Gemini extraction → dual approval → immutable rule hash and version                   |
+| One anomaly stops the entire settlement             | Continue valid allocation while isolating only the affected screening and amount      |
+| Calculation, payment, and evidence are fragmented   | Connect Agent decisions, Anchor execution, and Explorer transactions in one dashboard |
+
+### Execution flow
 
 1. Gemini extracts revenue shares, fees, minimum guarantees, deductions, and settlement
    dates together with the supporting clauses.
@@ -163,6 +178,33 @@ basis for calculation and execution.
 > **Key differentiator — partial hold:** if only 50 out of 1,000 is anomalous, settlement
 > of the valid 950 continues while only 50 is isolated. One issue does not stop the entire
 > settlement.
+
+---
+
+## Why Solana?
+
+MovieEscrow did not choose Solana to force crypto onto moviegoers. We chose it to keep
+**film-specific contract rules, segregated funds, and execution evidence in one
+verifiable state**.
+
+<p align="center">
+  <img src="assets/readme/why-solana.svg" width="100%" alt="Four reasons MovieEscrow uses Solana: PDA escrow, atomic execution, screening-level operations, and public proof" />
+</p>
+
+| Solana capability         | MovieEscrow implementation                                                                   | Settlement impact                                                                       |
+| ------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| PDA without a private key | Film Escrow and role Allocation PDAs are derived deterministically from `movie_id`.          | Neither the theater nor the distributor can withdraw Vault funds at its own discretion. |
+| Program-enforced rules    | `deposit`, `settle_batch`, `mark_disputed`, and `claim` pass through Anchor constraints.     | Only state transitions that satisfy approved rules and account constraints can execute. |
+| Atomic transactions       | Rightsholder allocation and Escrow state updates are processed in the same execution unit.   | The operation either succeeds as a whole or rolls back without leaving a partial state. |
+| Low execution overhead    | Valid settlement and anomalous holds are separate screening- and rightsholder-level calls.   | Small amounts can be processed frequently while only the affected amount is stopped.    |
+| Public verifiability      | Signatures, slots, events, and account state connect directly to the dashboard and Explorer. | Every settlement party can inspect the same execution history and current balances.     |
+
+Solana is therefore not a payment decoration. It is MovieEscrow's **neutral settlement
+execution layer**. The AI agent proposes an anomaly decision and its evidence; the Solana
+program re-checks authority, amount, and state transitions before executing only the
+approved scope.
+
+<sub>Technical references: [Program Derived Addresses](https://solana.com/docs/core/pda) · [atomic transaction execution](https://solana.com/docs/intro/quick-start/writing-to-network) · [transaction fee model](https://solana.com/docs/core/fees)</sub>
 
 ---
 
