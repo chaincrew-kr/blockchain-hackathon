@@ -111,12 +111,21 @@ collects nationwide ticketing information and improves the transparency of box-o
 sales and industry statistics. It does not, however, interpret each film's contract,
 isolate rightsholder funds, or execute payment.
 
-The timing of data transmission can vary by theater and ticketing provider. In a July
-2026 field response, Cinecube explained that its ticketing provider transmits the prior
-day's records in a daily batch early the following morning. MovieEscrow therefore does
-not treat KOBIS as the sole real-time input immediately after purchase. Theater ledgers
-and ticketing APIs provide the primary input, while KOBIS serves as a later reconciliation
-source. [Field research notes](docs/research/CINECUBE_FIELD_RESPONSE_2026-07-31.md)
+In July 2026, we sent the same written questions to Cinecube and Seoul Art Cinema. Both
+could export ticketing data to Excel, but their KOBIS transmission timing differed: one
+used an early-morning batch on the following day, while the other transmitted
+automatically in real time. Cinecube also explained that eligible-sales rules can vary
+with theater discount and coupon policies and that film-specific agreements may exist.
+
+| Field observation                                      | MovieEscrow design response                                             |
+| ------------------------------------------------------ | ----------------------------------------------------------------------- |
+| KOBIS transmission may be next-day batch or real time  | Use theater ledgers as primary input and KOBIS for later reconciliation |
+| Eligible-sales rules vary with discounts and coupons   | Version and jointly approve a film-specific `SettlementRule`            |
+| Excel export exists; API availability needs validation | Normalize Excel and API inputs through a shared `TicketEvent` adapter   |
+
+This was qualitative product discovery, not a statistical sample of the entire market.
+Respondent names, email addresses, and raw reply screenshots are not published.
+[Two-theater field research summary](docs/research/FIELD_RESEARCH_SUMMARY_2026-07.md)
 
 ```text
 KOBIS
@@ -465,12 +474,12 @@ The following flows were verified in the August 3, 2026 submission build.
 
 ## Team
 
-|                                                      Kyubin Jin                                                      |                                                     Seoyoon Jung                                                     |                                                  Sangah Choi                                                  |                                                     Seryeong Park                                                     |
-| :------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://github.com/kyubinjin"><img src="https://github.com/kyubinjin.png" width="100" alt="Kyubin Jin"></a> | <a href="https://github.com/youn1205"><img src="https://github.com/youn1205.png" width="100" alt="Seoyoon Jung"></a> | <a href="https://github.com/jj8ng"><img src="https://github.com/jj8ng.png" width="100" alt="Sangah Choi"></a> | <a href="https://github.com/ryeong03"><img src="https://github.com/ryeong03.png" width="100" alt="Seryeong Park"></a> |
-|                                              **A · Frontend / AI Data**                                              |                                              **B · Chain / Fund Flow**                                               |                                      **C · Chain / Decision Execution**                                       |                                            **D · Agent / Decision Logic**                                             |
-|                            Contract onboarding · purchase<br />Dashboard · Gemini prompts                            |                               Escrow initialization · deposit<br />Refund · settlement                               |                            Claim protection · partial hold<br />Dispute resolution                            |                           Risk checks · settlement decisions<br />Express API · deployment                            |
-|                                      [@kyubinjin](https://github.com/kyubinjin)                                      |                                       [@youn1205](https://github.com/youn1205)                                       |                                      [@jj8ng](https://github.com/jj8ng)                                       |                                       [@ryeong03](https://github.com/ryeong03)                                        |
+|                                                      Kyubin Jin                                                      |                                                     Seoyoon Jung                                                     |                                                  Sanga Choi                                                  |                                                     Seryeong Park                                                     |
+| :------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
+| <a href="https://github.com/kyubinjin"><img src="https://github.com/kyubinjin.png" width="100" alt="Kyubin Jin"></a> | <a href="https://github.com/youn1205"><img src="https://github.com/youn1205.png" width="100" alt="Seoyoon Jung"></a> | <a href="https://github.com/jj8ng"><img src="https://github.com/jj8ng.png" width="100" alt="Sanga Choi"></a> | <a href="https://github.com/ryeong03"><img src="https://github.com/ryeong03.png" width="100" alt="Seryeong Park"></a> |
+|                                              **A · Frontend / AI Data**                                              |                                              **B · Chain / Fund Flow**                                               |                                      **C · Chain / Decision Execution**                                      |                                            **D · Agent / Decision Logic**                                             |
+|                            Contract onboarding · purchase<br />Dashboard · Gemini prompts                            |                               Escrow initialization · deposit<br />Refund · settlement                               |                           Claim protection · partial hold<br />Dispute resolution                            |                           Risk checks · settlement decisions<br />Express API · deployment                            |
+|                                      [@kyubinjin](https://github.com/kyubinjin)                                      |                                       [@youn1205](https://github.com/youn1205)                                       |                                      [@jj8ng](https://github.com/jj8ng)                                      |                                       [@ryeong03](https://github.com/ryeong03)                                        |
 
 ---
 
@@ -486,6 +495,6 @@ This project is distributed under the [MIT License](LICENSE).
 
 **Google Cloud × Solana AI Agentic Commerce Hackathon**
 
-_Team ChainCrew — Kyubin Jin · Seoyoon Jung · Sangah Choi · Seryeong Park_
+_Team ChainCrew — Kyubin Jin · Seoyoon Jung · Sanga Choi · Seryeong Park_
 
 </div>
