@@ -27,6 +27,9 @@ describe("init_escrow", () => {
   const ruleHash = new Uint8Array(32).fill(2);
   const ruleVersion = 1;
   const authority = Keypair.generate();
+  const theater = Keypair.generate().publicKey;
+  const MG_AMOUNT = 1_000_000;
+  const INVESTMENT_AMOUNT = 2_000_000;
 
   let escrowPda: PublicKey;
   let escrowBump: number;
@@ -48,7 +51,15 @@ describe("init_escrow", () => {
 
   it("creates the MovieEscrow PDA and vault with the expected initial state", async () => {
     await program.methods
-      .initEscrow(movieId, Array.from(contractHash), Array.from(ruleHash), ruleVersion)
+      .initEscrow(
+        movieId,
+        theater,
+        Array.from(contractHash),
+        Array.from(ruleHash),
+        ruleVersion,
+        new anchor.BN(MG_AMOUNT),
+        new anchor.BN(INVESTMENT_AMOUNT),
+      )
       .accounts({
         payer: provider.wallet.publicKey,
         escrow: escrowPda,
@@ -60,6 +71,7 @@ describe("init_escrow", () => {
         ),
         systemProgram: PublicKey.default,
       })
+      .signers([authority])
       .rpc();
 
     const escrow = await program.account.movieEscrow.fetch(escrowPda);
@@ -78,6 +90,10 @@ describe("init_escrow", () => {
     expect(escrow.paidOut.toNumber()).toBe(0);
     expect(escrow.refunded.toNumber()).toBe(0);
     expect(escrow.batchCount).toBe(0);
+    expect(escrow.disputeCount).toBe(0);
+    expect(escrow.theater.toBase58()).toBe(theater.toBase58());
+    expect(escrow.mgRemaining.toNumber()).toBe(MG_AMOUNT);
+    expect(escrow.investmentRemaining.toNumber()).toBe(INVESTMENT_AMOUNT);
     expect(escrow.bump).toBe(escrowBump);
 
     const vaultAccount = await getAccount(provider.connection, escrow.vault);

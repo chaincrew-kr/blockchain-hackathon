@@ -7,7 +7,7 @@ import type { AddressInfo } from "node:net";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { createApp } from "../src/app.js";
+import { createApp, parseAllowedOrigins } from "../src/app.js";
 import type { ChainGateway, SettleBatchResult } from "../src/chain/gateway.js";
 import { StubChainGateway } from "../src/chain/gateway.js";
 import { demoBatch } from "../src/fixtures/screenings.js";
@@ -52,9 +52,6 @@ afterEach(async () => {
 
 /** 항상 실패하는 체인 — 업스트림 장애(502) 분류 확인용 */
 class FailingChainGateway implements ChainGateway {
-  async verifyEscrow(): Promise<SettleBatchResult> {
-    throw new Error("RPC connection refused");
-  }
   async settleBatch(): Promise<SettleBatchResult> {
     throw new Error("RPC connection refused");
   }
@@ -68,28 +65,15 @@ class SlowChainGateway extends StubChainGateway {
   constructor(private readonly delayMs: number) {
     super();
   }
-  override async verifyEscrow(movieId: string) {
+  override async settleBatch(screeningId: string, amount: number) {
     await new Promise((r) => setTimeout(r, this.delayMs));
-    return super.verifyEscrow(movieId);
+    return super.settleBatch(screeningId, amount);
   }
-  override async settleBatch(
-    params: Parameters<StubChainGateway["settleBatch"]>[0],
-  ) {
+  override async markDisputed(screeningId: string, amount: number) {
     await new Promise((r) => setTimeout(r, this.delayMs));
-    return super.settleBatch(params);
-  }
-  override async markDisputed(
-    movieId: string,
-    screeningId: string,
-    amount: number,
-  ) {
-    await new Promise((r) => setTimeout(r, this.delayMs));
-    return super.markDisputed(movieId, screeningId, amount);
+    return super.markDisputed(screeningId, amount);
   }
 }
-
-/** 데모 배치(정상 1 + 이상 1)의 체인 호출 수: 격리 1 + 검증 1 + 정산 1 */
-const CALLS_PER_BATCH = 3;
 
 describe("POST /api/batch/trigger — 멱등성", () => {
   it("두 번 호출해도 체인은 한 번만 호출된다 (이중 정산 방지)", async () => {
@@ -100,6 +84,8 @@ describe("POST /api/batch/trigger — 멱등성", () => {
     const firstBody = await first.json();
     expect(first.status).toBe(200);
     expect(firstBody.replayed).toBe(false);
+    expect(firstBody.movieId).toBe("indie-demo-001");
+    expect(firstBody.chainMode).toBe("stub");
     expect(firstBody.decisions).toHaveLength(2);
 
     const second = await fetch(`${url}/api/batch/trigger`, { method: "POST" });
@@ -109,8 +95,8 @@ describe("POST /api/batch/trigger — 멱등성", () => {
 
     // 같은 판정을 그대로 돌려준다
     expect(secondBody.decisions).toEqual(firstBody.decisions);
-    // 핵심 — 배치 1회분의 호출뿐. 두 배 나오면 이중 정산이다.
-    expect(gateway.calls).toHaveLength(CALLS_PER_BATCH);
+    // 핵심 — 회차 2건에 대한 호출 2회뿐. 4회면 이중 정산이다.
+    expect(gateway.calls).toHaveLength(2);
   });
 
   it("실행 중 들어온 동시 요청은 409 batch_in_progress", async () => {
@@ -130,8 +116,8 @@ describe("POST /api/batch/trigger — 멱등성", () => {
     expect(body.error.code).toBe("batch_in_progress");
     expect(body.error.requestId).toBeTruthy();
 
-    // 동시에 두 번 들어와도 체인 호출은 배치 1회분만
-    expect(gateway.calls).toHaveLength(CALLS_PER_BATCH);
+    // 동시에 두 번 들어와도 체인 호출은 회차 수만큼만
+    expect(gateway.calls).toHaveLength(2);
   });
 
   it("reset 후에는 다시 실행된다 (리허설 반복용)", async () => {
@@ -145,7 +131,7 @@ describe("POST /api/batch/trigger — 멱등성", () => {
 
     const again = await fetch(`${url}/api/batch/trigger`, { method: "POST" });
     expect((await again.json()).replayed).toBe(false);
-    expect(gateway.calls).toHaveLength(CALLS_PER_BATCH * 2);
+    expect(gateway.calls).toHaveLength(4);
   });
 
   it("실행 중 reset 요청은 409이고 진행 중인 정산은 유지된다", async () => {
@@ -178,7 +164,7 @@ describe("POST /api/batch/trigger — 멱등성", () => {
     const completed = await trigger;
     expect(completed.status).toBe(200);
     expect(store.runState).toBe("completed");
-    expect(gateway.calls).toHaveLength(CALLS_PER_BATCH);
+    expect(gateway.calls).toHaveLength(2);
   });
 });
 
@@ -257,5 +243,45 @@ describe("requestId 전파", () => {
     });
     expect(response.headers.get("x-request-id")).toBe("trace-me-123");
     expect((await response.json()).error.requestId).toBe("trace-me-123");
+  });
+});
+
+describe("CORS 허용 출처", () => {
+  it("환경변수의 공백·중복·빈 항목을 정리한다", () => {
+    expect(
+      parseAllowedOrigins(" https://web.example,https://web.example, ,"),
+    ).toEqual(["https://web.example"]);
+  });
+
+  it("허용한 웹 Origin에만 CORS 응답 헤더를 붙인다", async () => {
+    const app = createApp(
+      new AgentStore(demoBatch),
+      { chainGateway: new StubChainGateway() },
+      { allowedOrigins: ["https://web.example"] },
+    );
+    const server = app.listen(0, "127.0.0.1");
+    await new Promise((resolve) => server.once("listening", resolve));
+    const { port } = server.address() as AddressInfo;
+    servers.push({
+      url: `http://127.0.0.1:${port}`,
+      close: async () => {
+        server.closeAllConnections();
+        await new Promise<void>((resolve, reject) =>
+          server.close((error) => (error ? reject(error) : resolve())),
+        );
+      },
+    });
+
+    const allowed = await fetch(`http://127.0.0.1:${port}/health`, {
+      headers: { Origin: "https://web.example" },
+    });
+    expect(allowed.headers.get("access-control-allow-origin")).toBe(
+      "https://web.example",
+    );
+
+    const denied = await fetch(`http://127.0.0.1:${port}/health`, {
+      headers: { Origin: "https://evil.example" },
+    });
+    expect(denied.headers.get("access-control-allow-origin")).toBeNull();
   });
 });

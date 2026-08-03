@@ -33,8 +33,9 @@ pub struct InitEscrow<'info> {
     )]
     pub vault: Account<'info, TokenAccount>,
 
-    /// CHECK: 정산 에이전트 지갑 주소를 저장만 함 — 서명 검증은 아직 안 함 (TODO(B/C))
-    pub authority: UncheckedAccount<'info>,
+    /// 정산 에이전트 — 본인 동의 없이 제3자가 임의 주소를 정산 권한자로
+    /// 지정하지 못하도록 escrow 생성 시점에 직접 서명하게 한다.
+    pub authority: Signer<'info>,
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -44,13 +45,19 @@ pub struct InitEscrow<'info> {
 pub fn handler(
     ctx: Context<InitEscrow>,
     movie_id: String,
+    theater: Pubkey,
     contract_hash: [u8; 32],
     rule_hash: [u8; 32],
     rule_version: u16,
+    // 계약서상 MG(미니멈 개런티) 총액 — 0이면 이 영화는 MG 없음.
+    mg_amount: u64,
+    // 계약서상 투자금 총액 — 0이면 외부 투자자 없음.
+    investment_amount: u64,
 ) -> Result<()> {
     let escrow = &mut ctx.accounts.escrow;
     escrow.movie_id = movie_id;
     escrow.authority = ctx.accounts.authority.key();
+    escrow.theater = theater;
     escrow.usdc_mint = ctx.accounts.usdc_mint.key();
     escrow.vault = ctx.accounts.vault.key();
     escrow.contract_hash = contract_hash;
@@ -64,6 +71,9 @@ pub fn handler(
     escrow.paid_out = 0;
     escrow.refunded = 0;
     escrow.batch_count = 0;
+    escrow.dispute_count = 0;
+    escrow.mg_remaining = mg_amount;
+    escrow.investment_remaining = investment_amount;
     escrow.bump = ctx.bumps.escrow;
     Ok(())
 }

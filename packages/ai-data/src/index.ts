@@ -12,8 +12,11 @@ export {
 } from "./contract.js";
 export {
   KobisClient,
+  getRecentDailyAudience,
   type KobisClientConfig,
   type KobisDailyBoxOfficeEntry,
+  type KobisMovieInfo,
+  type DailyAudiencePoint,
 } from "./kobis.js";
 export {
   templateNarrative,

@@ -15,6 +15,8 @@ _독립영화 티켓 매출을 결제 순간부터 에스크로에 격리하고,
 [![Requirements](https://img.shields.io/badge/DOCS-REQUIREMENTS-4d4d4d?style=for-the-badge&logo=readthedocs&logoColor=white)](docs/indie_cinema_requirements.html)
 [![Product Spec](https://img.shields.io/badge/DOCS-PRODUCT_SPEC-4d4d4d?style=for-the-badge&logo=readthedocs&logoColor=white)](docs/indie_cinema_product_spec.html)
 [![Execution Plan](https://img.shields.io/badge/DOCS-EXECUTION_PLAN-4d4d4d?style=for-the-badge&logo=readthedocs&logoColor=white)](docs/최종%20실행계획서.html)
+[![Submission Report](https://img.shields.io/badge/SUBMISSION-HTML-E95D3C?style=for-the-badge&logo=html5&logoColor=white)](docs/e2e/ChainCrew_Hackathon_Submission.html)
+[![Submission PDF](https://img.shields.io/badge/SUBMISSION-PDF-B83232?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)](docs/e2e/ChainCrew_Hackathon_Submission.pdf)
 
 <br />
 
@@ -75,6 +77,12 @@ _독립영화 티켓 매출을 결제 순간부터 에스크로에 격리하고,
 투명성을 높입니다. 그러나 영화별 계약을 해석하거나 권리자별 금액을 격리하고 실제
 지급을 실행하는 시스템은 아닙니다.
 
+현장 운영의 전송 시점은 극장·발권 솔루션에 따라 다를 수 있습니다. 2026년 7월
+씨네큐브 답변에서는 상영일 다음 날 새벽에 발권 솔루션이 일 1회 일괄 전송한다고
+확인됐습니다. 따라서 제품은 KOBIS를 결제 직후 정산의 유일한 실시간 원천으로
+가정하지 않고, 극장 발권 원장과 솔루션 API를 1차 입력으로 사용하며 KOBIS를 사후
+대조 자료로 활용합니다. [현장 조사 정리](docs/research/CINECUBE_FIELD_RESPONSE_2026-07-31.md)
+
 ```text
 KOBIS
 → 얼마가 판매됐는지 저장·집계
@@ -123,7 +131,8 @@ AI Movie Settlement
 2. 배급사와 상영자가 추출 결과를 확인하고 승인합니다.
 3. 승인된 규칙의 해시와 버전을 온체인에 고정합니다.
 4. 티켓 결제금이 개인키가 없는 영화별 에스크로 PDA로 직접 들어갑니다.
-5. 정산 에이전트가 환불률, 무료 발권, 좌석 초과와 해시 연속성을 검증합니다.
+5. 정산 에이전트가 회차별 발권·환불 입력, 과거 상영관 이력과 온체인 계정 상태를
+   바탕으로 환불률, 무료 발권과 좌석 초과를 검증합니다.
 6. 정상 회차는 승인된 규칙으로 귀속·분배하고 이상 회차의 금액만 보류합니다.
 7. 대시보드에서 상태, 잔액, 트랜잭션과 AI 판단 근거를 확인합니다.
 
@@ -134,15 +143,15 @@ AI Movie Settlement
 
 ## Key Features
 
-| 기능             | 설명                                                                                            |
-| ---------------- | ----------------------------------------------------------------------------------------------- |
-| 계약 → 규칙      | Gemini Structured Output으로 정산 조건과 근거 조항을 추출하고 양측 승인 후 버전으로 고정합니다. |
-| 결제 순간 격리   | Solana Pay 결제금이 영화별 에스크로 PDA에 직접 유입되어 운영자금과 섞이지 않습니다.             |
-| 위험조정검증     | 과거 이력에 따라 임계값을 조정하고 환불률·무료 발권·좌석 초과·해시 연속성을 검사합니다.         |
-| 부분 보류        | 문제가 있는 회차·금액만 `Disputed`로 격리하고 정상분 지급은 중단하지 않습니다.                  |
-| 인출 제한        | 각 권리자는 자기 `Claimable` 잔액까지만 인출할 수 있으며 초과 요청은 온체인에서 거부됩니다.     |
-| 설명 가능한 판단 | Gemini가 적용 정책, 근거 조항과 보류 사유를 자연어 리포트로 생성합니다.                         |
-| 투명 대시보드    | 상태머신, 권리자별 잔액, Explorer 링크와 판단 로그를 공개합니다.                                |
+| 기능             | 설명                                                                                                  |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| 계약 → 규칙      | Gemini Structured Output으로 정산 조건과 근거 조항을 추출하고 양측 승인 후 버전으로 고정합니다.       |
+| 결제 순간 격리   | Phantom 서명으로 보낸 Devnet USDC가 영화별 에스크로 Vault에 직접 유입되어 운영자금과 섞이지 않습니다. |
+| 위험조정검증     | 과거 이력에 따라 임계값을 조정하고 환불률·무료 발권·좌석 초과를 검사합니다.                           |
+| 부분 보류        | 문제가 있는 회차·금액만 `Disputed`로 격리하고 정상분 지급은 중단하지 않습니다.                        |
+| 인출 제한        | 각 권리자는 자기 `Claimable` 잔액까지만 인출할 수 있으며 초과 요청은 온체인에서 거부됩니다.           |
+| 설명 가능한 판단 | Gemini가 적용 정책, 근거 조항과 보류 사유를 자연어 리포트로 생성합니다.                               |
+| 투명 대시보드    | 상태머신, 권리자별 잔액, Explorer 링크와 판단 로그를 공개합니다.                                      |
 
 ---
 
@@ -153,19 +162,24 @@ flowchart LR
   Contract["계약서 업로드"] --> Gemini["Gemini 규칙 추출"]
   Gemini --> Approval["배급사·상영자 승인"]
   Approval --> Rule["규칙 해시·버전 고정"]
-  Payment["Solana Pay 티켓 결제"] --> Escrow["영화별 Escrow PDA"]
+  Payment["Phantom Devnet 서명<br/>USDC 티켓 결제"] --> Escrow["영화별 Escrow PDA·Vault"]
   Rule --> Escrow
+  Batch["회차별 발권·환불 데이터"] --> Risk["위험조정검증"]
+  KOBIS["KOBIS 익일 사후 대조"] -.-> Risk
   Escrow --> Risk["위험조정검증"]
   Risk --> Judge{"정산 판단"}
-  Judge -->|정상| Settle["배치 귀속·분배"]
+  Judge -->|정상| Settle["권리자별 Allocation 귀속"]
   Judge -->|이상| Hold["이상 금액만 Disputed"]
   Settle --> Dashboard["투명 대시보드"]
   Hold --> Dashboard
+  Dashboard --> Claim["권리자 Claim·Explorer"]
 ```
 
-Phase 1은 외부 유료 데이터 없이 온체인 이력만으로 완결합니다. Phase 2에서는 신규
-상영관이나 환불 불일치가 발생했을 때만 에이전트가 정책과 예산을 확인한 뒤
-x402/pay.sh로 신뢰도·증빙 데이터를 조건부 구매합니다.
+현재 MVP는 **별도의 유료 증빙 API 구매 없이** 승인 계약, 정규화한 발권·환불
+데이터, Solana 계정 상태와 KOBIS 사후 대조로 실행합니다. x402/pay.sh는 현재 실행
+경로가 아니라 Phase 2 확장안입니다. 신규 상영관이나 환불 불일치처럼 외부 검증이
+필요한 경우에만 정책과 예산을 확인한 뒤 신뢰도·증빙 데이터를 조건부 구매하는
+구조로 설계했습니다.
 
 ---
 
@@ -191,7 +205,7 @@ flowchart TB
   end
 
   Gemini["Gemini API"]
-  Cloud["Cloud Run · Scheduler · Firestore"]
+  Cloud["Cloud Run · Secret Manager<br/>Scheduler · Cloud Logging"]
 
   Backoffice --> Gemini
   Ticket --> Program
@@ -204,12 +218,12 @@ flowchart TB
   Agent -.-> Cloud
 ```
 
-| 서비스           | 책임                                              | 주요 연결                       |
-| ---------------- | ------------------------------------------------- | ------------------------------- |
-| React Web        | 계약 승인, 구매 시연, 정산 결과 시각화            | Gemini, Agent API, Solana       |
-| Settlement Agent | 이력 조회, 정합성 검증, 정산 판단, 체인 호출      | Solana RPC, Gemini, Dashboard   |
-| Movie Escrow     | 자금 격리, 귀속, 부분 보류, 인출 제한과 분쟁 해결 | Solana Devnet                   |
-| Google Cloud     | Agent 배포, 배치 트리거, 로그·비밀값 관리         | Cloud Run, Scheduler, Firestore |
+| 서비스           | 책임                                               | 주요 연결                                     |
+| ---------------- | -------------------------------------------------- | --------------------------------------------- |
+| React Web        | 계약 승인, 구매 시연, 정산 결과 시각화             | Gemini, Agent API, Solana                     |
+| Settlement Agent | 이력 조회, 정합성 검증, 정산 판단, 체인 호출       | Solana RPC, Gemini, Dashboard                 |
+| Movie Escrow     | 자금 격리, 귀속, 부분 보류, 인출 제한과 분쟁 해결  | Solana Devnet                                 |
+| Google Cloud     | Web·Agent 배포, 인증 배치 트리거, 로그·비밀값 관리 | Cloud Run, Secret Manager, Scheduler, Logging |
 
 ---
 
@@ -237,8 +251,8 @@ cp .env.example .env
 | Settlement Agent | `npm run dev:agent` | `http://localhost:4030/health`   |
 | 전체 검사        | `npm run check`     | lint · typecheck · test · format |
 
-개발용 정산 에이전트는 Gemini와 실제 Anchor 연결 전에도 fixture/stub으로 실행할 수
-있습니다.
+로컬에서는 `CHAIN_MODE=stub`으로 외부 체인 호출 없이 개발할 수 있고, 제출용 Cloud
+Run Agent는 `anchor` 모드로 Solana Devnet에 연결됩니다.
 
 ---
 
@@ -255,7 +269,10 @@ blockchain-hackathon/
 ├── programs/
 │   └── movie_escrow/        # [B·C] Anchor 에스크로 프로그램
 ├── tools/
+│   ├── devnet-seed/         # 공동 서명 init · 테스트 민트 · Escrow 시딩
 │   └── wallet/              # Localnet·Devnet 지갑 도구
+├── scripts/
+│   └── demo-claim.ts        # Claim · 초과 인출 · 분쟁 해제 리허설
 ├── docs/                    # 요구사항 · 스펙 · 실행계획 · 작업 문서
 ├── assets/readme/           # README 커버 · 소셜 이미지
 ├── legacy/                  # Phase 2용 x402 결제 PoC
@@ -272,37 +289,44 @@ Anchor instruction별 B·C 담당은
 
 ## Tech Stack
 
-| 영역          | 기술                                                      |
-| ------------- | --------------------------------------------------------- |
-| Frontend      | React 19 · TypeScript · Vite                              |
-| Agent Backend | Node.js · Express 5 · TypeScript                          |
-| AI            | Gemini Structured Output                                  |
-| Blockchain    | Solana · Anchor 0.31 · Rust · PDA                         |
-| Payment       | Solana Pay · Devnet USDC                                  |
-| Cloud         | Google Cloud Run · Scheduler · Firestore · Secret Manager |
-| Testing       | Vitest · TypeScript · ESLint · Prettier                   |
-| Phase 2       | x402 · pay.sh                                             |
+| 영역          | 기술                                                    |
+| ------------- | ------------------------------------------------------- |
+| Frontend      | React 19 · TypeScript · Vite                            |
+| Agent Backend | Node.js · Express 5 · TypeScript                        |
+| AI            | Gemini Structured Output                                |
+| Blockchain    | Solana · Anchor 0.31 · Rust · PDA                       |
+| Payment       | Phantom Wallet Adapter · Solana Devnet USDC             |
+| Cloud         | Google Cloud Run · Secret Manager · Scheduler · Logging |
+| Testing       | Vitest · TypeScript · ESLint · Prettier                 |
+| Roadmap       | x402 · pay.sh · 원화 PG/신탁 연동                       |
 
 ---
 
 ## Development Status
 
-### Implemented
+2026년 8월 3일 제출 빌드 기준입니다.
 
-- STAGE 3 검증 4종과 신규 상영관 임계값 조정
-- STAGE 4 진행·부분 보류 판정과 보류액 계산
-- 템플릿 기반 자연어 판정 리포트
-- 배치 트리거·스냅샷·발권 로그 API
-- fixture/stub 기반 정산 파이프라인
-- D 파트 타입 검사와 테스트 13개
+| 영역        | 현재 상태                                                                                          |
+| ----------- | -------------------------------------------------------------------------------------------------- |
+| 계약 온보딩 | Cloud Run 웹에서 PDF → Gemini 규칙 추출, 충돌 탐지와 승인 게이트 확인                              |
+| 관객 결제   | Phantom Wallet Adapter와 Devnet USDC `deposit` 경로 배포; 발표 지갑의 최종 수동 서명 리허설만 남음 |
+| 온체인 정산 | Devnet 프로그램 배포, 실제 `settle_batch` 2건과 `mark_disputed` 4건 확인                           |
+| 분쟁·인출   | 별도 연습 Escrow에서 정상 Claim, 초과 인출 거부, 분쟁 중 인출 거부와 해제 후 Claim 확인            |
+| Agent       | 위험 검증, 진행·부분 보류 판정, Anchor Gateway와 IAM 보호 Cloud Run 배포 완료                      |
+| Cloud       | Web·Agent Cloud Run, Secret Manager, 인증 Scheduler 구성; 재정산 방지를 위해 Scheduler는 `PAUSED`  |
+| 자동 검사   | Agent 42개, AI Data 4개, Devnet Seed 3개 — 총 49개 통과                                            |
 
-### Integration Pending
+### 현재 한계
 
-- 실제 Solana RPC 과거 이력 조회
-- B·C Anchor 프로그램의 `settle_batch`·`mark_disputed` 호출
-- Gemini 자연어 판단 리포트
-- A 대시보드와 라이브 API 연결
-- Firestore·Cloud Run·Scheduler·Secret Manager
+- 대시보드의 판정·트랜잭션은 라이브 API와 연결되지만 일부 잔액·상태 표시는 데모
+  스냅샷을 함께 사용합니다.
+- 제출용 `indie-2026-001` Escrow는 이미 정산되어 `pending`이 0입니다. 같은
+  Escrow에서 배치를 다시 실행하지 않고 기존 Devnet 결과를 시연합니다.
+- x402/pay.sh, 원화 PG·신탁 연동과 영속 Firestore 저장은 상용화 단계의 범위이며
+  현재 MVP 구현으로 표시하지 않습니다.
+
+구현 근거와 시연 순서는 [제출용 HTML 보고서](docs/e2e/ChainCrew_Hackathon_Submission.html)와
+[PDF 보고서](docs/e2e/ChainCrew_Hackathon_Submission.pdf)에서 확인할 수 있습니다.
 
 자세한 D 파트 진행 상황은 [D 작업 체크리스트](docs/ponyo_work/README.md)에서
 확인할 수 있습니다.

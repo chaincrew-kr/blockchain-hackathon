@@ -26,7 +26,7 @@ export const templateNarrative: NarrativeGenerator = {
       return (
         `회차 ${meta.screeningId}의 발권·환불 기록 ${verification.checks.length}개 항목 ` +
         `검증을 모두 통과했습니다. 환불률·무료 발권 비율이 조정된 보류 임계 이내이고 ` +
-        `발권 수가 좌석수(${meta.seatCount}석)를 넘지 않으며 기록 해시가 연속적이므로 ` +
+        `발권 수가 좌석수(${meta.seatCount}석)를 넘지 않으므로 ` +
         `계약 규칙에 따라 정산을 진행합니다.`
       );
     }

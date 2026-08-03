@@ -1,20 +1,38 @@
 /**
  * STAGE 6 — 투명 대시보드. 모든 숫자는 온체인 계정에서 직접 읽는 것이 원칙.
- * 목업: mocks/demo.ts 고정 데이터. 실제 연동 시 교체 지점:
- *   - snapshot → apps/agent `GET /api/snapshot` 폴링 + 에스크로 계정 구독
- *   - 차트 → KOBIS 오픈API 일별 박스오피스 (실존 독립영화 1편)
+ *
+ * 교체 진행 상황:
+ *   - KOBIS 차트 → 실제 연동 완료 (apps/web/server /api/kobis/*)
+ *   - "정산일 도래" 버튼 → 실제 연동 완료 (POST apps/agent /api/batch/trigger,
+ *     lib/api.ts triggerBatch). 판정 근거·tx 타임라인은 트리거 후 실제 응답으로
+ *     교체되고, 트리거 전엔 mocks/demo.ts 미리보기를 보여준다.
+ *   - snapshot(잔액·상태머신) → 아직 목업 — /api/batch/trigger는 판정 결과만
+ *     주고 온체인 잔액은 안 준다. 별도 스냅샷 API 나오면 교체.
  *   - tx 링크 → Solana Explorer (?cluster=devnet)
  */
-import type { CheckResult, EscrowStatus } from "@chaincrew/schema";
+import { useEffect, useState } from "react";
+import type {
+  BatchRunResponse,
+  CheckResult,
+  EscrowStatus,
+} from "@chaincrew/schema";
 
 import { BarChart } from "../../components/BarChart";
+import { ClockIcon } from "../../components/ClockIcon";
 import {
-  checks,
-  decision,
-  demoDaily,
-  kobisDaily,
-  snapshot,
-} from "../../mocks/demo";
+  describeAgentError,
+  fetchKobisDaily,
+  fetchKobisMovieInfo,
+  resetBatch,
+  triggerBatch,
+  type KobisDailyPoint,
+  type KobisMovieInfo,
+} from "../../lib/api";
+import { explorerTxUrl } from "../../lib/chain";
+import { checks, decision, demoDaily, snapshot } from "../../mocks/demo";
+import { formatUsdc } from "../../lib/usdc";
+
+type BatchState = "idle" | "running" | "done" | "error";
 
 const STATUS_ORDER: EscrowStatus[] = [
   "pending",
@@ -54,7 +72,66 @@ const checkValue = (c: CheckResult) =>
     ? `${c.observed} ${c.threshold}`
     : `${c.observed} ${c.passed ? "≤" : ">"} ${c.threshold}`;
 
+/** KOBIS가 감독·배급사 정보를 안 주는 영화도 있다 — 없는 항목은 "?" 대신 통째로 뺀다. */
+function kobisCaption(info: KobisMovieInfo): string {
+  const openDate = `${info.openDate.slice(0, 4)}-${info.openDate.slice(4, 6)}-${info.openDate.slice(6, 8)} 개봉`;
+  const director = info.directors[0] ? `${info.directors[0]} 감독` : null;
+  const distributor = info.companies.find((c) => c.role === "배급사")?.name;
+  const parts = [
+    openDate,
+    director,
+    distributor ? `${distributor} 배급` : null,
+  ].filter((p): p is string => p !== null);
+  return `「${info.movieName}」 (${parts.join(", ")}) — `;
+}
+
 export function DashboardPage() {
+  const [kobisDaily, setKobisDaily] = useState<KobisDailyPoint[] | null>(null);
+  const [kobisInfo, setKobisInfo] = useState<KobisMovieInfo | null>(null);
+  const [kobisError, setKobisError] = useState<string | null>(null);
+
+  const [batchState, setBatchState] = useState<BatchState>("idle");
+  const [batchResult, setBatchResult] = useState<BatchRunResponse | null>(null);
+  const [batchError, setBatchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchKobisDaily()
+      .then(setKobisDaily)
+      .catch((e) => setKobisError(String(e.message ?? e)));
+    fetchKobisMovieInfo()
+      .then(setKobisInfo)
+      .catch((e) => setKobisError(String(e.message ?? e)));
+  }, []);
+
+  const handleTrigger = async () => {
+    setBatchState("running");
+    setBatchError(null);
+    try {
+      const result = await triggerBatch();
+      setBatchResult(result);
+      setBatchState("done");
+    } catch (error) {
+      setBatchError(describeAgentError(error));
+      setBatchState("error");
+    }
+  };
+
+  const handleReset = async () => {
+    setBatchError(null);
+    try {
+      await resetBatch();
+      setBatchResult(null);
+      setBatchState("idle");
+    } catch (error) {
+      setBatchError(describeAgentError(error));
+    }
+  };
+
+  const usingRealDecisions = batchResult !== null;
+  const activeDecisions = batchResult ? batchResult.decisions : [decision];
+  const activeTimeline = batchResult ? batchResult.timeline : snapshot.timeline;
+  const fmt = usingRealDecisions ? formatUsdc : usdc;
+
   const partsSum =
     snapshot.pending +
     snapshot.allocated +
@@ -75,15 +152,13 @@ export function DashboardPage() {
 
   return (
     <section className="screen">
-      <p className="eyebrow">
-        <span className="chip-role">담당 A</span>
-        <span className="chip-role">D — 로그 API</span> STAGE 6 — 투명 대시보드
-        · 전 권리자 공개
-      </p>
-      <h1>《미광》 정산 현황</h1>
-      <p className="sub">
-        모든 숫자는 온체인 계정에서 직접 읽습니다. 판정은 에이전트가 내리지만,
-        근거는 전부 여기 공개됩니다.
+      <p className="eyebrow">STAGE 6 — 투명 대시보드 · 전 권리자 공개</p>
+      <h1>“붉은 노을 아래” 정산 현황</h1>
+      <p className="sub" style={{ maxWidth: "none", whiteSpace: "nowrap" }}>
+        숫자는 전부 온체인 계정에서 그대로 가져옵니다.
+        <br />
+        보류할지 말지는 에이전트가 판단하지만, 그렇게 판단한 이유를 함께
+        제시합니다.
       </p>
 
       <div className="flow" aria-label="에스크로 상태머신">
@@ -107,8 +182,32 @@ export function DashboardPage() {
             </span>
           </>
         )}
-        <button className="ghost">정산일 도래 — 시간 압축 ▸</button>
+        <button
+          className="ghost"
+          disabled={batchState === "running"}
+          onClick={handleTrigger}
+        >
+          {batchState === "running" ? (
+            <span className="spinner" />
+          ) : (
+            <ClockIcon />
+          )}
+          {batchState === "running" ? "정산 배치 실행 중…" : "정산일 도래"}
+        </button>
+        {batchResult?.replayed && (
+          <span className="chip state-dim">재생됨 — 기존 결과</span>
+        )}
+        {batchState === "done" && (
+          <button className="ghost" onClick={handleReset}>
+            리허설 초기화
+          </button>
+        )}
       </div>
+      {batchError && (
+        <p className="error-text" role="alert">
+          {batchError}
+        </p>
+      )}
 
       <div className="grid stats">
         {stats.map((s) => (
@@ -130,43 +229,77 @@ export function DashboardPage() {
       <div className="grid two-col">
         <div className="card">
           <h2>
-            AI 판정 근거 <span className="muted">— STAGE 4 · Gemini 생성</span>
+            AI 판정 근거{" "}
+            <span className="muted">
+              — STAGE 4 · Gemini 생성
+              {!usingRealDecisions && " (미리보기 · 목업)"}
+            </span>
           </h2>
-          <div className="verdict-head">
-            <span
-              className={`chip ${decision.verdict === "partial-hold" ? "state-hold" : "state-live"}`}
+          {activeDecisions.length === 0 && (
+            <p className="chart-caption">
+              이번 배치에는 판정 대상 회차가 없습니다.
+            </p>
+          )}
+          {activeDecisions.map((d, i) => (
+            <div
+              key={d.screeningId}
+              style={i > 0 ? { marginTop: 18, paddingTop: 18 } : undefined}
+              className={i > 0 ? "bordered-top" : undefined}
             >
-              {decision.verdict === "partial-hold" ? "부분 보류" : "진행"}
-            </span>
-            <span
-              className="mono"
-              style={{ fontSize: 11, color: "var(--smoke)" }}
-            >
-              {new Date(decision.decidedAt).toLocaleString("ko-KR", {
-                dateStyle: "short",
-                timeStyle: "short",
-              })}{" "}
-              · 회차 {decision.screeningId}
-            </span>
-          </div>
-          <p className="serif" style={{ marginTop: 14, color: "var(--mist)" }}>
-            {decision.narrative}
-          </p>
-          <div className="checks">
-            {checks.map((c) => (
-              <div
-                key={c.check}
-                className={`check ${c.passed ? "pass" : "fail"}`}
-              >
-                <span className="mark">{c.passed ? "✓" : "✕"}</span>
-                <span>{CHECK_LABEL[c.check]}</span>
-                <span className="mono">{checkValue(c)}</span>
+              <div className="verdict-head">
+                <span
+                  className={`chip ${d.verdict === "partial-hold" ? "state-hold" : "state-live"}`}
+                >
+                  {d.verdict === "partial-hold" ? "부분 보류" : "진행"}
+                </span>
+                <span
+                  className="mono"
+                  style={{ fontSize: 11, color: "var(--smoke)" }}
+                >
+                  {new Date(d.decidedAt).toLocaleString("ko-KR", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })}{" "}
+                  · 회차 {d.screeningId}
+                  {d.verdict === "partial-hold" &&
+                    ` · 보류 ${fmt(d.heldAmount)} USDC`}
+                </span>
               </div>
-            ))}
-          </div>
+              <p
+                className="prose"
+                style={{ marginTop: 14, color: "var(--mist)" }}
+              >
+                {d.narrative}
+              </p>
+              {/* 실데이터 narrative는 D의 에이전트가 근거 조항을 문장 안에
+                  이미 포함해서 생성한다 — mock 미리보기만 별도로 보여준다
+                  (mock 문구엔 인용이 안 박혀 있어서 중복이 안 생김). */}
+              {!usingRealDecisions && d.basisClauses.length > 0 && (
+                <p className="chart-caption">
+                  근거: {d.basisClauses.join(" · ")}
+                </p>
+              )}
+            </div>
+          ))}
+          {!usingRealDecisions && (
+            <div className="checks">
+              {checks.map((c) => (
+                <div
+                  key={c.check}
+                  className={`check ${c.passed ? "pass" : "fail"}`}
+                >
+                  <span className="mark">{c.passed ? "✓" : "✕"}</span>
+                  <span>{CHECK_LABEL[c.check]}</span>
+                  <span className="mono">{checkValue(c)}</span>
+                </div>
+              ))}
+            </div>
+          )}
           <p className="chart-caption">
-            임계값은 상영관 온체인 이력으로 조정됩니다 — 신규 상영관이라
-            기본값보다 30% 엄격하게 적용 중.
+            이 상영관은 온체인에 정산 이력이 아직 없는 신규 상영관입니다 — 믿을
+            만한 이력이 쌓이기 전까지는 환불률 허용 기준을 평소보다 30% 낮춰(더
+            엄격하게) 적용해서, 이상 징후를 더 예민하게 잡아냅니다. 정상 정산
+            이력이 쌓이면 기준이 점차 완화됩니다.
           </p>
         </div>
 
@@ -202,7 +335,7 @@ export function DashboardPage() {
           </div>
           <div className="legend">
             <span>
-              <i style={{ background: "var(--white)" }} />
+              <i style={{ background: "var(--success)" }} />
               지급 완료
             </span>
             <span>
@@ -215,11 +348,13 @@ export function DashboardPage() {
             </span>
           </div>
           <hr className="hair" />
-          <h2 style={{ marginBottom: 10 }}>tx 타임라인</h2>
+          <h2 style={{ marginBottom: 10 }}>
+            tx 타임라인{!usingRealDecisions && " (미리보기 · 목업)"}
+          </h2>
           <div className="timeline">
-            {snapshot.timeline.map((t) => (
+            {activeTimeline.map((t, i) => (
               <div
-                key={t.label}
+                key={`${t.label}-${i}`}
                 className={`tl${t.label.includes("거부") ? " reject" : ""}`}
               >
                 <span className="t">{time(t.timestamp)}</span>
@@ -227,14 +362,23 @@ export function DashboardPage() {
                   {t.label}
                   <small>{t.txSignature}</small>
                 </span>
-                <a
-                  className="ex"
-                  href="https://explorer.solana.com/?cluster=devnet"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Explorer ↗
-                </a>
+                {usingRealDecisions ? (
+                  <a
+                    className="ex"
+                    href={explorerTxUrl(t.txSignature)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Explorer ↗
+                  </a>
+                ) : (
+                  <span
+                    className="ex muted"
+                    title="미리보기 · 목업 서명이라 실제 트랜잭션이 없습니다"
+                  >
+                    Explorer ↗
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -244,7 +388,8 @@ export function DashboardPage() {
       <div className="grid chart-pair">
         <div className="card">
           <h2>
-            《미광》 일별 발권 <span className="muted">— 우리 데모 · 건</span>
+            “붉은 노을 아래” 일별 발권{" "}
+            <span className="muted">— 우리 데모 · 건</span>
           </h2>
           <BarChart
             data={demoDaily}
@@ -258,15 +403,36 @@ export function DashboardPage() {
             실존 독립영화 일별 관객{" "}
             <span className="muted">— KOBIS 오픈API · 명</span>
           </h2>
-          <BarChart
-            data={kobisDaily}
-            unit=" 명"
-            color="rgba(255,255,255,.45)"
-            gridStep={100}
-          />
+
+          {kobisError && (
+            <p
+              className="chart-caption"
+              style={{ color: "var(--stamp, #BE3A28)" }}
+            >
+              KOBIS 조회 실패: {kobisError} — 서버의 KOBIS_API_KEY 설정을
+              확인하세요 (로컬 개발 중이면 apps/web/server가 localhost:8787에서
+              떠 있는지도 함께 확인).
+            </p>
+          )}
+
+          {!kobisError && !kobisDaily && (
+            <p className="chart-caption">KOBIS에서 불러오는 중…</p>
+          )}
+
+          {kobisDaily && (
+            <BarChart
+              data={kobisDaily}
+              unit=" 명"
+              color="rgba(255,255,255,.45)"
+              gridStep={100}
+            />
+          )}
+
           <p className="chart-caption">
-            단위가 다르므로 축을 공유하지 않습니다 — 같은 기간의 실데이터를
-            나란히 보여 “실제 시장과 연결된 파이프라인”임을 증명하는 패널.
+            {kobisInfo ? kobisCaption(kobisInfo) : ""}
+            일별 박스오피스 상위권 밖인 날은 0으로 표시됩니다. 단위가 다르므로
+            축을 공유하지 않습니다 — 같은 기간의 실데이터를 나란히 보여 “실제
+            시장과 연결된 파이프라인”임을 증명하는 패널.
           </p>
         </div>
       </div>

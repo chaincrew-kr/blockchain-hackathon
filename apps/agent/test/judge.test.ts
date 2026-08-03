@@ -17,7 +17,7 @@ import { judgeSettlement } from "../src/judge/index.js";
 
 const thresholds: AdjustedThresholds = {
   maxRefundRate: 0.07,
-  maxFreeRate: 0.105,
+  maxFreeRate: 0.05,
   maxTicketsPerScreening: 50,
 };
 
@@ -48,13 +48,13 @@ describe("basisClause — 검사별 단위", () => {
       check: "free-rate",
       passed: false,
       observed: 0.182,
-      threshold: 0.105,
+      threshold: 0.05,
     });
 
     // 계약서에는 5%라 적혀 있는데 화면이 임계값만 말하면 어긋나 보인다
     expect(clause).toContain("계약 상한 5%");
     expect(clause).toContain("18.2%");
-    expect(clause).toContain("보류 임계 10.5%");
+    expect(clause).toContain("보류 임계 5%");
     expect(clause).toContain(DEMO_CONTRACT_TERMS.freeTicket.article);
   });
 
@@ -72,7 +72,7 @@ describe("basisClause — 검사별 단위", () => {
     expect(clause).not.toContain("%");
   });
 
-  it("환불률: 계약 상한 조항이 없으면 보류 임계만 말한다", async () => {
+  it("환불률: 계약 상한과 보류 임계를 함께 인용한다", async () => {
     const clause = await clauseFor({
       check: "refund-rate",
       passed: false,
@@ -80,9 +80,10 @@ describe("basisClause — 검사별 단위", () => {
       threshold: 0.07,
     });
 
+    expect(clause).toContain("계약 상한 10%");
     expect(clause).toContain("보류 임계 7%");
     expect(clause).toContain("12%");
-    expect(clause).not.toContain("계약 상한");
+    expect(clause).toContain(DEMO_CONTRACT_TERMS.refund.article);
   });
 
   it("해시 연속성: 측정값 문자열을 그대로 싣는다", async () => {
@@ -105,7 +106,7 @@ describe("judgeSettlement — 판정", () => {
         check: "free-rate",
         passed: true,
         observed: 0.05,
-        threshold: 0.105,
+        threshold: 0.05,
       }),
       meta,
       1000,

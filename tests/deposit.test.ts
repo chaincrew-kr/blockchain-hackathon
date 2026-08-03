@@ -69,9 +69,12 @@ describe("deposit", () => {
     await program.methods
       .initEscrow(
         movieId,
+        Keypair.generate().publicKey,
         Array.from(new Uint8Array(32).fill(1)),
         Array.from(new Uint8Array(32).fill(2)),
         1,
+        new anchor.BN(0),
+        new anchor.BN(0),
       )
       .accounts({
         payer: provider.wallet.publicKey,
@@ -84,6 +87,7 @@ describe("deposit", () => {
         ),
         systemProgram: PublicKey.default,
       })
+      .signers([authority])
       .rpc();
 
     const escrowAfterInit = await program.account.movieEscrow.fetch(escrowPda);
@@ -92,7 +96,7 @@ describe("deposit", () => {
 
   it("transfers USDC into the vault and updates gross_in/pending", async () => {
     await program.methods
-      .deposit(new anchor.BN(DEPOSIT_AMOUNT))
+      .deposit("SCR-1", "A12", new anchor.BN(DEPOSIT_AMOUNT))
       .accounts({
         payer: provider.wallet.publicKey,
         escrow: escrowPda,
@@ -113,7 +117,7 @@ describe("deposit", () => {
 
   it("accumulates across multiple deposits", async () => {
     await program.methods
-      .deposit(new anchor.BN(DEPOSIT_AMOUNT))
+      .deposit("SCR-1", "A13", new anchor.BN(DEPOSIT_AMOUNT))
       .accounts({
         payer: provider.wallet.publicKey,
         escrow: escrowPda,
@@ -128,20 +132,28 @@ describe("deposit", () => {
     expect(escrow.pending.toNumber()).toBe(DEPOSIT_AMOUNT * 2);
   });
 
-  it("rejects a zero-amount deposit", async () => {
-    await expect(
-      program.methods
-        .deposit(new anchor.BN(0))
-        .accounts({
-          payer: provider.wallet.publicKey,
-          escrow: escrowPda,
-          payerTokenAccount,
-          vault: vaultPda,
-          tokenProgram: new PublicKey(
-            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-          ),
-        })
-        .rpc(),
-    ).rejects.toThrow();
+  it("accepts a zero-amount deposit (무료 발권, 이슈 #8) without moving vault funds", async () => {
+    const escrowBefore = await program.account.movieEscrow.fetch(escrowPda);
+    const vaultBefore = await getAccount(provider.connection, vaultPda);
+
+    await program.methods
+      .deposit("SCR-1", "A14", new anchor.BN(0))
+      .accounts({
+        payer: provider.wallet.publicKey,
+        escrow: escrowPda,
+        payerTokenAccount,
+        vault: vaultPda,
+        tokenProgram: new PublicKey(
+          "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        ),
+      })
+      .rpc();
+
+    const escrow = await program.account.movieEscrow.fetch(escrowPda);
+    expect(escrow.grossIn.toNumber()).toBe(escrowBefore.grossIn.toNumber());
+    expect(escrow.pending.toNumber()).toBe(escrowBefore.pending.toNumber());
+
+    const vaultAccount = await getAccount(provider.connection, vaultPda);
+    expect(Number(vaultAccount.amount)).toBe(Number(vaultBefore.amount));
   });
 });

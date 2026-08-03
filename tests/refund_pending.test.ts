@@ -76,9 +76,12 @@ describe("refund_pending", () => {
     await program.methods
       .initEscrow(
         movieId,
+        Keypair.generate().publicKey,
         Array.from(new Uint8Array(32).fill(1)),
         Array.from(new Uint8Array(32).fill(2)),
         1,
+        new anchor.BN(0),
+        new anchor.BN(0),
       )
       .accounts({
         payer: provider.wallet.publicKey,
@@ -89,13 +92,14 @@ describe("refund_pending", () => {
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         systemProgram: PublicKey.default,
       })
+      .signers([authority])
       .rpc();
 
     const escrowAfterInit = await program.account.movieEscrow.fetch(escrowPda);
     vaultPda = escrowAfterInit.vault;
 
     await program.methods
-      .deposit(new anchor.BN(DEPOSIT_AMOUNT))
+      .deposit("SCR-1", "A15", new anchor.BN(DEPOSIT_AMOUNT))
       .accounts({
         payer: provider.wallet.publicKey,
         escrow: escrowPda,
@@ -110,7 +114,7 @@ describe("refund_pending", () => {
     const refundAmount = 4_000_000;
 
     await program.methods
-      .refundPending(new anchor.BN(refundAmount))
+      .refundPending("SCR-1", "A15", new anchor.BN(refundAmount))
       .accounts({
         payer: provider.wallet.publicKey,
         escrow: escrowPda,
@@ -136,7 +140,7 @@ describe("refund_pending", () => {
 
     await expect(
       program.methods
-        .refundPending(new anchor.BN(tooMuch))
+        .refundPending("SCR-1", "A15", new anchor.BN(tooMuch))
         .accounts({
           payer: provider.wallet.publicKey,
           escrow: escrowPda,
@@ -159,7 +163,7 @@ describe("refund_pending", () => {
 
     await expect(
       program.methods
-        .refundPending(new anchor.BN(1_000_000))
+        .refundPending("SCR-1", "A15", new anchor.BN(1_000_000))
         .accounts({
           payer: provider.wallet.publicKey,
           escrow: escrowPda,

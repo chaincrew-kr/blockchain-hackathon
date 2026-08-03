@@ -26,4 +26,4 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "echo 'TODO(B·C): anchor 테스트 러너 연결'"
+test = "npx vitest run tests"

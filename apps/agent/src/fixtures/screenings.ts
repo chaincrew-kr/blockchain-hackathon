@@ -10,28 +10,10 @@
  */
 import type { ScreeningMeta, TicketEvent } from "@chaincrew/schema";
 
-import type { SettleWaterfallParams } from "../chain/gateway.js";
 import { GENESIS_HASH, hashTicketEvent } from "../risk-check/hash.js";
 
 /** USDC 6 decimals — 10 USDC */
 export const TICKET_PRICE = 10_000_000;
-
-/** init_escrow에 등록하는 데모 영화 식별자 — 에스크로 PDA 시드와 일치해야 한다. */
-export const DEMO_MOVIE_ID = "MOV-INDIE-2026";
-
-/**
- * 데모 워터폴 인자 — 서울 한국영화 부율 5:5, 배급수수료 10%.
- *
- * 승인된 SettlementRule vN의 revenueShare·distributionFeeRate와 같은 값이어야
- * 한다. rule_hash 인코딩 방식이 합의되면(SCHEMA_CONTRACT §11) 상수 대신 rule
- * 객체에서 파생한다.
- */
-export const demoSettlement: SettleWaterfallParams = {
-  movieId: DEMO_MOVIE_ID,
-  theaterBps: 5000,
-  distributorBps: 5000,
-  distributionFeeBps: 1000,
-};
 
 /** 데모 기준 시각(unix ms) — 2026-07-30 14:00 KST 회차 */
 const BASE_TS = 1_785_992_400_000;
@@ -71,7 +53,7 @@ function seats(prefix: string, count: number): string[] {
 }
 
 // ── 정상 회차: 유료 19 + 무료 1(5%) 발권, 환불 1건(5%) ────────────────────────
-// 환불률 1/20=5% < 10%, 무료율 1/20=5% < 15%, 발권 20 ≤ 좌석 50, 해시체인 정상.
+// 환불률 1/20=5% < 10%, 무료율 1/20=5% ≤ 계약 상한 5%, 발권 20 ≤ 좌석 50.
 
 export const NORMAL_SCREENING_ID = "SCR-2026-0730-14";
 
@@ -119,6 +101,44 @@ export const anomalousEvents: TicketEvent[] = buildEventChain(
   ],
   BASE_TS + 9 * 3_600_000, // 심야 회차
 );
+
+// ── 회귀 테스트용 이상 시나리오 ────────────────────────────────────────
+
+export const refundAnomalyMeta: ScreeningMeta = {
+  ...normalMeta,
+  screeningId: "SCR-2026-0730-REFUND",
+};
+export const refundAnomalyEvents = buildEventChain(
+  refundAnomalyMeta.screeningId,
+  [
+    ...seats("R", 4).map((seat) => ({
+      kind: "issue" as const,
+      seat,
+      amount: TICKET_PRICE,
+    })),
+    { kind: "refund", seat: "R1", amount: TICKET_PRICE },
+  ],
+);
+
+export const overIssueAnomalyMeta: ScreeningMeta = {
+  ...normalMeta,
+  screeningId: "SCR-2026-0730-OVER",
+  seatCount: 4,
+};
+export const overIssueAnomalyEvents = buildEventChain(
+  overIssueAnomalyMeta.screeningId,
+  seats("O", 5).map((seat) => ({
+    kind: "issue" as const,
+    seat,
+    amount: TICKET_PRICE,
+  })),
+);
+
+/** 기본 데모에는 넣지 않지만 각 검증 규칙의 회귀 테스트에 쓰는 고정 시나리오. */
+export const regressionAnomalyBatch = [
+  { meta: refundAnomalyMeta, events: refundAnomalyEvents },
+  { meta: overIssueAnomalyMeta, events: overIssueAnomalyEvents },
+] as const;
 
 /** 데모 배치 = 회차 2개 (정상 1 + 이상 1) */
 export const demoBatch = [

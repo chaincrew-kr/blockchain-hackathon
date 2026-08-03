@@ -7,10 +7,8 @@
  * 것이 가장 위험하다.
  */
 import { logger } from "../logger.js";
-import {
-  AnchorChainGateway,
-  type BeneficiaryWallets,
-} from "./anchor-gateway.js";
+import type { HistoryProvider } from "../risk-check/history.js";
+import { AnchorChainGateway } from "./anchor-gateway.js";
 import { StubChainGateway, type ChainGateway } from "./gateway.js";
 
 export type ChainMode = "stub" | "anchor";
@@ -20,6 +18,10 @@ export interface ChainSetup {
   mode: ChainMode;
   /** anchor 모드일 때 서명 지갑 공개키 */
   authority?: string;
+  /** anchor 모드일 때 온체인 상영관 공개키 */
+  theater?: string;
+  historyProvider?: HistoryProvider;
+  movieId?: string;
 }
 
 /** anchor 모드에 필요한 환경변수 — 하나라도 비면 스텁으로 떨어진다. */
@@ -27,33 +29,25 @@ const REQUIRED = [
   "SOLANA_RPC_URL",
   "SOLANA_PROGRAM_ID",
   "AGENT_KEYPAIR_PATH",
-] as const;
-
-/**
- * settle_batch가 Allocation에 기록할 권리자 지갑 — 선택 사항.
- * 없어도 anchor 모드로 뜨지만 settle_batch 호출은 명확한 오류로 거부된다.
- */
-const WALLET_ENV = [
+  "SOLANA_IDL_PATH",
+  "ESCROW_MOVIE_ID",
   "THEATER_WALLET",
   "DISTRIBUTOR_WALLET",
   "PRODUCER_WALLET",
+  "INVESTOR_WALLET",
+  "THEATER_BPS",
+  "DISTRIBUTOR_BPS",
+  "DISTRIBUTION_FEE_BPS",
+  "INVESTOR_PROFIT_BPS",
 ] as const;
 
-function readBeneficiaryWallets(
+function integer(
   env: NodeJS.ProcessEnv,
-): BeneficiaryWallets | undefined {
-  const missing = WALLET_ENV.filter((key) => !env[key]);
-  if (missing.length === 0) {
-    return {
-      theater: env.THEATER_WALLET as string,
-      distributor: env.DISTRIBUTOR_WALLET as string,
-      producer: env.PRODUCER_WALLET as string,
-    };
-  }
-  logger.warn("beneficiary wallets not fully set — settle_batch will refuse", {
-    missingEnv: missing,
-  });
-  return undefined;
+  key: (typeof REQUIRED)[number],
+): number {
+  const value = Number(env[key]);
+  if (!Number.isInteger(value)) throw new Error(`${key} must be an integer`);
+  return value;
 }
 
 export function createChainGateway(
@@ -74,9 +68,25 @@ export function createChainGateway(
       rpcUrl: env.SOLANA_RPC_URL as string,
       programId: env.SOLANA_PROGRAM_ID as string,
       keypairPath: env.AGENT_KEYPAIR_PATH as string,
-      beneficiaryWallets: readBeneficiaryWallets(env),
+      idlPath: env.SOLANA_IDL_PATH as string,
+      movieId: env.ESCROW_MOVIE_ID as string,
+      theaterWallet: env.THEATER_WALLET as string,
+      distributorWallet: env.DISTRIBUTOR_WALLET as string,
+      producerWallet: env.PRODUCER_WALLET as string,
+      investorWallet: env.INVESTOR_WALLET as string,
+      theaterBps: integer(env, "THEATER_BPS"),
+      distributorBps: integer(env, "DISTRIBUTOR_BPS"),
+      distributionFeeBps: integer(env, "DISTRIBUTION_FEE_BPS"),
+      investorProfitBps: integer(env, "INVESTOR_PROFIT_BPS"),
     });
-    return { gateway, mode: "anchor", authority: gateway.authority };
+    return {
+      gateway,
+      mode: "anchor",
+      authority: gateway.authority,
+      theater: gateway.theater,
+      historyProvider: gateway.historyProvider,
+      movieId: env.ESCROW_MOVIE_ID as string,
+    };
   } catch (error) {
     // 키파일 누락·잘못된 program id 등 설정 오류. 서버는 뜨게 두되 스텁으로
     // 내려앉는다 — 데모 도중 서버가 죽는 것보다 낫다.
