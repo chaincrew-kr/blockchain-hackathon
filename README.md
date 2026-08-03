@@ -203,17 +203,25 @@ MovieEscrow
 
 ## Settlement Flow
 
+### 1. 계약 확정과 결제금 격리
+
 ```mermaid
-flowchart LR
+flowchart TB
   Contract["계약서 업로드"] --> Gemini["Gemini 규칙 추출"]
   Gemini --> Approval["배급사·상영자 승인"]
   Approval --> Rule["규칙 해시·버전 고정"]
   Rule --> Init["Phantom init_escrow 서명<br/>테스트 Mint·Vault 생성"]
   Init --> Escrow["영화별 Escrow PDA·Vault"]
   Payment["Phantom Devnet 서명<br/>USDC 티켓 결제"] --> Escrow
+```
+
+### 2. 검증과 부분 보류 정산
+
+```mermaid
+flowchart TB
+  Escrow["영화별 Escrow 잔액"] --> Risk["위험조정검증"]
   Batch["회차별 발권·환불 데이터"] --> Risk["위험조정검증"]
   KOBIS["KOBIS 익일 사후 대조"] -.-> Risk
-  Escrow --> Risk["위험조정검증"]
   Risk --> Judge{"정산 판단"}
   Judge -->|정상| Settle["권리자별 Allocation 귀속"]
   Judge -->|이상| Hold["이상 금액만 Disputed"]
