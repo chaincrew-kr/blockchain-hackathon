@@ -213,17 +213,25 @@ basis for calculation and execution.
 
 ## Settlement Flow
 
+### 1. Contract Approval and Fund Segregation
+
 ```mermaid
-flowchart LR
+flowchart TB
   Contract["Upload contract"] --> Gemini["Extract rules with Gemini"]
   Gemini --> Approval["Distributor · exhibitor approval"]
   Approval --> Rule["Lock rule hash · version"]
   Rule --> Init["Phantom init_escrow signature<br/>Create test Mint · Vault"]
   Init --> Escrow["Film Escrow PDA · Vault"]
   Payment["Phantom Devnet signature<br/>USDC ticket payment"] --> Escrow
+```
+
+### 2. Verification and Partial-Hold Settlement
+
+```mermaid
+flowchart TB
+  Escrow["Film Escrow balance"] --> Risk["Risk-adjusted verification"]
   Batch["Screening ticket · refund data"] --> Risk["Risk-adjusted verification"]
   KOBIS["Next-day KOBIS reconciliation"] -.-> Risk
-  Escrow --> Risk
   Risk --> Judge{"Settlement decision"}
   Judge -->|Valid| Settle["Allocate to rightsholder accounts"]
   Judge -->|Anomaly| Hold["Hold anomalous amount only"]
