@@ -244,5 +244,15 @@ export function describeChainError(error: unknown): string {
       return "지갑에서 서명을 취소했습니다";
     return error.message;
   }
+  // Phantom의 지갑 프로바이더는 승인 요청이 겹치면 Error가 아닌
+  // 순수 객체({code, message})를 던진다 — 위 instanceof Error 분기를
+  // 건너뛰므로 별도로 잡아줘야 원인을 알 수 있는 메시지가 나온다.
+  if (typeof error === "object" && error !== null && "message" in error) {
+    const { code, message } = error as { code?: number; message: unknown };
+    if (code === -32002)
+      return "지갑에 이미 대기 중인 연결 요청이 있습니다 — Phantom 확장을 열어 처리한 뒤 다시 시도하세요";
+    if (code === 4001) return "지갑에서 서명을 취소했습니다";
+    return String(message);
+  }
   return "알 수 없는 오류가 발생했습니다";
 }
